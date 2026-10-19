@@ -1,0 +1,569 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:sizer/sizer.dart';
+
+import '../../services/auth_service.dart';
+import '../../services/chat_controller.dart';
+import '../../services/chat_service.dart';
+import '../../theme/app_theme.dart';
+
+class ChatScreen extends StatefulWidget {
+  const ChatScreen({super.key});
+
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
+  final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  ChatController? _chat;
+  int _boundGeneration = -1;
+  int _lastCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    AuthService.instance.addListener(_onAuthChanged);
+    _scrollController.addListener(_onScroll);
+    _bind();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    AuthService.instance.removeListener(_onAuthChanged);
+    _scrollController.removeListener(_onScroll);
+    _chat?.removeListener(_onChatChanged);
+    _chat?.dispose(); // unsubscribes Realtime
+    _chat = null;
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// (Re)creates the controller whenever the signed-in account changes, so the
+  /// previous user's subscription and in-memory messages are discarded.
+  void _bind() {
+    final auth = AuthService.instance;
+    if (_boundGeneration == auth.generation && _chat != null) return;
+
+    _chat?.removeListener(_onChatChanged);
+    _chat?.dispose();
+    _chat = null;
+    _lastCount = 0;
+    _messageController.clear();
+    _boundGeneration = auth.generation;
+
+    if (auth.isSignedIn) {
+      final c = ChatController();
+      c.addListener(_onChatChanged);
+      _chat = c;
+      c.init();
+    }
+    if (mounted) setState(() {});
+  }
+
+  void _onAuthChanged() => _bind();
+
+  void _onChatChanged() {
+    if (!mounted) return;
+    final count = _chat?.messages.length ?? 0;
+    final grew = count > _lastCount;
+    final nearBottom =
+        !_scrollController.hasClients ||
+        _scrollController.position.maxScrollExtent -
+                _scrollController.position.pixels <
+            160;
+    setState(() {});
+    if (grew && nearBottom) _scrollToBottom();
+    _lastCount = count;
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.pixels <= 80) {
+      _chat?.loadOlder();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _chat?.onResumed();
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _sendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return;
+    final id = await _chat?.send(text);
+    if (id != null) {
+      // Draft is cleared only once the message is queued locally; a failure
+      // leaves it visible in the list (with retry), never overwriting a newer draft.
+      _messageController.clear();
+      _scrollToBottom();
+    }
+  }
+
+  String _formatTime(DateTime dt) {
+    final l = dt.toLocal();
+    final hour = l.hour.toString().padLeft(2, '0');
+    final minute = l.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
+  String _formatDate(DateTime dt) {
+    final l = dt.toLocal();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final msgDay = DateTime(l.year, l.month, l.day);
+    if (msgDay == today) return 'Today';
+    final yesterday = today.subtract(const Duration(days: 1));
+    if (msgDay == yesterday) return 'Yesterday';
+    return '${l.day}/${l.month}/${l.year}';
+  }
+
+  bool _showDateSeparator(List<ChatMessage> msgs, int index) {
+    if (index == 0) return true;
+    final prev = msgs[index - 1].createdAt.toLocal();
+    final curr = msgs[index].createdAt.toLocal();
+    return prev.day != curr.day ||
+        prev.month != curr.month ||
+        prev.year != curr.year;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final chat = _chat;
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surfaceLight,
+        elevation: 0,
+        scrolledUnderElevation: 1,
+        title: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.support_agent_rounded,
+                color: AppTheme.primary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Research Team',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textDark,
+                  ),
+                ),
+                Text(
+                  'Happy Heart Study',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: AppTheme.textLight,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: chat == null
+                ? _buildErrorState('Please sign in to use chat.', null)
+                : chat.isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppTheme.primary),
+                  )
+                : chat.error != null
+                ? _buildErrorState(chat.error!, chat.init)
+                : chat.messages.isEmpty
+                ? _buildEmptyState()
+                : _buildMessageList(chat),
+          ),
+          _buildInputBar(
+            enabled: chat != null && !chat.isLoading && chat.error == null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.chat_bubble_outline_rounded,
+                color: AppTheme.primary,
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Start a conversation',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textDark,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Send a message to the Happy Heart research team. We\'re here to help with any questions about your study.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+                color: AppTheme.textMedium,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message, VoidCallback? onRetry) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              color: AppTheme.errorColor,
+              size: 48,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                color: AppTheme.textMedium,
+              ),
+            ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 16),
+              ElevatedButton(onPressed: onRetry, child: const Text('Retry')),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessageList(ChatController chat) {
+    final msgs = chat.messages;
+    return ListView.builder(
+      controller: _scrollController,
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+      itemCount: msgs.length + (chat.isLoadingOlder ? 1 : 0),
+      itemBuilder: (context, rawIndex) {
+        if (chat.isLoadingOlder) {
+          if (rawIndex == 0) {
+            return const Padding(
+              padding: EdgeInsets.all(8),
+              child: Center(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            );
+          }
+        }
+        final index = chat.isLoadingOlder ? rawIndex - 1 : rawIndex;
+        final message = msgs[index];
+        return Column(
+          key: ValueKey(message.id),
+          children: [
+            if (_showDateSeparator(msgs, index))
+              _buildDateSeparator(message.createdAt),
+            _buildMessageBubble(message),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDateSeparator(DateTime date) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Expanded(child: Divider(color: AppTheme.borderColor, thickness: 1)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              _formatDate(date),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.textLight,
+              ),
+            ),
+          ),
+          Expanded(child: Divider(color: AppTheme.borderColor, thickness: 1)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble(ChatMessage message) {
+    final isUser = message.isUserMessage;
+    final failed = message.sendState == SendState.failed;
+    final pending = message.sendState == SendState.pending;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isUser) ...[
+            Container(
+              width: 28,
+              height: 28,
+              margin: const EdgeInsets.only(right: 8, bottom: 2),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceVariantLight,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.support_agent_rounded,
+                color: AppTheme.textMedium,
+                size: 16,
+              ),
+            ),
+          ],
+          Flexible(
+            child: Column(
+              crossAxisAlignment: isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
+              children: [
+                if (!isUser)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 3),
+                    child: Text(
+                      'Research Team',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.textLight,
+                      ),
+                    ),
+                  ),
+                Opacity(
+                  opacity: pending ? 0.7 : 1,
+                  child: Container(
+                    constraints: BoxConstraints(maxWidth: 70.w),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isUser ? AppTheme.primary : AppTheme.surfaceLight,
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(16),
+                        topRight: const Radius.circular(16),
+                        bottomLeft: Radius.circular(isUser ? 16 : 4),
+                        bottomRight: Radius.circular(isUser ? 4 : 16),
+                      ),
+                      border: failed
+                          ? Border.all(color: AppTheme.errorColor, width: 1.5)
+                          : isUser
+                          ? null
+                          : Border.all(color: AppTheme.borderColor, width: 1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(8),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      message.content,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: isUser ? Colors.white : AppTheme.textDark,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 3, left: 4, right: 4),
+                  child: failed
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Not sent',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 10,
+                                color: AppTheme.errorColor,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: () => _chat?.retry(message.id),
+                              child: Text(
+                                'Retry',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.primary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: () => _chat?.discard(message.id),
+                              child: Text(
+                                'Delete',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 10,
+                                  color: AppTheme.textLight,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          pending
+                              ? 'Sending...'
+                              : _formatTime(message.createdAt),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 10,
+                            color: AppTheme.textLight,
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+          if (isUser) const SizedBox(width: 4),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputBar({required bool enabled}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceLight,
+        border: Border(top: BorderSide(color: AppTheme.borderColor, width: 1)),
+      ),
+      padding: EdgeInsets.only(left: 4.w, right: 4.w, top: 10, bottom: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceVariantLight,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppTheme.borderColor, width: 1),
+              ),
+              child: TextField(
+                controller: _messageController,
+                enabled: enabled,
+                maxLines: 4,
+                minLines: 1,
+                maxLength: 4000,
+                buildCounter:
+                    (
+                      context, {
+                      required currentLength,
+                      required isFocused,
+                      maxLength,
+                    }) => null,
+                textCapitalization: TextCapitalization.sentences,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  color: AppTheme.textDark,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Message the research team...',
+                  hintStyle: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    color: AppTheme.textLight,
+                  ),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                ),
+                onSubmitted: (_) => _sendMessage(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Material(
+            color: enabled ? AppTheme.primary : AppTheme.textLight,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: enabled ? _sendMessage : null,
+              child: const Padding(
+                padding: EdgeInsets.all(10),
+                child: Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
