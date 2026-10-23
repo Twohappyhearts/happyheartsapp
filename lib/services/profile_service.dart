@@ -7,13 +7,30 @@ class UserProfile {
   final String fullName;
   final String username;
   final String? email;
+  final String? phone;
 
   const UserProfile({
     required this.id,
     required this.fullName,
     required this.username,
     this.email,
+    this.phone,
   });
+
+  /// Stored as "+digits" / digits; shown as (949) 555-0100 for US numbers.
+  String? get phoneDisplay {
+    final p = phone;
+    if (p == null || p.isEmpty) return null;
+    final us10 = RegExp(r'^(\d{3})(\d{3})(\d{4})$').firstMatch(p);
+    if (us10 != null) {
+      return '(${us10[1]}) ${us10[2]}-${us10[3]}';
+    }
+    final us11 = RegExp(r'^\+?1(\d{3})(\d{3})(\d{4})$').firstMatch(p);
+    if (us11 != null) {
+      return '+1 (${us11[1]}) ${us11[2]}-${us11[3]}';
+    }
+    return p;
+  }
 
   String get displayName => fullName.trim().isNotEmpty ? fullName : username;
 
@@ -53,7 +70,7 @@ class ProfileService {
     try {
       final row = await _client
           .from('profiles')
-          .select('id, full_name, username')
+          .select('id, full_name, username, phone')
           .eq('id', uid)
           .maybeSingle();
 
@@ -72,6 +89,7 @@ class ProfileService {
         fullName: (row['full_name'] as String?) ?? '',
         username: row['username'] as String,
         email: auth.email,
+        phone: row['phone'] as String?,
       );
     } on PostgrestException catch (e) {
       if (e.code == '42501') {

@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter # CRITICAL: Required for every Flutter project - DO NOT REMOVE
   
   # CRITICAL: Core UI and responsive design - DO NOT REMOVE OR MODIFY
-  supabase_flutter: ^2.9.1
+  supabase_flutter: ^2.18.3
   sizer: ^2.0.15              # Required for responsive design system
   flutter_svg: ^2.0.9        # Required for SVG icon support
   google_fonts: ^6.1.0       # Required for typography (replaces local fonts)
@@ -26,6 +26,11 @@ dependencies:
   fl_chart: ^0.65.0
   go_router: ^14.6.1
   webview_flutter: ^4.4.4
+  webview_flutter_android: ^4.14.1   # inline/autoplay media settings for lesson videos
+  webview_flutter_wkwebview: ^3.27.2 # (already used by webview_flutter; now imported directly)
+  url_launcher: ^6.3.1      # opens links shared by the AI assistant in the browser
+  html: ^0.15.4             # parses lesson script HTML from the dashboard editor
+  visibility_detector: ^0.4.0+2 # lesson-notes reading time (analytics)
 
 
   universal_html: ^2.3.0

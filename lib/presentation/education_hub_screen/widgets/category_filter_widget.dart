@@ -5,19 +5,18 @@ class CategoryFilterWidget extends StatelessWidget {
   final String selectedCategory;
   final ValueChanged<String> onCategoryChanged;
 
-  static const List<String> _categories = [
-    'All',
-    'Heart Health',
-    'Sleep Health',
-    'Emotional Support & Resources',
-    'Resources',
-  ];
+  /// Category names from the dashboard (active only, in dashboard order).
+  /// "All" is always shown first.
+  final List<String> categories;
 
   const CategoryFilterWidget({
     required this.selectedCategory,
     required this.onCategoryChanged,
+    required this.categories,
     super.key,
   });
+
+  List<String> get _categories => ['All', ...categories];
 
   @override
   Widget build(BuildContext context) {

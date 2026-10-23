@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import './supabase_service.dart';
+import './tracking_service.dart';
 
 enum AuthStatus { unknown, signedOut, signedIn, passwordRecovery }
 
@@ -103,18 +104,41 @@ class AuthService extends ChangeNotifier {
     _applySession(res.session, recovery: false);
   }
 
+  /// True if [username] is valid and not used by another account.
+  Future<bool> isUsernameAvailable(String username) async {
+    _requireConfigured();
+    final res = await _client.rpc(
+      'username_available',
+      params: {'p_username': username.trim()},
+    );
+    return res == true;
+  }
+
   Future<SignUpOutcome> signUp({
     required String fullName,
+    required String username,
+    required String phone,
     required String email,
     required String password,
   }) async {
     _requireConfigured();
+    if (!await isUsernameAvailable(username)) {
+      throw const AuthException(
+        'That username is already taken. Use your REDCap username, or contact '
+        'the care team if it is already registered.',
+      );
+    }
     final res = await _client.auth.signUp(
       email: email.trim(),
       password: password,
       emailRedirectTo: SupabaseService.emailRedirectTo,
-      // Only display data. Roles are never taken from client metadata.
-      data: {'full_name': fullName.trim()},
+      // Profile data only (applied by the handle_new_auth_user trigger).
+      // Roles are never taken from client metadata.
+      data: {
+        'full_name': fullName.trim(),
+        'username': username.trim(),
+        'phone_number': phone.trim(),
+      },
     );
     if (res.session != null) {
       _applySession(res.session, recovery: false);
@@ -152,6 +176,11 @@ class AuthService extends ChangeNotifier {
 
   Future<void> signOut() async {
     if (!SupabaseService.isConfigured) return;
+    // Best effort: send queued lesson analytics while the session is still
+    // valid. Anything left stays queued for this account's next sign-in.
+    try {
+      await TrackingService.instance.flush().timeout(const Duration(seconds: 3));
+    } catch (_) {}
     try {
       await _client.auth.signOut();
     } finally {
@@ -170,6 +199,13 @@ class AuthService extends ChangeNotifier {
       final m = e.message;
       if (m.toLowerCase().contains('invalid login credentials')) {
         return 'Incorrect email or password.';
+      }
+      if (m.toLowerCase().contains('database error saving new user')) {
+        // The sign-up trigger rejected the username (taken or invalid).
+        return 'That username is already taken or not allowed. Please choose another.';
+      }
+      if (m.toLowerCase().contains('banned')) {
+        return 'This account has been disabled. Please contact your care team.';
       }
       if (m.toLowerCase().contains('email not confirmed')) {
         return 'Please confirm your email before signing in.';

@@ -4,7 +4,10 @@ import 'dart:ui_web' as ui_web;
 import 'package:web/web.dart' as web;
 
 // This file is only compiled on web — no webview_flutter needed
-Object? createYouTubeController(String videoId) {
+Object? createYouTubeController(
+  String videoId, {
+  void Function(String state)? onState, // not tracked on web
+}) {
   // Web platform: no controller needed, iframe is registered directly
   return null;
 }

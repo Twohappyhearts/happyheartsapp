@@ -21,6 +21,8 @@ class CreateAccountFormWidget extends StatefulWidget {
 class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
@@ -33,6 +35,8 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose();
+    _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
@@ -55,6 +59,8 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
       final email = _emailController.text.trim();
       final outcome = await AuthService.instance.signUp(
         fullName: _nameController.text,
+        username: _usernameController.text,
+        phone: _phoneController.text,
         email: email,
         password: _passwordController.text,
       );
@@ -106,6 +112,61 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
             validator: (v) {
               if (v == null || v.trim().isEmpty) {
                 return 'Please enter your name';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            controller: _usernameController,
+            autocorrect: false,
+            enableSuggestions: false,
+            maxLength: 20,
+            decoration: const InputDecoration(
+              labelText: 'Username',
+              hintText: 'Your REDCap username',
+              helperText:
+                  'Use the same username as on the REDCap platform. It links '
+                  'your surveys to your account and can’t be changed later.',
+              helperMaxLines: 3,
+              counterText: '',
+              prefixIcon: Icon(
+                Icons.badge_outlined,
+                color: AppTheme.textLight,
+              ),
+            ),
+            validator: (v) {
+              final t = v?.trim() ?? '';
+              if (t.isEmpty) return 'Please enter your username';
+              if (!RegExp(r'^[A-Za-z0-9]{3,20}$').hasMatch(t)) {
+                return 'Use 3–20 letters or numbers (no spaces or symbols)';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            autofillHints: const [AutofillHints.telephoneNumber],
+            decoration: const InputDecoration(
+              labelText: 'Phone Number',
+              hintText: 'e.g. (949) 555-0100',
+              prefixIcon: Icon(
+                Icons.phone_outlined,
+                color: AppTheme.textLight,
+              ),
+            ),
+            validator: (v) {
+              final t = v?.trim() ?? '';
+              if (t.isEmpty) return 'Please enter your phone number';
+              final digits = t.replaceAll(RegExp(r'[^0-9]'), '');
+              if (!RegExp(r'^\+?[0-9 ().-]+$').hasMatch(t) ||
+                  digits.length < 7 ||
+                  digits.length > 15) {
+                return 'Please enter a valid phone number';
               }
               return null;
             },

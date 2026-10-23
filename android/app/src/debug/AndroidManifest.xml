@@ -4,4 +4,8 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Debug builds only: the AI assistant page is loaded from the local
+         dev server over http (AGENT_WEB_URL). Release builds keep the default
+         (https only). -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>

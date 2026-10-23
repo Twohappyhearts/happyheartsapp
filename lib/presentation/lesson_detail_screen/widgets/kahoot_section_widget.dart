@@ -11,9 +11,21 @@ class KahootSectionWidget extends StatefulWidget {
   final String kahootUrl;
   final String username;
 
+  /// Already reported as finished (earlier visit or still being sent).
+  final bool quizCompleted;
+
+  /// "Start Kahoot! Game" tapped.
+  final VoidCallback? onQuizStarted;
+
+  /// "I finished the quiz" tapped (self-report; Kahoot can't tell us).
+  final VoidCallback? onQuizCompleted;
+
   const KahootSectionWidget({
     required this.kahootUrl,
     required this.username,
+    this.quizCompleted = false,
+    this.onQuizStarted,
+    this.onQuizCompleted,
     super.key,
   });
 
@@ -23,7 +35,30 @@ class KahootSectionWidget extends StatefulWidget {
 
 class _KahootSectionWidgetState extends State<KahootSectionWidget> {
   bool _kahootStarted = false;
+  bool _startedOnce = false;
+  late bool _quizDone = widget.quizCompleted;
   Object? _mobileController;
+
+  @override
+  void didUpdateWidget(covariant KahootSectionWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.quizCompleted && !_quizDone) _quizDone = true;
+  }
+
+  void _markQuizFinished() {
+    if (_quizDone) return;
+    setState(() => _quizDone = true);
+    widget.onQuizCompleted?.call();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Nice work! Quiz marked as finished.'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppTheme.textDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
 
   void _copyUsername() {
     Clipboard.setData(ClipboardData(text: widget.username));
@@ -46,7 +81,11 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
         widget.kahootUrl,
       );
     }
-    setState(() => _kahootStarted = true);
+    setState(() {
+      _kahootStarted = true;
+      _startedOnce = true;
+    });
+    widget.onQuizStarted?.call();
   }
 
   @override
@@ -99,6 +138,12 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
 
         // Kahoot embed or card
         if (_kahootStarted) _buildKahootEmbed() else _buildKahootCard(),
+
+        // Self-report, shown once the game was opened (or already reported).
+        if (_startedOnce || _quizDone) ...[
+          const SizedBox(height: 12),
+          _buildQuizFinishedRow(),
+        ],
 
         const SizedBox(height: 16),
 
@@ -316,6 +361,53 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
         child: kahoot_platform.buildKahootPlayer(
           widget.kahootUrl,
           _mobileController,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuizFinishedRow() {
+    if (_quizDone) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: AppTheme.secondaryContainer,
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.check_circle_rounded, size: 18, color: Color(0xFF15803D)),
+            SizedBox(width: 6),
+            Text(
+              'Quiz finished',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF15803D),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _markQuizFinished,
+        icon: const Icon(Icons.flag_rounded, size: 18),
+        label: const Text(
+          'I finished the quiz',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppTheme.purple,
+          side: const BorderSide(color: AppTheme.purple),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 12),
         ),
       ),
     );

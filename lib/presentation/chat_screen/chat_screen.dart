@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
@@ -6,6 +8,11 @@ import '../../services/auth_service.dart';
 import '../../services/chat_controller.dart';
 import '../../services/chat_service.dart';
 import '../../theme/app_theme.dart';
+import '../assistance/assistance_request_sheet.dart';
+import '../assistance/my_assistance_requests_screen.dart';
+import 'widgets/ai_assistant_web_stub.dart'
+    if (dart.library.html) 'widgets/ai_assistant_web_impl.dart'
+    as ai_platform;
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -21,6 +28,16 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   int _boundGeneration = -1;
   int _lastCount = 0;
 
+  /// 0 = Care Team (human staff chat), 1 = AI Assistant (our agent, WebView).
+  int _tab = 0;
+
+  /// The AI WebView is created shortly after this screen opens (or right away
+  /// when its tab is opened), then kept alive (IndexedStack) so switching tabs
+  /// doesn't reload the conversation. Loading it in the background means the
+  /// assistant is usually ready by the time the patient taps the tab.
+  bool _aiStarted = false;
+  Timer? _aiPrewarm;
+
   @override
   void initState() {
     super.initState();
@@ -28,10 +45,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     AuthService.instance.addListener(_onAuthChanged);
     _scrollController.addListener(_onScroll);
     _bind();
+    // Let the Care Team chat render first, then start the AI assistant page.
+    _aiPrewarm = Timer(const Duration(milliseconds: 800), () {
+      if (mounted && !_aiStarted) setState(() => _aiStarted = true);
+    });
   }
 
   @override
   void dispose() {
+    _aiPrewarm?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     AuthService.instance.removeListener(_onAuthChanged);
     _scrollController.removeListener(_onScroll);
@@ -146,9 +168,20 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         prev.year != curr.year;
   }
 
+  void _selectTab(int tab) {
+    if (tab == _tab) return;
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _tab = tab;
+      if (tab == 1) _aiStarted = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final chat = _chat;
+    final isAi = _tab == 1;
+    final userId = AuthService.instance.userId;
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
@@ -161,12 +194,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: AppTheme.primaryContainer,
+                color: isAi ? AppTheme.purpleContainer : AppTheme.primaryContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.support_agent_rounded,
-                color: AppTheme.primary,
+                isAi ? Icons.smart_toy_outlined : Icons.support_agent_rounded,
+                color: isAi ? AppTheme.purple : AppTheme.primary,
                 size: 20,
               ),
             ),
@@ -175,7 +208,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Research Team',
+                  isAi ? 'AI Assistant' : 'Research Team',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -183,7 +216,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   ),
                 ),
                 Text(
-                  'Happy Heart Study',
+                  isAi ? 'Automated answers, 24/7' : 'Happy Heart Study',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w400,
@@ -194,24 +227,180 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
           ],
         ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(52),
+          child: _buildTabSwitcher(),
+        ),
       ),
-      body: Column(
+      body: IndexedStack(
+        index: _tab,
         children: [
-          Expanded(
-            child: chat == null
-                ? _buildErrorState('Please sign in to use chat.', null)
-                : chat.isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppTheme.primary),
-                  )
-                : chat.error != null
-                ? _buildErrorState(chat.error!, chat.init)
-                : chat.messages.isEmpty
-                ? _buildEmptyState()
-                : _buildMessageList(chat),
+          _buildTeamChat(chat),
+          if (!_aiStarted)
+            const SizedBox.shrink()
+          else if (userId == null)
+            _buildErrorState('Please sign in to use the AI assistant.', null)
+          else
+            ai_platform.buildAiAssistantView(userId: userId),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabSwitcher() {
+    Widget tab(int index, IconData icon, String label) {
+      final selected = _tab == index;
+      return Expanded(
+        child: Semantics(
+          button: true,
+          selected: selected,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _selectTab(index),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: selected ? AppTheme.surfaceLight : Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    size: 16,
+                    color: selected ? AppTheme.textDark : AppTheme.textLight,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    label,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      color: selected ? AppTheme.textDark : AppTheme.textMedium,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          _buildInputBar(
-            enabled: chat != null && !chat.isLoading && chat.error == null,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceVariantLight,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            tab(0, Icons.support_agent_rounded, 'Care Team'),
+            tab(1, Icons.smart_toy_outlined, 'AI Assistant'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTeamChat(ChatController? chat) {
+    return Column(
+      children: [
+        if (chat != null) _buildAssistanceBanner(),
+        Expanded(
+          child: chat == null
+              ? _buildErrorState('Please sign in to use chat.', null)
+              : chat.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppTheme.primary),
+                )
+              : chat.error != null
+              ? _buildErrorState(chat.error!, chat.init)
+              : chat.messages.isEmpty
+              ? _buildEmptyState()
+              : _buildMessageList(chat),
+        ),
+        _buildInputBar(
+          enabled: chat != null && !chat.isLoading && chat.error == null,
+        ),
+      ],
+    );
+  }
+
+  /// Separate from chat: a request becomes a NEW alert on the staff dashboard
+  /// and is tracked until a team member resolves it.
+  Widget _buildAssistanceBanner() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryContainer.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.support_rounded, color: AppTheme.primary, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Need help with something?',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textDark,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => openMyAssistanceRequests(context),
+                  child: Text(
+                    'View my requests',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.primary,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppTheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => showAssistanceRequestSheet(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              'I need assistance',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/auth_service.dart';
+import '../../services/content_service.dart';
 import '../../services/current_profile.dart';
 import '../../services/profile_service.dart';
 
@@ -34,31 +35,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _editName(UserProfile profile) async {
-    final controller = TextEditingController(text: profile.fullName);
+    // The dialog owns its TextEditingController and disposes it in its own
+    // dispose(). Disposing it here, right after showDialog returns, crashed the
+    // app: the dialog's closing animation still renders the TextField.
     final newName = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Edit name'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(labelText: 'Full name'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+      builder: (ctx) => _EditNameDialog(initialName: profile.fullName),
     );
-    controller.dispose();
+    if (!mounted) return;
     if (newName == null || newName.isEmpty || newName == profile.fullName) {
       return;
     }
@@ -181,7 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 24),
 
                     // Progress summary
-                    _ProgressSummaryCard(),
+                    const _ProgressSummaryCard(),
                     const SizedBox(height: 24),
 
                     // Account section
@@ -418,6 +402,18 @@ class _ProfileHeaderCard extends StatelessWidget {
                     color: AppTheme.textLight,
                   ),
                 ),
+                if (p.phoneDisplay != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    p.phoneDisplay!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.textLight,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -441,9 +437,60 @@ class _ProfileHeaderCard extends StatelessWidget {
 // Progress Summary Card
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ProgressSummaryCard extends StatelessWidget {
+/// Real totals for the signed-in patient (same numbers as the Progress tab).
+class _ProgressSummaryCard extends StatefulWidget {
+  const _ProgressSummaryCard();
+
+  @override
+  State<_ProgressSummaryCard> createState() => _ProgressSummaryCardState();
+}
+
+class _ProgressSummaryCardState extends State<_ProgressSummaryCard> {
+  LearningSummary? _summary;
+  bool _loading = true;
+  bool _failed = false;
+  bool _wasVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Profile is a bottom tab kept alive in an IndexedStack: refresh when it
+    // becomes visible again.
+    final visible = TickerMode.valuesOf(context).enabled;
+    if (visible && !_wasVisible && !_loading) _load();
+    _wasVisible = visible;
+  }
+
+  Future<void> _load() async {
+    _loading = true;
+    try {
+      final s = await ContentService.instance.loadLearningSummary();
+      if (!mounted) return;
+      setState(() {
+        _summary = s;
+        _failed = false;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _failed = _summary == null;
+        _loading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final summary = _summary;
+    String v(String Function(LearningSummary s) f) =>
+        summary == null ? '—' : f(summary);
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -487,15 +534,34 @@ class _ProgressSummaryCard extends StatelessWidget {
           const SizedBox(height: 14),
           Row(
             children: [
-              _MiniStat(value: '2', label: 'Completed'),
+              _MiniStat(value: v((s) => '${s.completed}'), label: 'Completed'),
               _Divider(),
-              _MiniStat(value: '1', label: 'In Progress'),
+              _MiniStat(
+                value: v((s) => '${s.inProgress}'),
+                label: 'In Progress',
+              ),
               _Divider(),
-              _MiniStat(value: '55m', label: 'Time Spent'),
+              _MiniStat(
+                value: v((s) => LearningSummary.formatTime(s.timeSpentSec)),
+                label: 'Time Spent',
+              ),
               _Divider(),
-              _MiniStat(value: '40%', label: 'Complete'),
+              _MiniStat(
+                value: v((s) => '${(s.percent * 100).round()}%'),
+                label: 'Complete',
+              ),
             ],
           ),
+          if (_failed) ...[
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: _load,
+              child: const Text(
+                'Could not load your progress. Tap to retry.',
+                style: TextStyle(fontSize: 11, color: AppTheme.textMedium),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -799,6 +865,54 @@ class _ActionTile extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// "Edit name" dialog. Pops with the trimmed name, or null when cancelled.
+class _EditNameDialog extends StatefulWidget {
+  final String initialName;
+
+  const _EditNameDialog({required this.initialName});
+
+  @override
+  State<_EditNameDialog> createState() => _EditNameDialogState();
+}
+
+class _EditNameDialogState extends State<_EditNameDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialName,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _save() => Navigator.of(context).pop(_controller.text.trim());
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text('Edit name'),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        textInputAction: TextInputAction.done,
+        maxLength: 100,
+        onSubmitted: (_) => _save(),
+        decoration: const InputDecoration(labelText: 'Full name'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(onPressed: _save, child: const Text('Save')),
+      ],
     );
   }
 }

@@ -264,6 +264,10 @@ class _ModuleCardWidgetState extends State<ModuleCardWidget>
                                 children: [
                                   _buildStatusIndicator(status),
                                   const Spacer(),
+                                  // Duration comes from the dashboard's
+                                  // video/audio estimates; hidden if none.
+                                  if ((module['duration'] as String? ?? '')
+                                      .isNotEmpty)
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 8,
@@ -310,13 +314,24 @@ class _ModuleCardWidgetState extends State<ModuleCardWidget>
                           child: SizedBox(
                             width: 110,
                             height: 130,
-                            child: CustomImageWidget(
-                              imageUrl: module['imageUrl'] as String,
-                              width: 110,
-                              height: 130,
-                              fit: BoxFit.cover,
-                              semanticLabel: module['semanticLabel'] as String,
-                            ),
+                            child: (module['imageUrl'] as String? ?? '').isEmpty
+                                ? Container(
+                                    color: catColor.withAlpha(25),
+                                    alignment: Alignment.center,
+                                    child: Icon(
+                                      Icons.menu_book_rounded,
+                                      color: catColor.withAlpha(140),
+                                      size: 32,
+                                    ),
+                                  )
+                                : CustomImageWidget(
+                                    imageUrl: module['imageUrl'] as String,
+                                    width: 110,
+                                    height: 130,
+                                    fit: BoxFit.cover,
+                                    semanticLabel:
+                                        module['semanticLabel'] as String,
+                                  ),
                           ),
                         ),
                       ),

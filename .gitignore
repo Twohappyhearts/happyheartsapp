@@ -46,3 +46,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 android/app/.cxx
+# Widget Preview related
+.widget_preview/
+
+# Supabase / service config for --dart-define-from-file (keep real values local).
+# Copy env.example.json to env.json and fill in.
+env.json

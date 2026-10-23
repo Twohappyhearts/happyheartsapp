@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../services/current_profile.dart';
+import '../../services/lesson_visit_tracker.dart';
 import '../../theme/app_theme.dart';
+import './widgets/audio_section_widget.dart';
 import './widgets/infographic_section_widget.dart';
 import './widgets/kahoot_section_widget.dart';
+import '../../services/content_service.dart';
 import './widgets/lesson_detail_app_bar_widget.dart';
+import './widgets/script_section_widget.dart';
 import './widgets/video_section_widget.dart';
 
 class LessonDetailScreen extends StatefulWidget {
@@ -21,51 +26,183 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   // TODO: Replace with [Riverpod/Bloc] for production state management
   bool _isBookmarked = false;
 
-  late Map<String, dynamic> _module;
+  /// The lesson to show. Comes from the Education list; when the Lessons tab
+  /// is opened directly, the first active session is loaded instead.
+  Map<String, dynamic>? _module;
+  bool _loadingFallback = false;
+  String? _loadError;
   final CurrentProfile _currentProfile = CurrentProfile.instance;
+
+  /// Measures this visit (time on page, media, notes, quiz, completion).
+  LessonVisitTracker? _tracker;
+  bool _completed = false;
 
   void _onProfileChanged() {
     if (mounted) setState(() {});
   }
 
-  static const Map<String, dynamic> _fallbackModule = {
-    'id': 'module_3',
-    'title': 'Understanding Prenatal Anxiety',
-    'category': 'Emotional Support & Resources',
-    'description': 'Recognizing and managing anxiety during pregnancy',
-    'duration': '35 min',
-    'status': 'in_progress',
-    'imageUrl':
-        'https://img.rocket.new/generatedImages/rocket_gen_img_16ddb4737-1770095453193.png',
-    'semanticLabel':
-        'Young woman sitting peacefully by window with hands folded in meditation pose',
-    'infographicUrl':
-        'https://res.cloudinary.com/drytmgv5/image/upload/f_auto,q_auto/peri-anxiModified-11-25-2025-LN-819x1024',
-    'videoUrl': 'https://www.youtube.com/watch?v=0xEC23Zmdrs',
-    'videoId': '0xEC23Zmdrs',
-    'kahootUrl':
-        'https://kahoot.it/challenge/03641688?challenge-id=dc7425a3-9036-4c27-8720-c187aa13c03a_1788587319343',
-  };
+  Future<void> _loadFirstSession() async {
+    setState(() {
+      _loadingFallback = true;
+      _loadError = null;
+    });
+    try {
+      final first = await ContentService.instance.firstSession();
+      if (!mounted) return;
+      setState(() {
+        _module = first;
+        _loadingFallback = false;
+        if (first == null) _loadError = 'No lessons are available yet.';
+      });
+      _startTracking();
+    } on ContentException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadingFallback = false;
+        _loadError = e.message;
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _module = widget.moduleData ?? _fallbackModule;
+    _module = widget.moduleData;
+    if (_module == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadFirstSession());
+    } else {
+      _startTracking();
+    }
     _currentProfile.addListener(_onProfileChanged);
     _currentProfile.load();
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // TickerMode.valuesOf and ModalRoute.of register dependencies, so this runs
+    // again when the patient switches bottom tabs or a route is pushed on top.
+    _updateRouteActive();
+  }
+
+  @override
   void dispose() {
     _currentProfile.removeListener(_onProfileChanged);
+    _tracker?.dispose(); // ends the visit and sends what was measured
     super.dispose();
+  }
+
+  // --- Analytics -------------------------------------------------------------
+
+  void _startTracking() {
+    final module = _module;
+    final id = module?['id'];
+    if (module == null || id is! String || _tracker != null) return;
+    _completed = module['status'] == 'completed';
+    final tracker = LessonVisitTracker(contentId: id);
+    _tracker = tracker;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _tracker != tracker) return;
+      tracker.start(routeActive: _isShownToUser());
+    });
+  }
+
+  /// True when this lesson is what the patient is looking at.
+  ///
+  /// * Bottom tabs are an IndexedStack (StatefulShellRoute): hidden tabs stay
+  ///   mounted but go_router wraps them in TickerMode(enabled: false).
+  /// * ModalRoute.isCurrent is false while another page is pushed on top.
+  ///
+  /// (The router location can't be used: after `context.push` it still
+  /// reports the page the lesson was pushed from.)
+  bool _isShownToUser() {
+    if (!mounted) return false;
+    final tabVisible = TickerMode.valuesOf(context).enabled;
+    final isTopRoute = ModalRoute.of(context)?.isCurrent ?? true;
+    return tabVisible && isTopRoute;
+  }
+
+  void _updateRouteActive() {
+    if (!mounted) return;
+    _tracker?.setRouteActive(_isShownToUser());
+  }
+
+  void _markCompleted() {
+    if (_completed) return;
+    setState(() => _completed = true);
+    _module?['status'] = 'completed';
+    _tracker?.sessionCompleted();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Lesson marked as completed. Great job!'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppTheme.textDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final module = _module;
+    if (module == null) {
+      return Scaffold(
+        backgroundColor: AppTheme.backgroundLight,
+        body: SafeArea(
+          child: Center(
+            child: _loadingFallback
+                ? const CircularProgressIndicator(color: AppTheme.primary)
+                : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.menu_book_rounded,
+                          size: 40,
+                          color: AppTheme.textLight,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _loadError ?? 'No lesson selected.',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppTheme.textMedium,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadFirstSession,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ),
+      );
+    }
+    final infographicUrl = module['infographicUrl'] as String?;
+    final videoId = module['videoId'] as String?;
+    final kahootUrl = module['kahootUrl'] as String?;
+    final scriptHtml = module['scriptHtml'] as String?;
+    final audioUrl = module['audioUrl'] as String?;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      body: SafeArea(
+      // Any touch or scroll counts as activity (pauses the 10-min idle timer).
+      body: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) => _tracker?.touch(),
+        onPointerSignal: (_) => _tracker?.touch(),
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (_) {
+            _tracker?.touch();
+            return false;
+          },
+          child: SafeArea(
         child: Column(
           children: [
             LessonDetailAppBarWidget(
@@ -81,28 +218,75 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Module title + category
-                    _buildModuleHeader(),
+                    _buildModuleHeader(module),
                     const SizedBox(height: 24),
 
-                    // Section 1: Infographic
-                    InfographicSectionWidget(
-                      infographicUrl: _module['infographicUrl'] as String,
-                      moduleTitle: _module['title'] as String,
-                    ),
-                    const SizedBox(height: 24),
+                    // Section 1: Infographic (optional)
+                    if (infographicUrl != null) ...[
+                      InfographicSectionWidget(
+                        infographicUrl: infographicUrl,
+                        moduleTitle: module['title'] as String,
+                        onFullscreenChanged: (open) =>
+                            _tracker?.setInfographicOpen(open),
+                        onInteraction: () => _tracker?.touch(),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
 
-                    // Section 2: Video
-                    VideoSectionWidget(
-                      videoId: _module['videoId'] as String,
-                      duration: _module['duration'] as String,
-                    ),
-                    const SizedBox(height: 24),
+                    // Section 2: Video (optional)
+                    if (videoId != null) ...[
+                      VideoSectionWidget(
+                        videoId: videoId,
+                        duration: (module['videoDuration'] as String?) ??
+                            (module['duration'] as String? ?? ''),
+                        onPlayerState: (state) =>
+                            _tracker?.onVideoState(state),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
 
-                    // Section 3: Kahoot
-                    KahootSectionWidget(
-                      kahootUrl: _module['kahootUrl'] as String,
-                      username: _currentProfile.profile?.username ?? '...',
-                    ),
+                    // Section 2b: Audio (optional, SoundCloud)
+                    if (audioUrl != null) ...[
+                      AudioSectionWidget(
+                        audioUrl: audioUrl,
+                        duration: (module['audioDuration'] as String?) ?? '',
+                        onPlayerState: (state) =>
+                            _tracker?.onAudioState(state),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+
+                    // Section 3: Lesson notes / script (optional)
+                    if (scriptHtml != null) ...[
+                      // Reading time counts while at least half of the notes
+                      // (or 40% of the screen) show lesson notes.
+                      VisibilityDetector(
+                        key: Key('lesson-notes-${module['id']}'),
+                        onVisibilityChanged: (info) {
+                          if (!mounted) return;
+                          final visible = info.visibleFraction >= 0.5 ||
+                              info.visibleBounds.height >= screenHeight * 0.4;
+                          _tracker?.setScriptVisible(visible);
+                        },
+                        child: ScriptSectionWidget(scriptHtml: scriptHtml),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+
+                    // Section 4: Quiz (optional)
+                    if (kahootUrl != null) ...[
+                      KahootSectionWidget(
+                        kahootUrl: kahootUrl,
+                        username: _currentProfile.profile?.username ?? '...',
+                        quizCompleted: module['quizCompleted'] == true,
+                        onQuizStarted: () => _tracker?.quizStarted(),
+                        onQuizCompleted: () => _tracker?.quizCompleted(),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+
+                    // Finish: the lesson counts as completed once tapped.
+                    _buildCompleteCard(),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -111,11 +295,95 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           ],
         ),
       ),
+        ),
+      ),
     );
   }
 
-  Widget _buildModuleHeader() {
-    final category = _module['category'] as String;
+  Widget _buildCompleteCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(10),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _completed ? 'Lesson completed' : 'Finished this lesson?',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textDark,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _completed
+                ? 'Great job! You can come back and review it any time.'
+                : 'Mark it as completed to keep track of your progress.',
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppTheme.textMedium,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _completed ? null : _markCompleted,
+              icon: Icon(
+                _completed
+                    ? Icons.check_circle_rounded
+                    : Icons.check_circle_outline_rounded,
+                size: 20,
+              ),
+              label: Text(
+                _completed ? 'Completed' : 'Mark as completed',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: AppTheme.secondaryContainer,
+                disabledForegroundColor: const Color(0xFF15803D),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModuleHeader(Map<String, dynamic> module) {
+    final category = module['category'] as String;
+    final duration = module['duration'] as String? ?? '';
+    final sections = [
+      module['infographicUrl'],
+      module['videoId'],
+      module['audioUrl'],
+      module['scriptHtml'],
+      module['kahootUrl'],
+    ].where((v) => v != null).length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -136,7 +404,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          _module['title'] as String,
+          module['title'] as String,
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
@@ -146,7 +414,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         ),
         const SizedBox(height: 6),
         Text(
-          _module['description'] as String,
+          module['description'] as String,
           style: const TextStyle(
             fontSize: 14,
             color: AppTheme.textMedium,
@@ -156,6 +424,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         const SizedBox(height: 10),
         Row(
           children: [
+            if (duration.isNotEmpty) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
@@ -172,7 +441,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    _module['duration'] as String,
+                    duration,
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppTheme.textMedium,
@@ -183,19 +452,20 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               ),
             ),
             const SizedBox(width: 8),
+            ],
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: const Color(0xFFEDE9FE),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.layers_rounded, size: 13, color: AppTheme.purple),
-                  SizedBox(width: 4),
+                  const Icon(Icons.layers_rounded, size: 13, color: AppTheme.purple),
+                  const SizedBox(width: 4),
                   Text(
-                    '3 sections',
+                    '$sections ${sections == 1 ? 'section' : 'sections'}',
                     style: TextStyle(
                       fontSize: 12,
                       color: AppTheme.purple,

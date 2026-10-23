@@ -11,9 +11,13 @@ class VideoSectionWidget extends StatefulWidget {
   final String videoId;
   final String duration;
 
+  /// Player state changes (play | playing | buffer | pause | ended).
+  final void Function(String state)? onPlayerState;
+
   const VideoSectionWidget({
     required this.videoId,
     required this.duration,
+    this.onPlayerState,
     super.key,
   });
 
@@ -31,6 +35,7 @@ class _VideoSectionWidgetState extends State<VideoSectionWidget> {
     if (!kIsWeb) {
       _mobileController = video_platform.createYouTubeController(
         widget.videoId,
+        onState: (state) => widget.onPlayerState?.call(state),
       );
     }
     setState(() => _videoStarted = true);

@@ -18,6 +18,15 @@ flutter pub get
 
 2. Run the application:
 
+Configure `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in `env.json` before
+running the app. `SUPABASE_ANON_KEY` remains supported as a fallback for older
+configurations. The Supabase client manages authentication; a separate
+`SUPABASE_JWKS_URL` setting is not needed.
+
+Only public client configuration belongs in `env.json`: its values are embedded
+in the app by `--dart-define-from-file`. Never add a Supabase secret/service-role
+key or another server-only API key to this file.
+
 To run the app with environment variables defined in an env.json file, follow the steps mentioned below:
 1. Through CLI
     ```bash

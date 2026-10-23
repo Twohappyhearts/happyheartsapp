@@ -1,9 +1,10 @@
 import 'package:flutter/services.dart';
 
-import '../core/app_export.dart';
-import '../widgets/custom_error_widget.dart';
+import 'core/app_export.dart';
+import 'widgets/custom_error_widget.dart';
 import './services/auth_service.dart';
 import './services/supabase_service.dart';
+import './services/tracking_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +13,8 @@ void main() async {
   // error (shown on the sign-in screen) instead of faking an authenticated state.
   await SupabaseService.initialize();
   AuthService.instance.start();
+  // Lesson engagement outbox (restores unsent events, flushes every 15s).
+  TrackingService.instance.start();
 
   bool hasShownError = false;
 

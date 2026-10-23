@@ -11,9 +11,9 @@ class SupabaseService {
     'SUPABASE_URL',
     defaultValue: '',
   );
-  static const String supabaseAnonKey = String.fromEnvironment(
-    'SUPABASE_ANON_KEY',
-    defaultValue: '',
+  static const String supabasePublishableKey = String.fromEnvironment(
+    'SUPABASE_PUBLISHABLE_KEY',
+    defaultValue: String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: ''),
   );
 
   /// Deep link used for email confirmation and password recovery on mobile.
@@ -31,9 +31,9 @@ class SupabaseService {
 
   // Initialize Supabase - call this in main()
   static Future<void> initialize() async {
-    if (supabaseUrl.trim().isEmpty || supabaseAnonKey.trim().isEmpty) {
+    if (supabaseUrl.trim().isEmpty || supabasePublishableKey.trim().isEmpty) {
       configurationError =
-          'Supabase is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY '
+          'Supabase is not configured. Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY '
           'in env.json (passed with --dart-define-from-file) and restart the app.';
       return;
     }
@@ -47,7 +47,7 @@ class SupabaseService {
     try {
       await Supabase.initialize(
         url: supabaseUrl.trim(),
-        anonKey: supabaseAnonKey.trim(),
+        publishableKey: supabasePublishableKey.trim(),
         authOptions: const FlutterAuthClientOptions(
           authFlowType: AuthFlowType.pkce,
         ),

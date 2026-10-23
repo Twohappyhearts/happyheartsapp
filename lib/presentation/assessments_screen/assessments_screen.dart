@@ -1,22 +1,265 @@
 import 'package:flutter/material.dart';
 
+import '../../services/current_profile.dart';
+import '../../services/survey_service.dart';
 import '../../theme/app_theme.dart';
 import './assessment_webview_screen.dart';
 
-class AssessmentsScreen extends StatelessWidget {
+/// Assessments tab: the active REDCap survey links managed on the dashboard
+/// (Survey section). Each opens in a web view with the patient's username as
+/// REDCap's participant_code.
+class AssessmentsScreen extends StatefulWidget {
   const AssessmentsScreen({super.key});
 
-  static const _foodResourcesUrl =
-      'https://ci-redcap.hs.uci.edu/surveys/?s=3JAA7JRPHFEC4WY3';
-  static const _mentalWellbeingUrl =
-      'https://ci-redcap.hs.uci.edu/surveys/?s=RC4XD9NPP9J7XKFL';
+  @override
+  State<AssessmentsScreen> createState() => _AssessmentsScreenState();
+}
 
-  void _openAssessment(BuildContext context, String title, String url) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => AssessmentWebViewScreen(title: title, url: url),
-      ),
+class _AssessmentsScreenState extends State<AssessmentsScreen> {
+  static const _sectionOrder = ['Emotional Assessment', 'Basic Needs Assessment'];
+  static const _noSection = 'Surveys';
+
+  List<SurveyLink> _surveys = const [];
+  Map<String, DateTime> _lastCompleted = const {};
+  bool _loading = true;
+  String? _error;
+  bool _opening = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final surveys = await SurveyService.instance.loadSurveys();
+      final completions = await SurveyService.instance.myCompletions();
+      final last = <String, DateTime>{};
+      for (final c in completions) {
+        final id = c.surveyId;
+        if (id != null && !last.containsKey(id)) last[id] = c.completedAt;
+      }
+      if (!mounted) return;
+      setState(() {
+        _surveys = surveys;
+        _lastCompleted = last;
+        _loading = false;
+        _error = null;
+      });
+    } on SurveyException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.message;
+      });
+    }
+  }
+
+  Future<void> _openAssessment(SurveyLink survey) async {
+    if (_opening) return;
+    _opening = true;
+    try {
+      final profile = CurrentProfile.instance;
+      if (profile.profile == null) await profile.load(force: true);
+      final username = profile.profile?.username;
+      if (!mounted) return;
+      if (username == null || username.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not load your username. Please try again.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      final completed = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => AssessmentWebViewScreen(
+            title: survey.title,
+            url: survey.personalizedUrl(username),
+          ),
+        ),
+      );
+      if (completed == true && mounted) _load();
+    } finally {
+      _opening = false;
+    }
+  }
+
+  /// Sections in a fixed order: the two from the app design, then any other
+  /// section staff typed, then surveys without a section.
+  List<MapEntry<String, List<SurveyLink>>> get _sections {
+    final groups = <String, List<SurveyLink>>{};
+    for (final s in _surveys) {
+      groups.putIfAbsent(s.category ?? _noSection, () => []).add(s);
+    }
+    final keys = groups.keys.toList()
+      ..sort((a, b) {
+        int rank(String k) {
+          final i = _sectionOrder.indexOf(k);
+          if (i >= 0) return i;
+          return k == _noSection ? 1000 : 100;
+        }
+
+        final r = rank(a).compareTo(rank(b));
+        return r != 0 ? r : a.compareTo(b);
+      });
+    return [for (final k in keys) MapEntry(k, groups[k]!)];
+  }
+
+  static ({IconData icon, Color color, Color bg}) _sectionStyle(String name) {
+    switch (name) {
+      case 'Emotional Assessment':
+        return (
+          icon: Icons.psychology_rounded,
+          color: const Color(0xFF7C3AED),
+          bg: const Color(0xFFEDE9FE),
+        );
+      case 'Basic Needs Assessment':
+        return (
+          icon: Icons.assignment_rounded,
+          color: const Color(0xFF0369A1),
+          bg: const Color(0xFFE0F2FE),
+        );
+      default:
+        return (
+          icon: Icons.fact_check_rounded,
+          color: const Color(0xFF475569),
+          bg: const Color(0xFFF1F5F9),
+        );
+    }
+  }
+
+  static ({IconData icon, Color color, Color bg}) _cardStyle(SurveyLink s) {
+    final key = '${s.code} ${s.title}'.toUpperCase();
+    if (key.contains('FOOD')) {
+      return (
+        icon: Icons.restaurant_rounded,
+        color: const Color(0xFF15803D),
+        bg: const Color(0xFFDCFCE7),
+      );
+    }
+    if (key.contains('EMA') || key.contains('MOOD')) {
+      return (
+        icon: Icons.monitor_heart_rounded,
+        color: const Color(0xFF7C3AED),
+        bg: const Color(0xFFEDE9FE),
+      );
+    }
+    if (key.contains('MENTAL') || key.contains('WELL')) {
+      return (
+        icon: Icons.favorite_rounded,
+        color: const Color(0xFFDB2777),
+        bg: const Color(0xFFFCE7F3),
+      );
+    }
+    if (key.contains('FOLLOW')) {
+      return (
+        icon: Icons.event_repeat_rounded,
+        color: const Color(0xFFD97706),
+        bg: const Color(0xFFFEF3C7),
+      );
+    }
+    return (
+      icon: Icons.assignment_rounded,
+      color: const Color(0xFF0369A1),
+      bg: const Color(0xFFE0F2FE),
     );
+  }
+
+  static ({Color color, Color bg}) _frequencyStyle(String f) {
+    switch (f.toLowerCase()) {
+      case 'daily':
+        return (color: const Color(0xFF15803D), bg: const Color(0xFFDCFCE7));
+      case 'weekly':
+      case 'monthly':
+        return (color: const Color(0xFF7C3AED), bg: const Color(0xFFEDE9FE));
+      case 'one time':
+        return (color: const Color(0xFFD97706), bg: const Color(0xFFFEF3C7));
+      default:
+        return (color: const Color(0xFF0369A1), bg: const Color(0xFFE0F2FE));
+    }
+  }
+
+  static String _shortDate(DateTime d) {
+    const m = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${m[d.month - 1]} ${d.day}';
+  }
+
+  List<Widget> _buildContent() {
+    if (_loading) {
+      return const [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 60),
+          child: Center(
+            child: CircularProgressIndicator(color: AppTheme.primary),
+          ),
+        ),
+      ];
+    }
+    if (_error != null) {
+      return [
+        _MessageBox(
+          icon: Icons.cloud_off_rounded,
+          message: _error!,
+          actionLabel: 'Retry',
+          onAction: () {
+            setState(() => _loading = true);
+            _load();
+          },
+        ),
+      ];
+    }
+    if (_surveys.isEmpty) {
+      return const [
+        _MessageBox(
+          icon: Icons.assignment_outlined,
+          message: 'No surveys right now. Your care team will add them here.',
+        ),
+      ];
+    }
+    final widgets = <Widget>[];
+    for (final section in _sections) {
+      final st = _sectionStyle(section.key);
+      widgets.add(
+        _SectionHeader(
+          icon: st.icon,
+          iconColor: st.color,
+          iconBg: st.bg,
+          title: section.key,
+        ),
+      );
+      widgets.add(const SizedBox(height: 12));
+      for (final survey in section.value) {
+        final cs = _cardStyle(survey);
+        final fs = _frequencyStyle(survey.frequency ?? '');
+        final done = _lastCompleted[survey.id];
+        widgets.add(
+          _AssessmentCard(
+            icon: cs.icon,
+            iconColor: cs.color,
+            iconBg: cs.bg,
+            title: survey.title,
+            description: survey.description,
+            frequency: survey.frequency,
+            frequencyColor: fs.color,
+            frequencyBg: fs.bg,
+            duration: survey.duration,
+            completedLabel: done == null
+                ? null
+                : 'Last completed ${_shortDate(done)}',
+            onTap: () => _openAssessment(survey),
+          ),
+        );
+        widgets.add(const SizedBox(height: 12));
+      }
+      widgets.add(const SizedBox(height: 16));
+    }
+    return widgets;
   }
 
   @override
@@ -24,101 +267,92 @@ class AssessmentsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Assessments',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textDark,
+        child: RefreshIndicator(
+          onRefresh: _load,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // Header
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Assessments',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textDark,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Track your mental and physical health with these validated screening tools.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.textMedium,
-                        height: 1.4,
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Track your mental and physical health with these validated screening tools.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.textMedium,
+                          height: 1.4,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 28),
-                  ],
+                      const SizedBox(height: 28),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // Content
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  // ── Emotional Assessment ──────────────────────────────
-                  _SectionHeader(
-                    icon: Icons.psychology_rounded,
-                    iconColor: const Color(0xFF7C3AED),
-                    iconBg: const Color(0xFFEDE9FE),
-                    title: 'Emotional Assessment',
-                  ),
-                  const SizedBox(height: 12),
-                  _AssessmentCard(
-                    icon: Icons.favorite_rounded,
-                    iconColor: const Color(0xFFDB2777),
-                    iconBg: const Color(0xFFFCE7F3),
-                    title: 'Mental Well-being Quiz',
-                    description:
-                        'A validated screening tool to assess your overall mental wellness and emotional health.',
-                    frequency: 'Monthly',
-                    frequencyColor: const Color(0xFF7C3AED),
-                    frequencyBg: const Color(0xFFEDE9FE),
-                    duration: '~5 min',
-                    onTap: () => _openAssessment(
-                      context,
-                      'Mental Well-being Quiz',
-                      _mentalWellbeingUrl,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-
-                  // ── Basic Needs Assessment ────────────────────────────
-                  _SectionHeader(
-                    icon: Icons.assignment_rounded,
-                    iconColor: const Color(0xFF0369A1),
-                    iconBg: const Color(0xFFE0F2FE),
-                    title: 'Basic Needs Assessment',
-                  ),
-                  const SizedBox(height: 12),
-                  _AssessmentCard(
-                    icon: Icons.restaurant_rounded,
-                    iconColor: const Color(0xFF15803D),
-                    iconBg: const Color(0xFFDCFCE7),
-                    title: 'Food Resources Quiz',
-                    description:
-                        'Find out about food assistance resources available to you and your family.',
-                    frequency: 'As Needed',
-                    frequencyColor: const Color(0xFF0369A1),
-                    frequencyBg: const Color(0xFFE0F2FE),
-                    duration: '~4 min',
-                    onTap: () => _openAssessment(
-                      context,
-                      'Food Resources Quiz',
-                      _foodResourcesUrl,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                ]),
+              // Content
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(_buildContent()),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _MessageBox extends StatelessWidget {
+  final IconData icon;
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  const _MessageBox({
+    required this.icon,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.borderColor),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 36, color: AppTheme.textLight),
+          const SizedBox(height: 10),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 14, color: AppTheme.textMedium),
+          ),
+          if (actionLabel != null) ...[
+            const SizedBox(height: 14),
+            ElevatedButton(onPressed: onAction, child: Text(actionLabel!)),
+          ],
+        ],
       ),
     );
   }
@@ -178,10 +412,11 @@ class _AssessmentCard extends StatelessWidget {
   final Color iconBg;
   final String title;
   final String description;
-  final String frequency;
+  final String? frequency;
   final Color frequencyColor;
   final Color frequencyBg;
-  final String duration;
+  final String? duration;
+  final String? completedLabel;
   final VoidCallback onTap;
 
   const _AssessmentCard({
@@ -194,6 +429,7 @@ class _AssessmentCard extends StatelessWidget {
     required this.frequencyColor,
     required this.frequencyBg,
     required this.duration,
+    this.completedLabel,
     required this.onTap,
   });
 
@@ -244,6 +480,7 @@ class _AssessmentCard extends StatelessWidget {
                         color: AppTheme.textDark,
                       ),
                     ),
+                    if (description.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       description,
@@ -253,11 +490,13 @@ class _AssessmentCard extends StatelessWidget {
                         height: 1.4,
                       ),
                     ),
+                    ],
                     const SizedBox(height: 10),
                     // Badges row
                     Row(
                       children: [
                         // Frequency badge
+                        if (frequency != null) ...[
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -268,7 +507,7 @@ class _AssessmentCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            frequency,
+                            frequency!,
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -277,7 +516,9 @@ class _AssessmentCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
+                        ],
                         // Duration badge
+                        if (duration != null)
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -288,7 +529,7 @@ class _AssessmentCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 3),
                             Text(
-                              duration,
+                              duration!,
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: AppTheme.textMedium,
@@ -298,6 +539,27 @@ class _AssessmentCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (completedLabel != null) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            size: 14,
+                            color: Color(0xFF15803D),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            completedLabel!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF15803D),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 14),
                     // Start button
                     SizedBox(
