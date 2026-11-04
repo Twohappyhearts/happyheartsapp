@@ -73,7 +73,7 @@ class AppDrawer extends StatelessWidget {
               icon: Icons.assignment_outlined,
               iconColor: AppTheme.purple,
               iconBg: AppTheme.purpleContainer,
-              label: 'Survey',
+              label: 'Holistic Assessments',
               subtitle: 'Questionnaires from your care team',
               onTap: () => _closeThen(context, () {
                 Navigator.of(shellContext).push(

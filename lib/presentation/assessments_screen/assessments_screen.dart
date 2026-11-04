@@ -30,7 +30,8 @@ class AssessmentsScreen extends StatefulWidget {
 
 class _AssessmentsScreenState extends State<AssessmentsScreen> {
   static const _sectionOrder = ['Emotional Assessment', 'Basic Needs Assessment'];
-  static const _noSection = 'Surveys';
+  /// Group key for links without a section (no heading is shown for it).
+  static const _noSection = '';
 
   List<SurveyLink> _surveys = const [];
   Map<String, DateTime> _lastCompleted = const {};
@@ -199,14 +200,14 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
 
   bool get _isSurvey => widget.placement == SurveyPlacement.survey;
 
-  String get _title => _isSurvey ? 'Survey' : 'Resources';
+  String get _title => _isSurvey ? 'Holistic Assessments' : 'Resources';
 
   String get _subtitle => _isSurvey
       ? 'Questionnaires from your care team.'
       : 'Track your mental and physical health with these validated screening tools.';
 
   String get _emptyMessage => _isSurvey
-      ? 'No surveys right now. Your care team will add them here.'
+      ? 'No holistic assessments right now. Your care team will add them here.'
       : 'No resources right now. Your care team will add them here.';
 
   static String _shortDate(DateTime d) {
@@ -251,16 +252,19 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
     }
     final widgets = <Widget>[];
     for (final section in _sections) {
-      final st = _sectionStyle(section.key);
-      widgets.add(
-        _SectionHeader(
-          icon: st.icon,
-          iconColor: st.color,
-          iconBg: st.bg,
-          title: section.key,
-        ),
-      );
-      widgets.add(const SizedBox(height: 12));
+      // Links without a section are listed without a heading.
+      if (section.key != _noSection) {
+        final st = _sectionStyle(section.key);
+        widgets.add(
+          _SectionHeader(
+            icon: st.icon,
+            iconColor: st.color,
+            iconBg: st.bg,
+            title: section.key,
+          ),
+        );
+        widgets.add(const SizedBox(height: 12));
+      }
       for (final survey in section.value) {
         final cs = _cardStyle(survey);
         final fs = _frequencyStyle(survey.frequency ?? '');
@@ -279,7 +283,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
             completedLabel: done == null
                 ? null
                 : 'Last completed ${_shortDate(done)}',
-            buttonLabel: _isSurvey ? 'Start Survey' : 'Start Assessment',
+            buttonLabel: 'Start Assessment',
             onTap: () => _openAssessment(survey),
           ),
         );
