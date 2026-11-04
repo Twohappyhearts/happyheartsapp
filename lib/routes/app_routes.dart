@@ -18,7 +18,8 @@ class AppRoutes {
   static const String resetPassword = '/reset-password-screen';
   static const String loginCallback = '/login-callback';
   static const String educationHub = '/education-hub-screen';
-  static const String lessonDetail = '/lesson-detail-screen';
+  /// A lesson, opened from the Education tab (a page inside that tab).
+  static const String lessonDetail = '/education-hub-screen/lesson';
   static const String assessments = '/assessments-screen';
   static const String progress = '/progress-screen';
   static const String chat = '/chat-screen';
@@ -128,31 +129,29 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state, navigationShell) =>
           AppScaffold(navigationShell: navigationShell),
       branches: [
-        // Branch 0: Education
+        // Branch 0: Education (lessons open as a page inside this tab)
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: AppRoutes.educationHub,
               pageBuilder: (context, state) =>
                   _slide(state, const EducationHubScreen()),
-            ),
-          ],
-        ),
-        // Branch 1: Lessons
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.lessonDetail,
-              pageBuilder: (context, state) => _slide(
-                state,
-                LessonDetailScreen(
-                  moduleData: state.extra as Map<String, dynamic>?,
+              routes: [
+                // /education-hub-screen/lesson
+                GoRoute(
+                  path: 'lesson',
+                  pageBuilder: (context, state) => _slide(
+                    state,
+                    LessonDetailScreen(
+                      moduleData: state.extra as Map<String, dynamic>?,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
-        // Branch 2: Assessments
+        // Branch 1: Resources (REDCap links with placement = resource)
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -162,7 +161,7 @@ final GoRouter appRouter = GoRouter(
             ),
           ],
         ),
-        // Branch 3: Progress
+        // Branch 2: Progress
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -172,7 +171,7 @@ final GoRouter appRouter = GoRouter(
             ),
           ],
         ),
-        // Branch 4: Chat
+        // Branch 3: Chat
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -182,7 +181,7 @@ final GoRouter appRouter = GoRouter(
             ),
           ],
         ),
-        // Branch 5: Profile
+        // Branch 4: Profile
         StatefulShellBranch(
           routes: [
             GoRoute(

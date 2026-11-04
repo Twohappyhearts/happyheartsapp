@@ -8,6 +8,7 @@ import '../../services/auth_service.dart';
 import '../../services/chat_controller.dart';
 import '../../services/chat_service.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_menu.dart';
 import '../assistance/assistance_request_sheet.dart';
 import '../assistance/my_assistance_requests_screen.dart';
 import 'widgets/ai_assistant_web_stub.dart'
@@ -188,8 +189,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         backgroundColor: AppTheme.surfaceLight,
         elevation: 0,
         scrolledUnderElevation: 1,
+        automaticallyImplyLeading: false,
+        titleSpacing: 16,
         title: Row(
           children: [
+            const AppMenuButton(),
+            const SizedBox(width: 12),
             Container(
               width: 36,
               height: 36,

@@ -3,13 +3,26 @@ import 'package:flutter/material.dart';
 import '../../services/current_profile.dart';
 import '../../services/survey_service.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_menu.dart';
 import './assessment_webview_screen.dart';
 
-/// Assessments tab: the active REDCap survey links managed on the dashboard
-/// (Survey section). Each opens in a web view with the patient's username as
-/// REDCap's participant_code.
+/// The active REDCap links managed on the dashboard (Survey Management),
+/// listed by placement:
+///  - [SurveyPlacement.resource]: the Resources tab (bottom navigation)
+///  - [SurveyPlacement.survey]: Survey, opened from the side menu
+/// Each opens in a web view with the patient's username as REDCap's
+/// participant_code.
 class AssessmentsScreen extends StatefulWidget {
-  const AssessmentsScreen({super.key});
+  final SurveyPlacement placement;
+
+  /// Opened as its own page (from the side menu): back button instead of ☰.
+  final bool standalone;
+
+  const AssessmentsScreen({
+    super.key,
+    this.placement = SurveyPlacement.resource,
+    this.standalone = false,
+  });
 
   @override
   State<AssessmentsScreen> createState() => _AssessmentsScreenState();
@@ -33,7 +46,9 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
 
   Future<void> _load() async {
     try {
-      final surveys = await SurveyService.instance.loadSurveys();
+      final surveys = await SurveyService.instance.loadSurveys(
+        placement: widget.placement,
+      );
       final completions = await SurveyService.instance.myCompletions();
       final last = <String, DateTime>{};
       for (final c in completions) {
@@ -182,6 +197,18 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
     }
   }
 
+  bool get _isSurvey => widget.placement == SurveyPlacement.survey;
+
+  String get _title => _isSurvey ? 'Survey' : 'Resources';
+
+  String get _subtitle => _isSurvey
+      ? 'Questionnaires from your care team.'
+      : 'Track your mental and physical health with these validated screening tools.';
+
+  String get _emptyMessage => _isSurvey
+      ? 'No surveys right now. Your care team will add them here.'
+      : 'No resources right now. Your care team will add them here.';
+
   static String _shortDate(DateTime d) {
     const m = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -215,10 +242,10 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
       ];
     }
     if (_surveys.isEmpty) {
-      return const [
+      return [
         _MessageBox(
-          icon: Icons.assignment_outlined,
-          message: 'No surveys right now. Your care team will add them here.',
+          icon: _isSurvey ? Icons.assignment_outlined : Icons.library_books_outlined,
+          message: _emptyMessage,
         ),
       ];
     }
@@ -252,6 +279,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
             completedLabel: done == null
                 ? null
                 : 'Last completed ${_shortDate(done)}',
+            buttonLabel: _isSurvey ? 'Start Survey' : 'Start Assessment',
             onTap: () => _openAssessment(survey),
           ),
         );
@@ -279,18 +307,29 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Assessments',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textDark,
-                        ),
+                      Row(
+                        children: [
+                          if (widget.standalone)
+                            const _BackButton()
+                          else
+                            const AppMenuButton(),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _title,
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.textDark,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 6),
-                      const Text(
-                        'Track your mental and physical health with these validated screening tools.',
-                        style: TextStyle(
+                      Text(
+                        _subtitle,
+                        style: const TextStyle(
                           fontSize: 14,
                           color: AppTheme.textMedium,
                           height: 1.4,
@@ -310,6 +349,35 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BackButton extends StatelessWidget {
+  const _BackButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Back',
+      child: InkWell(
+        onTap: () => Navigator.of(context).maybePop(),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceVariantLight,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 18,
+            color: AppTheme.textDark,
           ),
         ),
       ),
@@ -417,6 +485,7 @@ class _AssessmentCard extends StatelessWidget {
   final Color frequencyBg;
   final String? duration;
   final String? completedLabel;
+  final String buttonLabel;
   final VoidCallback onTap;
 
   const _AssessmentCard({
@@ -430,6 +499,7 @@ class _AssessmentCard extends StatelessWidget {
     required this.frequencyBg,
     required this.duration,
     this.completedLabel,
+    required this.buttonLabel,
     required this.onTap,
   });
 
@@ -567,7 +637,7 @@ class _AssessmentCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: onTap,
                         icon: const Icon(Icons.open_in_new_rounded, size: 16),
-                        label: const Text('Start Assessment'),
+                        label: Text(buttonLabel),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primary,
                           foregroundColor: Colors.white,

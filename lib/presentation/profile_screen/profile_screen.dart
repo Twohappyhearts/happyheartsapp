@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_menu.dart';
 import '../../services/auth_service.dart';
 import '../../services/content_service.dart';
 import '../../services/current_profile.dart';
@@ -142,13 +143,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Profile',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textDark,
-                      ),
+                    Row(
+                      children: [
+                        const AppMenuButton(),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Profile',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textDark,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 24),
 

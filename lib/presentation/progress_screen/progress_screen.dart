@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/content_service.dart';
 import '../../services/survey_service.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_menu.dart';
 
 /// Progress tab: the patient's real lesson progress (lesson_progress view,
 /// derived from the events the app sends), plus an activity calendar.
@@ -196,13 +197,21 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Your Progress',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textDark,
-                        ),
+                      Row(
+                        children: [
+                          const AppMenuButton(),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Your Progress',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.textDark,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 6),
                       const Text(

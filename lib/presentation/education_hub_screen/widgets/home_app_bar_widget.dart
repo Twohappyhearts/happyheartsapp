@@ -1,4 +1,5 @@
 import '../../../core/app_export.dart';
+import '../../../widgets/app_menu.dart';
 
 class HomeAppBarWidget extends StatelessWidget {
   final String userName;
@@ -25,6 +26,9 @@ class HomeAppBarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        // Side menu
+        const AppMenuButton(),
+        const SizedBox(width: 10),
         // Avatar
         GestureDetector(
           onTap: onAvatarTap,

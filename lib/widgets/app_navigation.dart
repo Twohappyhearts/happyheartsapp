@@ -36,34 +36,28 @@ class _AppNavigationState extends State<AppNavigation> {
       branchIndex: 0,
     ),
     _TabSpec(
-      label: 'Lessons',
-      icon: Icons.play_circle_outline,
-      selectedIcon: Icons.play_circle,
+      label: 'Resources',
+      icon: Icons.library_books_outlined,
+      selectedIcon: Icons.library_books,
       branchIndex: 1,
-    ),
-    _TabSpec(
-      label: 'Assessments',
-      icon: Icons.assignment_outlined,
-      selectedIcon: Icons.assignment,
-      branchIndex: 2,
     ),
     _TabSpec(
       label: 'Progress',
       icon: Icons.bar_chart_outlined,
       selectedIcon: Icons.bar_chart,
-      branchIndex: 3,
+      branchIndex: 2,
     ),
     _TabSpec(
       label: 'Chat',
       icon: Icons.chat_bubble_outline_rounded,
       selectedIcon: Icons.chat_bubble_rounded,
-      branchIndex: 4,
+      branchIndex: 3,
     ),
     _TabSpec(
       label: 'Profile',
       icon: Icons.person_outline,
       selectedIcon: Icons.person,
-      branchIndex: 5,
+      branchIndex: 4,
     ),
   ];
 

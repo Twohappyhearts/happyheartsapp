@@ -1,5 +1,18 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Where a link is listed in the app (survey_links.placement), set by staff
+/// on the dashboard. Both kinds are REDCap links opened the same way.
+enum SurveyPlacement {
+  /// The Resources tab in the bottom navigation.
+  resource('resource'),
+
+  /// Survey, opened from the side menu.
+  survey('survey');
+
+  const SurveyPlacement(this.dbValue);
+  final String dbValue;
+}
+
 /// REDCap survey links managed on the dashboard (public.survey_links).
 /// RLS only returns ACTIVE links to patients.
 class SurveyLink {
@@ -66,7 +79,9 @@ class SurveyService {
   static String? _nonEmpty(Object? v) =>
       v is String && v.trim().isNotEmpty ? v.trim() : null;
 
-  Future<List<SurveyLink>> loadSurveys() async {
+  Future<List<SurveyLink>> loadSurveys({
+    SurveyPlacement placement = SurveyPlacement.resource,
+  }) async {
     try {
       final List<Map<String, dynamic>> rows = await _client
           .from('survey_links')
@@ -76,6 +91,7 @@ class SurveyService {
           )
           // Staff accounts can read hidden links too; the app never shows them.
           .eq('is_active', true)
+          .eq('placement', placement.dbValue)
           .order('sort_order')
           .order('title');
       return rows

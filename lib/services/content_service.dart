@@ -231,7 +231,7 @@ class ContentService {
   static DateTime _later(DateTime? a, DateTime b) =>
       a == null || b.isAfter(a) ? b : a;
 
-  /// First active session (used when the Lessons tab is opened directly).
+  /// First active session (fallback when a lesson page opens without one).
   Future<Map<String, dynamic>?> firstSession() async {
     final content = await loadEducation();
     return content.sessions.isEmpty ? null : content.sessions.first;

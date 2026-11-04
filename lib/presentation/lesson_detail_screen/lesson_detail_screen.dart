@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../../routes/app_routes.dart';
 import '../../services/current_profile.dart';
 import '../../services/lesson_visit_tracker.dart';
 import '../../theme/app_theme.dart';
@@ -26,8 +27,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   // TODO: Replace with [Riverpod/Bloc] for production state management
   bool _isBookmarked = false;
 
-  /// The lesson to show. Comes from the Education list; when the Lessons tab
-  /// is opened directly, the first active session is loaded instead.
+  /// The lesson to show. Comes from the Education list; if the page is opened
+  /// without one (e.g. a restored link), the first active session is loaded.
   Map<String, dynamic>? _module;
   bool _loadingFallback = false;
   String? _loadError;
@@ -207,7 +208,10 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           children: [
             LessonDetailAppBarWidget(
               isBookmarked: _isBookmarked,
-              onBack: () => context.pop(),
+              // Normally pushed from Education; if not (e.g. restored link), go there.
+              onBack: () => context.canPop()
+                  ? context.pop()
+                  : context.go(AppRoutes.educationHub),
               onBookmark: () => setState(() => _isBookmarked = !_isBookmarked),
               onShare: () {},
             ),
