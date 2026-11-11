@@ -300,5 +300,10 @@
   "fileSizeMb": "{size} MB",
   "fileSizeKb": "{size} KB",
   "materialsOpenImage": "Mở hình: {name}",
-  "materialsOpenPdf": "Mở PDF: {name}"
+  "materialsOpenPdf": "Mở PDF: {name}",
+  "listSeparator": ", ",
+  "msgLangTitle": "Kiểm tra ngôn ngữ tin nhắn",
+  "msgLangBody": "Nhóm nghiên cứu chỉ đọc được các ngôn ngữ sau: {languages}. Họ có thể không hiểu tin nhắn của bạn.",
+  "msgLangSendAnyway": "Vẫn gửi",
+  "msgLangEdit": "Sửa tin nhắn"
 }

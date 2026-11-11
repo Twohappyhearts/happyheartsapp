@@ -1395,5 +1395,30 @@
         "type": "String"
       }
     }
+  },
+  "listSeparator": ", ",
+  "@listSeparator": {
+    "description": "Between items of a list, e.g. language names."
+  },
+  "msgLangTitle": "Check the language of your message",
+  "@msgLangTitle": {
+    "description": ""
+  },
+  "msgLangBody": "The research team only reads these languages: {languages}. They may not be able to understand your message.",
+  "@msgLangBody": {
+    "description": "{languages}: the accepted language names, each in its own language, e.g. \"English, Español\".",
+    "placeholders": {
+      "languages": {
+        "type": "String"
+      }
+    }
+  },
+  "msgLangSendAnyway": "Send anyway",
+  "@msgLangSendAnyway": {
+    "description": ""
+  },
+  "msgLangEdit": "Edit message",
+  "@msgLangEdit": {
+    "description": ""
   }
 }

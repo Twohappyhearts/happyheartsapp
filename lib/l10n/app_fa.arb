@@ -300,5 +300,10 @@
   "fileSizeMb": "{size} مگابایت",
   "fileSizeKb": "{size} کیلوبایت",
   "materialsOpenImage": "باز کردن تصویر: {name}",
-  "materialsOpenPdf": "باز کردن PDF: {name}"
+  "materialsOpenPdf": "باز کردن PDF: {name}",
+  "listSeparator": "، ",
+  "msgLangTitle": "زبان پیام خود را بررسی کنید",
+  "msgLangBody": "تیم پژوهش فقط پیام‌ها را به این زبان‌ها می‌خواند: {languages}. ممکن است پیام شما را متوجه نشوند.",
+  "msgLangSendAnyway": "با این حال ارسال کن",
+  "msgLangEdit": "ویرایش پیام"
 }

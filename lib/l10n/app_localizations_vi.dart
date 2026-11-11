@@ -1047,4 +1047,21 @@ class AppLocalizationsVi extends AppLocalizations {
   String materialsOpenPdf(String name) {
     return 'Mở PDF: $name';
   }
+
+  @override
+  String get listSeparator => ', ';
+
+  @override
+  String get msgLangTitle => 'Kiểm tra ngôn ngữ tin nhắn';
+
+  @override
+  String msgLangBody(String languages) {
+    return 'Nhóm nghiên cứu chỉ đọc được các ngôn ngữ sau: $languages. Họ có thể không hiểu tin nhắn của bạn.';
+  }
+
+  @override
+  String get msgLangSendAnyway => 'Vẫn gửi';
+
+  @override
+  String get msgLangEdit => 'Sửa tin nhắn';
 }

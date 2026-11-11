@@ -1055,4 +1055,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String materialsOpenPdf(String name) {
     return 'Abrir PDF: $name';
   }
+
+  @override
+  String get listSeparator => ', ';
+
+  @override
+  String get msgLangTitle => 'Revise el idioma de su mensaje';
+
+  @override
+  String msgLangBody(String languages) {
+    return 'El equipo de investigación solo lee estos idiomas: $languages. Es posible que no entiendan su mensaje.';
+  }
+
+  @override
+  String get msgLangSendAnyway => 'Enviar de todos modos';
+
+  @override
+  String get msgLangEdit => 'Editar mensaje';
 }

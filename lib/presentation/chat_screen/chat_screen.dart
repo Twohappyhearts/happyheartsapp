@@ -8,8 +8,10 @@ import '../../services/app_language.dart';
 import '../../services/auth_service.dart';
 import '../../services/chat_controller.dart';
 import '../../services/chat_service.dart';
+import '../../services/message_language_settings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_menu.dart';
+import '../../widgets/message_language_check.dart';
 import '../assistance/assistance_request_sheet.dart';
 import '../assistance/my_assistance_requests_screen.dart';
 import 'widgets/ai_assistant_web_stub.dart'
@@ -25,6 +27,10 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final TextEditingController _messageController = TextEditingController();
+  final FocusNode _inputFocus = FocusNode();
+
+  /// The language check before sending is running (blocks a second tap).
+  bool _checkingLanguage = false;
   final ScrollController _scrollController = ScrollController();
   ChatController? _chat;
   int _boundGeneration = -1;
@@ -47,6 +53,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     AuthService.instance.addListener(_onAuthChanged);
     _scrollController.addListener(_onScroll);
     _bind();
+    // Languages the research team reads, for the check before sending.
+    MessageLanguageSettings.instance.prefetch();
     // Let the Care Team chat render first, then start the AI assistant page.
     _aiPrewarm = Timer(const Duration(milliseconds: 800), () {
       if (mounted && !_aiStarted) setState(() => _aiStarted = true);
@@ -63,6 +71,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _chat?.dispose(); // unsubscribes Realtime
     _chat = null;
     _messageController.dispose();
+    _inputFocus.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -133,7 +142,20 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || _checkingLanguage) return;
+    // Warn (don't block) when the team may not read the message's language.
+    _checkingLanguage = true;
+    final bool send;
+    try {
+      send = await confirmMessageLanguage(context, text);
+    } finally {
+      _checkingLanguage = false;
+    }
+    if (!mounted) return;
+    if (!send) {
+      _inputFocus.requestFocus(); // "Edit message": the draft stays
+      return;
+    }
     final id = await _chat?.send(text);
     if (id != null) {
       // Draft is cleared only once the message is queued locally; a failure
@@ -743,6 +765,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               ),
               child: TextField(
                 controller: _messageController,
+                focusNode: _inputFocus,
                 enabled: enabled,
                 maxLines: 4,
                 minLines: 1,

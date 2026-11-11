@@ -1908,6 +1908,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open PDF: {name}'**
   String materialsOpenPdf(String name);
+
+  /// Between items of a list, e.g. language names.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get listSeparator;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Check the language of your message'**
+  String get msgLangTitle;
+
+  /// {languages}: the accepted language names, each in its own language, e.g. "English, Español".
+  ///
+  /// In en, this message translates to:
+  /// **'The research team only reads these languages: {languages}. They may not be able to understand your message.'**
+  String msgLangBody(String languages);
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Send anyway'**
+  String get msgLangSendAnyway;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Edit message'**
+  String get msgLangEdit;
 }
 
 class _AppLocalizationsDelegate

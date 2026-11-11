@@ -300,5 +300,10 @@
   "fileSizeMb": "{size} MB",
   "fileSizeKb": "{size} KB",
   "materialsOpenImage": "打开图片：{name}",
-  "materialsOpenPdf": "打开 PDF：{name}"
+  "materialsOpenPdf": "打开 PDF：{name}",
+  "listSeparator": "、",
+  "msgLangTitle": "请确认消息的语言",
+  "msgLangBody": "研究团队只看得懂这些语言：{languages}。他们可能看不懂您的消息。",
+  "msgLangSendAnyway": "仍然发送",
+  "msgLangEdit": "修改消息"
 }

@@ -986,6 +986,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String materialsOpenPdf(String name) {
     return '打开 PDF：$name';
   }
+
+  @override
+  String get listSeparator => '、';
+
+  @override
+  String get msgLangTitle => '请确认消息的语言';
+
+  @override
+  String msgLangBody(String languages) {
+    return '研究团队只看得懂这些语言：$languages。他们可能看不懂您的消息。';
+  }
+
+  @override
+  String get msgLangSendAnyway => '仍然发送';
+
+  @override
+  String get msgLangEdit => '修改消息';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1970,4 +1987,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String materialsOpenPdf(String name) {
     return '開啟 PDF：$name';
   }
+
+  @override
+  String get listSeparator => '、';
+
+  @override
+  String get msgLangTitle => '請確認訊息的語言';
+
+  @override
+  String msgLangBody(String languages) {
+    return '研究團隊只看得懂這些語言：$languages。他們可能看不懂您的訊息。';
+  }
+
+  @override
+  String get msgLangSendAnyway => '仍然傳送';
+
+  @override
+  String get msgLangEdit => '修改訊息';
 }

@@ -300,5 +300,10 @@
   "fileSizeMb": "{size} ميجابايت",
   "fileSizeKb": "{size} كيلوبايت",
   "materialsOpenImage": "فتح الصورة: {name}",
-  "materialsOpenPdf": "فتح ملف PDF: {name}"
+  "materialsOpenPdf": "فتح ملف PDF: {name}",
+  "listSeparator": "، ",
+  "msgLangTitle": "تحقّق من لغة رسالتك",
+  "msgLangBody": "يقرأ فريق البحث هذه اللغات فقط: {languages}. قد لا يتمكنون من فهم رسالتك.",
+  "msgLangSendAnyway": "أرسل على أي حال",
+  "msgLangEdit": "تعديل الرسالة"
 }

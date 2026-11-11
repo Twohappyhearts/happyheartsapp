@@ -3,7 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../services/app_language.dart';
 import '../../services/assistance_service.dart';
+import '../../services/message_language_settings.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/message_language_check.dart';
 import 'my_assistance_requests_screen.dart';
 
 /// Opens the "I need assistance" form. Returns the created request, or null if
@@ -63,6 +65,7 @@ class _AssistanceRequestSheet extends StatefulWidget {
 
 class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focus = FocusNode();
   // One id per request: a retry re-sends the same id, so no duplicate alerts.
   final String _requestId = AssistanceService.instance.newRequestId();
   bool _sending = false;
@@ -71,6 +74,8 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
   @override
   void initState() {
     super.initState();
+    // Languages the research team reads, for the check before sending.
+    MessageLanguageSettings.instance.prefetch();
     _controller.addListener(() {
       // Clear a previous error and refresh the Send button state.
       setState(() => _error = null);
@@ -80,6 +85,7 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
   @override
   void dispose() {
     _controller.dispose();
+    _focus.dispose();
     super.dispose();
   }
 
@@ -92,6 +98,14 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
       _sending = true;
       _error = null;
     });
+    // Warn (don't block) when the team may not read the message's language.
+    final send = await confirmMessageLanguage(context, _controller.text);
+    if (!mounted) return;
+    if (!send) {
+      setState(() => _sending = false);
+      _focus.requestFocus(); // "Edit message": the text stays
+      return;
+    }
     try {
       final created = await AssistanceService.instance.submit(
         requestId: _requestId,
@@ -210,6 +224,7 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
             const SizedBox(height: 16),
             TextField(
               controller: _controller,
+              focusNode: _focus,
               autofocus: true,
               enabled: !_sending,
               minLines: 4,

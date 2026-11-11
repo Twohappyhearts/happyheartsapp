@@ -300,5 +300,10 @@
   "fileSizeMb": "{size} MB",
   "fileSizeKb": "{size} KB",
   "materialsOpenImage": "Abrir imagen: {name}",
-  "materialsOpenPdf": "Abrir PDF: {name}"
+  "materialsOpenPdf": "Abrir PDF: {name}",
+  "listSeparator": ", ",
+  "msgLangTitle": "Revise el idioma de su mensaje",
+  "msgLangBody": "El equipo de investigación solo lee estos idiomas: {languages}. Es posible que no entiendan su mensaje.",
+  "msgLangSendAnyway": "Enviar de todos modos",
+  "msgLangEdit": "Editar mensaje"
 }

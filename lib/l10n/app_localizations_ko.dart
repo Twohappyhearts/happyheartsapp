@@ -996,4 +996,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String materialsOpenPdf(String name) {
     return 'PDF 열기: $name';
   }
+
+  @override
+  String get listSeparator => ', ';
+
+  @override
+  String get msgLangTitle => '메시지 언어를 확인해 주세요';
+
+  @override
+  String msgLangBody(String languages) {
+    return '연구팀은 다음 언어로 된 메시지만 읽습니다: $languages. 보내신 메시지를 이해하지 못할 수 있습니다.';
+  }
+
+  @override
+  String get msgLangSendAnyway => '그래도 보내기';
+
+  @override
+  String get msgLangEdit => '메시지 수정';
 }

@@ -1037,4 +1037,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String materialsOpenPdf(String name) {
     return 'فتح ملف PDF: $name';
   }
+
+  @override
+  String get listSeparator => '، ';
+
+  @override
+  String get msgLangTitle => 'تحقّق من لغة رسالتك';
+
+  @override
+  String msgLangBody(String languages) {
+    return 'يقرأ فريق البحث هذه اللغات فقط: $languages. قد لا يتمكنون من فهم رسالتك.';
+  }
+
+  @override
+  String get msgLangSendAnyway => 'أرسل على أي حال';
+
+  @override
+  String get msgLangEdit => 'تعديل الرسالة';
 }
