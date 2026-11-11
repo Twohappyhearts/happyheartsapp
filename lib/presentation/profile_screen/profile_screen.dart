@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_menu.dart';
 import '../../widgets/language_picker.dart';
+import '../../widgets/legal_links.dart';
+import '../../services/agent_config.dart';
 import '../../services/app_language.dart';
 import '../../services/auth_service.dart';
 import '../../services/content_service.dart';
@@ -228,7 +230,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       iconColor: const Color(0xFF15803D),
                       iconBg: const Color(0xFFDCFCE7),
                       title: l10n.legalPrivacy,
-                      onTap: () {},
+                      onTap: () =>
+                          openLegalDocument(context, LegalDocument.privacy),
                     ),
                     const SizedBox(height: 8),
                     _ActionTile(
@@ -236,7 +239,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       iconColor: const Color(0xFFF59E0B),
                       iconBg: const Color(0xFFFEF3C7),
                       title: l10n.legalTerms,
-                      onTap: () {},
+                      onTap: () =>
+                          openLegalDocument(context, LegalDocument.terms),
                     ),
                     const SizedBox(height: 24),
 

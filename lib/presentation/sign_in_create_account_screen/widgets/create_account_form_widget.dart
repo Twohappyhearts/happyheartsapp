@@ -1,9 +1,12 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../services/agent_config.dart';
 import '../../../services/app_language.dart';
 import '../../../services/auth_service.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/legal_links.dart';
 
 class CreateAccountFormWidget extends StatefulWidget {
   /// Called when registration succeeded but no session exists yet because
@@ -33,9 +36,15 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
   bool _agreeToTerms = false;
   bool _isLoading = false;
   String? _error;
+  late final TapGestureRecognizer _termsTap = TapGestureRecognizer()
+    ..onTap = () => openLegalDocument(context, LegalDocument.terms);
+  late final TapGestureRecognizer _privacyTap = TapGestureRecognizer()
+    ..onTap = () => openLegalDocument(context, LegalDocument.privacy);
 
   @override
   void dispose() {
+    _termsTap.dispose();
+    _privacyTap.dispose();
     _nameController.dispose();
     _usernameController.dispose();
     _phoneController.dispose();
@@ -78,8 +87,8 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
     }
   }
 
-  /// "I agree to the Terms of Use and Privacy Policy", with the two document
-  /// names styled as links. The sentence comes from the translations with
+  /// "I agree to the Terms of Use and Privacy Policy", where the two document
+  /// names open the documents. The sentence comes from the translations with
   /// markers in place of the names, so word order can differ per language.
   List<InlineSpan> _agreeSpans(AppLocalizations l10n) {
     const termsMark = '\u0001', privacyMark = '\u0002';
@@ -106,6 +115,8 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
           TextSpan(
             text: terms ? l10n.legalTerms : l10n.legalPrivacy,
             style: linkStyle,
+            recognizer: terms ? _termsTap : _privacyTap,
+            semanticsLabel: terms ? l10n.legalTerms : l10n.legalPrivacy,
           ),
         );
       } else {

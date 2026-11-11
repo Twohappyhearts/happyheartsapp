@@ -21,5 +21,18 @@ class AgentConfig {
 
   static Uri get pageUri => Uri.parse('$baseUrl/m/assistant');
 
+  /// Public page that redirects to the current Terms of Use / Privacy Policy
+  /// PDF uploaded on the dashboard (or the built-in sample until one is).
+  static Uri legalUri(LegalDocument document) =>
+      Uri.parse('$baseUrl/legal/${document.path}');
+
   static String get host => Uri.parse(baseUrl).host;
+}
+
+enum LegalDocument {
+  terms('terms'),
+  privacy('privacy');
+
+  const LegalDocument(this.path);
+  final String path;
 }
