@@ -11,6 +11,7 @@ import './widgets/infographic_section_widget.dart';
 import './widgets/kahoot_section_widget.dart';
 import '../../services/content_service.dart';
 import './widgets/lesson_detail_app_bar_widget.dart';
+import './widgets/references_section_widget.dart';
 import './widgets/script_section_widget.dart';
 import './widgets/video_section_widget.dart';
 
@@ -190,6 +191,10 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     final kahootUrl = module['kahootUrl'] as String?;
     final scriptHtml = module['scriptHtml'] as String?;
     final audioUrl = module['audioUrl'] as String?;
+    final references = <Map<String, String>>[
+      for (final r in (module['references'] as List? ?? const []))
+        if (r is Map) {'title': '${r['title'] ?? ''}', 'url': '${r['url'] ?? ''}'},
+    ];
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -286,6 +291,12 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         onQuizStarted: () => _tracker?.quizStarted(),
                         onQuizCompleted: () => _tracker?.quizCompleted(),
                       ),
+                      const SizedBox(height: 24),
+                    ],
+
+                    // Section 5: References (the lesson's links + staff-added)
+                    if (references.isNotEmpty) ...[
+                      ReferencesSectionWidget(references: references),
                       const SizedBox(height: 24),
                     ],
 

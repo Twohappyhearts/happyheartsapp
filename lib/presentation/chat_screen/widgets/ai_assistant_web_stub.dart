@@ -238,7 +238,6 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
     final controller = _controller;
     return Column(
       children: [
-        const _AiDisclaimer(),
         Expanded(
           child: Stack(
             children: [
@@ -274,37 +273,6 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _AiDisclaimer extends StatelessWidget {
-  const _AiDisclaimer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: AppTheme.warningColor.withValues(alpha: 0.10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 1),
-            child: Icon(Icons.info_outline_rounded, size: 16, color: AppTheme.warningColor),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Automated AI assistant — not your care team, and it can make '
-              'mistakes. In an emergency, call 911. For questions about your '
-              'care, message the Care Team.',
-              style: GoogleFonts.plusJakartaSans(fontSize: 11.5, height: 1.35, color: AppTheme.textMedium),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

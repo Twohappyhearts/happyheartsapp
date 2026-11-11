@@ -1,3 +1,4 @@
+import 'package:html/parser.dart' as html_parser;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import './tracking_service.dart';
@@ -120,7 +121,7 @@ class ContentService {
   static const String _columns =
       'id, title, description, group_id, group_number, group_name, tags, '
       'video_url, audio_url, thumbnail_url, thumbnail_alt, infographic_url, '
-      'quiz_url, script_html, video_duration, audio_duration, '
+      'quiz_url, script_html, video_duration, audio_duration, reference_links, '
       'category:content_categories(name)';
 
   Future<EducationContent> loadEducation() async {
@@ -280,6 +281,44 @@ class ContentService {
     return null;
   }
 
+  /// The lesson's References block: its own links first (video, audio, the
+  /// links in the lesson notes), then the links staff added in the dashboard
+  /// (content_items.reference_links). https only, each link once.
+  /// Keep in step with lessonOwnReferences() in the dashboard (src/lib/content.ts).
+  static List<Map<String, String>> _references({
+    String? videoUrl,
+    String? audioUrl,
+    String? scriptHtml,
+    Object? added,
+  }) {
+    final out = <Map<String, String>>[];
+    final seen = <String>{};
+    void add(String title, String? url) {
+      final u = url?.trim() ?? '';
+      if (!u.toLowerCase().startsWith('https://')) return;
+      final key = u.replaceFirst(RegExp(r'/+$'), '').toLowerCase();
+      if (!seen.add(key)) return;
+      out.add({'title': title.trim(), 'url': u});
+    }
+
+    add('Lesson video', videoUrl);
+    add('Lesson audio', audioUrl);
+    if (scriptHtml != null) {
+      final links = html_parser.parseFragment(scriptHtml).querySelectorAll('a');
+      for (final a in links) {
+        final href = a.attributes['href'];
+        final text = a.text.replaceAll(RegExp(r'\s+'), ' ').trim();
+        add(text == href?.trim() ? '' : text, href);
+      }
+    }
+    if (added is List) {
+      for (final r in added) {
+        if (r is Map) add('${r['title'] ?? ''}', r['url']?.toString());
+      }
+    }
+    return out;
+  }
+
   static int _seconds(String? mmss) {
     if (mmss == null) return 0;
     final parts = mmss.split(':');
@@ -318,6 +357,8 @@ class ContentService {
     final catName = cat is Map ? cat['name'] as String? : null;
     final title = (r['title'] as String?) ?? '';
     final videoUrl = _nonEmpty(r['video_url']);
+    final audioUrl = _nonEmpty(r['audio_url']);
+    final scriptHtml = _nonEmpty(r['script_html']);
     final id = r['id'] as String;
     return {
       'id': id,
@@ -339,10 +380,16 @@ class ContentService {
       'videoUrl': videoUrl,
       'videoId': youTubeId(videoUrl),
       'videoDuration': _nonEmpty(r['video_duration']),
-      'audioUrl': _nonEmpty(r['audio_url']),
+      'audioUrl': audioUrl,
       'audioDuration': _nonEmpty(r['audio_duration']),
       'kahootUrl': _nonEmpty(r['quiz_url']),
-      'scriptHtml': _nonEmpty(r['script_html']),
+      'scriptHtml': scriptHtml,
+      'references': _references(
+        videoUrl: videoUrl,
+        audioUrl: audioUrl,
+        scriptHtml: scriptHtml,
+        added: r['reference_links'],
+      ),
       'tags': (r['tags'] as List?)?.cast<String>() ?? const <String>[],
     };
   }
