@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import './auth_service.dart';
@@ -92,12 +93,15 @@ class ChatService {
       if (row is Map && row['id'] != null) return row['id'] as String;
       throw const ChatException('Could not open your conversation.');
     } on PostgrestException catch (e) {
+      debugPrint('ChatService.getOrCreateConversationId failed: $e');
       if (e.code == '42501') {
         throw const ChatException(
           'This account cannot use patient chat. Please sign in with a patient account.',
         );
       }
-      throw ChatException('Could not open your conversation: ${e.message}');
+      throw const ChatException(
+        'Could not open your conversation. Please try again.',
+      );
     } on ChatException {
       rethrow;
     } catch (_) {
@@ -133,9 +137,8 @@ class ChatService {
           .reversed
           .toList();
       return ChatPage(list, rows.length >= pageSize);
-    } on PostgrestException catch (e) {
-      throw ChatException('Could not load messages: ${e.message}');
-    } catch (_) {
+    } catch (e) {
+      debugPrint('ChatService.fetchPage failed: $e');
       throw const ChatException(
         'Could not load messages. Check your connection and try again.',
       );
@@ -197,13 +200,14 @@ class ChatService {
   }
 
   String _sendMessage(PostgrestException e) {
+    debugPrint('ChatService.send failed: $e');
     if (e.code == '42501') {
       return 'You do not have permission to send messages in this conversation.';
     }
     if (e.code == '23514') {
       return 'Messages must be 1-4000 characters.';
     }
-    return 'Message not sent: ${e.message}';
+    return 'Message not sent. Please try again.';
   }
 
   RealtimeChannel subscribe(

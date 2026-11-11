@@ -125,10 +125,10 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
             maxLength: 20,
             decoration: const InputDecoration(
               labelText: 'Username',
-              hintText: 'Your REDCap username',
+              hintText: 'The username your study team gave you',
               helperText:
-                  'Use the same username as on the REDCap platform. It links '
-                  'your surveys to your account and can’t be changed later.',
+                  'Use the username your study team gave you. It links your '
+                  'surveys to your account and can’t be changed later.',
               helperMaxLines: 3,
               counterText: '',
               prefixIcon: Icon(

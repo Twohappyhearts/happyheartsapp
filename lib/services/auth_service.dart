@@ -11,6 +11,12 @@ enum AuthStatus { unknown, signedOut, signedIn, passwordRecovery }
 /// Outcome of a registration attempt.
 enum SignUpOutcome { signedIn, confirmationRequired }
 
+/// Registration stopped before contacting Supabase Auth: the username is
+/// already used by another account.
+class UsernameTakenException implements Exception {
+  const UsernameTakenException();
+}
+
 /// Single source of truth for the authentication state. Drives router redirects.
 /// `generation` increments on every identity change so async work started for a
 /// previous account can detect that it is stale and drop its results.
@@ -123,10 +129,7 @@ class AuthService extends ChangeNotifier {
   }) async {
     _requireConfigured();
     if (!await isUsernameAvailable(username)) {
-      throw const AuthException(
-        'That username is already taken. Use your REDCap username, or contact '
-        'the care team if it is already registered.',
-      );
+      throw const UsernameTakenException();
     }
     final res = await _client.auth.signUp(
       email: email.trim(),
@@ -194,24 +197,50 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  /// True when sign-in failed only because the email is not confirmed yet.
+  static bool isEmailNotConfirmed(Object e) =>
+      e is AuthException &&
+      e.message.toLowerCase().contains('email not confirmed');
+
+  /// A plain-language message for an auth error. The server's own wording is
+  /// logged, never shown.
   static String friendlyError(Object e) {
+    if (e is UsernameTakenException) {
+      return 'That username is already taken. Use the username your study '
+          'team gave you, or contact the care team if it is already '
+          'registered.';
+    }
     if (e is AuthException) {
-      final m = e.message;
-      if (m.toLowerCase().contains('invalid login credentials')) {
+      final m = e.message.toLowerCase();
+      if (m.contains('invalid login credentials')) {
         return 'Incorrect email or password.';
       }
-      if (m.toLowerCase().contains('database error saving new user')) {
+      if (m.contains('database error saving new user')) {
         // The sign-up trigger rejected the username (taken or invalid).
         return 'That username is already taken or not allowed. Please choose another.';
       }
-      if (m.toLowerCase().contains('banned')) {
+      if (m.contains('banned')) {
         return 'This account has been disabled. Please contact your care team.';
       }
-      if (m.toLowerCase().contains('email not confirmed')) {
+      if (m.contains('email not confirmed')) {
         return 'Please confirm your email before signing in.';
       }
-      return m;
+      debugPrint('Auth error: ${e.message} (${e.statusCode})');
+      if (m.contains('already registered') || m.contains('already exists')) {
+        return 'An account with this email already exists. Try signing in.';
+      }
+      if (m.contains('rate limit') ||
+          m.contains('too many') ||
+          m.contains('security purposes') ||
+          e.statusCode == '429') {
+        return 'Too many attempts. Please wait a minute and try again.';
+      }
+      if (m.contains('password')) {
+        return 'Please choose a different password.';
+      }
+      return 'Something went wrong. Please try again.';
     }
+    debugPrint('Auth error: $e');
     return 'Something went wrong. Check your connection and try again.';
   }
 

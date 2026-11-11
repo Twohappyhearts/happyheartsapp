@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import './chat_service.dart' show newMessageId;
@@ -122,9 +123,8 @@ class AssistanceService {
       return (rows as List)
           .map((r) => AssistanceRequest.fromJson(r as Map<String, dynamic>))
           .toList();
-    } on PostgrestException catch (e) {
-      throw AssistanceException('Could not load your requests: ${e.message}');
-    } catch (_) {
+    } catch (e) {
+      debugPrint('AssistanceService.fetchMine failed: $e');
       throw const AssistanceException(
         'Could not load your requests. Check your connection and try again.',
       );
@@ -132,6 +132,7 @@ class AssistanceService {
   }
 
   String _describe(PostgrestException e) {
+    debugPrint('AssistanceService.submit failed: $e');
     if (e.code == '42501') {
       return 'Only participant accounts can send assistance requests.';
     }
@@ -140,8 +141,10 @@ class AssistanceService {
     }
     if (e.hint == 'rate_limited' || e.message.contains('too many requests')) {
       return 'You have sent several requests recently. The team will get back '
-          'to you soon — for urgent help, please call.';
+          'to you soon. If it is urgent, call your care team. In an emergency, '
+          'call 911.';
     }
-    return 'Request not sent: ${e.message}';
+    return 'Your request was not sent. Your message was kept — please try '
+        'again.';
   }
 }

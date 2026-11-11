@@ -163,6 +163,9 @@ class _ModuleCardWidgetState extends State<ModuleCardWidget>
     final catColor = _getCategoryTextColor(category);
     final status = module['status'] as String;
     final isCompleted = status == 'completed';
+    // 130 at the default text size; taller when the phone's text is larger
+    // (about 54 px of padding plus three lines of text).
+    final cardHeight = 54 + MediaQuery.textScalerOf(context).scale(76);
 
     return FadeTransition(
       opacity: _fadeAnim,
@@ -174,7 +177,7 @@ class _ModuleCardWidgetState extends State<ModuleCardWidget>
             onTap: widget.onTap,
             borderRadius: BorderRadius.circular(20),
             child: Container(
-              height: 130,
+              height: cardHeight,
               decoration: BoxDecoration(
                 color: isCompleted ? cardBg.withAlpha(153) : cardBg,
                 borderRadius: BorderRadius.circular(20),
@@ -313,7 +316,7 @@ class _ModuleCardWidgetState extends State<ModuleCardWidget>
                           ),
                           child: SizedBox(
                             width: 110,
-                            height: 130,
+                            height: cardHeight,
                             child: (module['imageUrl'] as String? ?? '').isEmpty
                                 ? Container(
                                     color: catColor.withAlpha(25),
@@ -327,7 +330,7 @@ class _ModuleCardWidgetState extends State<ModuleCardWidget>
                                 : CustomImageWidget(
                                     imageUrl: module['imageUrl'] as String,
                                     width: 110,
-                                    height: 130,
+                                    height: cardHeight,
                                     fit: BoxFit.cover,
                                     semanticLabel:
                                         module['semanticLabel'] as String,

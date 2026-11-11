@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -150,9 +151,9 @@ class ContentService {
           .map((r) => _toModule(r, progress))
           .toList();
       return EducationContent(categories, sessions);
-    } on PostgrestException catch (e) {
-      throw ContentException('Could not load lessons: ${e.message}');
-    } catch (_) {
+    } catch (e) {
+      // The raw database error is for developers, not patients.
+      debugPrint('ContentService.loadEducation failed: $e');
       throw const ContentException(
         'Could not load lessons. Check your connection and try again.',
       );
@@ -183,9 +184,8 @@ class ContentService {
           lastActivityAt: _date(row['last_activity_at']),
         );
       }
-    } on PostgrestException catch (e) {
-      throw ContentException('Could not load your progress: ${e.message}');
-    } catch (_) {
+    } catch (e) {
+      debugPrint('ContentService.loadMyProgress failed: $e');
       throw const ContentException(
         'Could not load your progress. Check your connection and try again.',
       );

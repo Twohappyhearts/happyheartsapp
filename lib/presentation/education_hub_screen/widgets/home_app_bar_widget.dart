@@ -1,16 +1,21 @@
 import '../../../core/app_export.dart';
 import '../../../widgets/app_menu.dart';
 
+/// Top of the Education tab: menu button, the patient's initial (opens
+/// Profile) and a greeting.
+///
+/// The notification bell was removed: the app has no notifications yet, and
+/// the bell always showed an unread dot and did nothing when tapped.
 class HomeAppBarWidget extends StatelessWidget {
   final String userName;
-  final bool hasNotifications;
-  final VoidCallback onNotificationTap;
+
+  /// First letter of the patient's name ('' while the profile loads).
+  final String initial;
   final VoidCallback onAvatarTap;
 
   const HomeAppBarWidget({
     required this.userName,
-    required this.hasNotifications,
-    required this.onNotificationTap,
+    required this.initial,
     required this.onAvatarTap,
     super.key,
   });
@@ -30,34 +35,44 @@ class HomeAppBarWidget extends StatelessWidget {
         const AppMenuButton(),
         const SizedBox(width: 10),
         // Avatar
-        GestureDetector(
-          onTap: onAvatarTap,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.primary, Color(0xFF60A5FA)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        Semantics(
+          button: true,
+          label: 'Profile',
+          child: GestureDetector(
+            onTap: onAvatarTap,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primary, Color(0xFF60A5FA)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withAlpha(64),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primary.withAlpha(64),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text(
-                'SJ',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+              child: Center(
+                child: initial.isEmpty
+                    ? const Icon(
+                        Icons.person_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      )
+                    : Text(
+                        initial,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
               ),
             ),
           ),
@@ -69,18 +84,15 @@ class HomeAppBarWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Text(
-                    'Hi, $userName ',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textDark,
-                    ),
-                  ),
-                  const Text('👋', style: TextStyle(fontSize: 16)),
-                ],
+              Text(
+                userName.isEmpty ? 'Hi 👋' : 'Hi, $userName 👋',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textDark,
+                ),
               ),
               Text(
                 _getTimeGreeting(),
@@ -90,43 +102,6 @@ class HomeAppBarWidget extends StatelessWidget {
                   fontWeight: FontWeight.w400,
                 ),
               ),
-            ],
-          ),
-        ),
-
-        // Notification Bell
-        GestureDetector(
-          onTap: onNotificationTap,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceVariantLight,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.borderColor),
-                ),
-                child: const Icon(
-                  Icons.notifications_none_rounded,
-                  color: AppTheme.textDark,
-                  size: 22,
-                ),
-              ),
-              if (hasNotifications)
-                Positioned(
-                  top: 8,
-                  right: 10,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppTheme.errorColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),

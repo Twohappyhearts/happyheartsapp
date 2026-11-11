@@ -46,13 +46,12 @@ class _SignInFormWidgetState extends State<SignInFormWidget> {
         password: _passwordController.text,
       );
     } catch (e) {
-      final msg = AuthService.friendlyError(e);
       if (!mounted) return;
-      if (msg.startsWith('Please confirm your email')) {
+      if (AuthService.isEmailNotConfirmed(e)) {
         widget.onEmailNotConfirmed(_emailController.text.trim());
         return;
       }
-      setState(() => _error = msg);
+      setState(() => _error = AuthService.friendlyError(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

@@ -76,12 +76,14 @@ class _AudioSectionWidgetState extends State<AudioSectionWidget> {
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'Audio Lesson',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textDark,
+            Flexible(
+              child: Text(
+                'Audio Lesson',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textDark,
+                ),
               ),
             ),
           ],

@@ -116,7 +116,7 @@ class _AppNavigationState extends State<AppNavigation> {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -144,8 +144,14 @@ class _AppNavigationState extends State<AppNavigation> {
                         const SizedBox(height: 2),
                         Text(
                           tab.label,
+                          // The bar has a fixed height: labels follow the
+                          // phone's text size only up to 120%.
+                          textScaler: MediaQuery.textScalerOf(
+                            context,
+                          ).clamp(maxScaleFactor: 1.2),
+                          maxLines: 1,
                           style: TextStyle(
-                            fontSize: 9,
+                            fontSize: 10,
                             fontWeight: isActive
                                 ? FontWeight.w600
                                 : FontWeight.w400,

@@ -110,16 +110,17 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'Knowledge Game',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textDark,
+            const Expanded(
+              child: Text(
+                'Knowledge Game',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textDark,
+                ),
               ),
             ),
             if (_kahootStarted) ...[
-              const Spacer(),
               TextButton.icon(
                 onPressed: () => setState(() {
                   _kahootStarted = false;

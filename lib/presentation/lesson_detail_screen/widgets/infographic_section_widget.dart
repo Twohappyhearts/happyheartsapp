@@ -82,12 +82,14 @@ class _InfographicSectionWidgetState extends State<InfographicSectionWidget> {
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'Infographic',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textDark,
+            Flexible(
+              child: Text(
+                'Infographic',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textDark,
+                ),
               ),
             ),
           ],

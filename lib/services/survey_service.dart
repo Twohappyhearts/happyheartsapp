@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Where a link is listed in the app (survey_links.placement), set by staff
@@ -110,9 +111,8 @@ class SurveyService {
           )
           .where((s) => s.url.startsWith('https://'))
           .toList();
-    } on PostgrestException catch (e) {
-      throw SurveyException('Could not load surveys: ${e.message}');
-    } catch (_) {
+    } catch (e) {
+      debugPrint('SurveyService.loadSurveys failed: $e');
       throw const SurveyException(
         'Could not load surveys. Check your connection and try again.',
       );
@@ -152,7 +152,11 @@ class SurveyService {
         params: {'p_code': code},
       );
     } on PostgrestException catch (e) {
-      throw SurveyException(e.message);
+      debugPrint('SurveyService.recordCompletion failed: $e');
+      throw const SurveyException(
+        'Your answers were submitted, but the app could not mark the survey '
+        'as completed.',
+      );
     }
   }
 

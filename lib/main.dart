@@ -54,16 +54,13 @@ class MyApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: ThemeMode.light,
-          // 🚨 CRITICAL: NEVER REMOVE OR MODIFY
-          builder: (context, child) {
-            return MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: TextScaler.linear(1.0)),
-              child: child!,
-            );
-          },
-          // 🚨 END CRITICAL SECTION
+          // Follow the phone's text size, from 100% up to 140%. Larger sizes
+          // would break the fixed-height cards; smaller ones hurt legibility.
+          builder: (context, child) => MediaQuery.withClampedTextScaling(
+            minScaleFactor: 1.0,
+            maxScaleFactor: 1.4,
+            child: child!,
+          ),
           debugShowCheckedModeBanner: false,
           routerConfig: appRouter,
         );

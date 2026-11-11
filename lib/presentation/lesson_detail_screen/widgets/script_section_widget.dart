@@ -45,12 +45,14 @@ class _ScriptSectionWidgetState extends State<ScriptSectionWidget> {
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'Lesson Notes',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textDark,
+            Flexible(
+              child: Text(
+                'Lesson Notes',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textDark,
+                ),
               ),
             ),
           ],

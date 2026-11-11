@@ -63,12 +63,14 @@ class _VideoSectionWidgetState extends State<VideoSectionWidget> {
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'Video Lesson',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textDark,
+            Flexible(
+              child: Text(
+                'Video Lesson',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textDark,
+                ),
               ),
             ),
           ],
@@ -143,11 +145,13 @@ class _VideoSectionWidgetState extends State<VideoSectionWidget> {
                       color: AppTheme.textLight,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      _videoStarted ? 'Playing video' : 'Tap to play video',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.textLight,
+                    Expanded(
+                      child: Text(
+                        _videoStarted ? 'Playing video' : 'Tap to play video',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textLight,
+                        ),
                       ),
                     ),
                   ],

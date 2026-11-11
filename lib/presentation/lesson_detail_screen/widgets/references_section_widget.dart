@@ -66,12 +66,14 @@ class ReferencesSectionWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'References',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textDark,
+            Flexible(
+              child: Text(
+                'References',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textDark,
+                ),
               ),
             ),
           ],

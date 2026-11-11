@@ -21,7 +21,8 @@ class CategoryFilterWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 38,
+      // 38 at the default text size; taller when the phone's text is larger.
+      height: 22 + MediaQuery.textScalerOf(context).scale(16),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: _categories.length,

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import './auth_service.dart';
@@ -92,12 +93,15 @@ class ProfileService {
         phone: row['phone'] as String?,
       );
     } on PostgrestException catch (e) {
+      debugPrint('ProfileService.loadMine failed: $e');
       if (e.code == '42501') {
         throw const ProfileException(
           'You do not have permission to view this profile.',
         );
       }
-      throw ProfileException('Could not load your profile: ${e.message}');
+      throw const ProfileException(
+        'Could not load your profile. Check your connection and try again.',
+      );
     } on ProfileException {
       rethrow;
     } catch (_) {
@@ -115,9 +119,8 @@ class ProfileService {
     if (name.isEmpty) throw const ProfileException('Name cannot be empty.');
     try {
       await _client.from('profiles').update({'full_name': name}).eq('id', uid);
-    } on PostgrestException catch (e) {
-      throw ProfileException('Could not save your name: ${e.message}');
-    } catch (_) {
+    } catch (e) {
+      debugPrint('ProfileService.updateFullName failed: $e');
       throw const ProfileException(
         'Could not save your name. Check your connection and try again.',
       );

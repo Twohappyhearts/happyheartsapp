@@ -461,12 +461,14 @@ class _SectionHeader extends StatelessWidget {
           child: Icon(icon, size: 20, color: iconColor),
         ),
         const SizedBox(width: 10),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.textDark,
+        Flexible(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textDark,
+            ),
           ),
         ),
       ],
@@ -566,8 +568,11 @@ class _AssessmentCard extends StatelessWidget {
                     ),
                     ],
                     const SizedBox(height: 10),
-                    // Badges row
-                    Row(
+                    // Badges (wrap onto a second line with large text)
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         // Frequency badge
                         if (frequency != null) ...[
@@ -589,7 +594,6 @@ class _AssessmentCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
                         ],
                         // Duration badge
                         if (duration != null)
@@ -623,12 +627,14 @@ class _AssessmentCard extends StatelessWidget {
                             color: Color(0xFF15803D),
                           ),
                           const SizedBox(width: 4),
-                          Text(
-                            completedLabel!,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF15803D),
+                          Flexible(
+                            child: Text(
+                              completedLabel!,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF15803D),
+                              ),
                             ),
                           ),
                         ],

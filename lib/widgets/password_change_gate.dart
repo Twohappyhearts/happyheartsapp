@@ -138,7 +138,7 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
         _saving = false;
         _error = e.message.toLowerCase().contains('different')
             ? 'Choose a password different from the temporary one.'
-            : e.message;
+            : AuthService.friendlyError(e);
       });
     } catch (_) {
       if (!mounted) return;

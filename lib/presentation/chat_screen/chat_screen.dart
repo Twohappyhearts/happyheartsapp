@@ -199,7 +199,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: isAi ? AppTheme.purpleContainer : AppTheme.primaryContainer,
+                color: isAi
+                    ? AppTheme.purpleContainer
+                    : AppTheme.primaryContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -209,31 +211,38 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               ),
             ),
             const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isAi ? 'AI Assistant' : 'Research Team',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textDark,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isAi ? 'AI Assistant' : 'Research Team',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textDark,
+                    ),
                   ),
-                ),
-                Text(
-                  isAi ? 'Automated answers, 24/7' : 'Happy Heart Study',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w400,
-                    color: AppTheme.textLight,
+                  Text(
+                    isAi ? 'Automated answers, 24/7' : 'Happy Hearts Study',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                      color: AppTheme.textLight,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(52),
+          // 52 at the default text size; taller when the phone's text is larger.
+          preferredSize: Size.fromHeight(
+            32 + MediaQuery.textScalerOf(context).scale(20),
+          ),
           child: _buildTabSwitcher(),
         ),
       ),
@@ -287,12 +296,20 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     color: selected ? AppTheme.textDark : AppTheme.textLight,
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    label,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                      color: selected ? AppTheme.textDark : AppTheme.textMedium,
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        fontWeight: selected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                        color: selected
+                            ? AppTheme.textDark
+                            : AppTheme.textMedium,
+                      ),
                     ),
                   ),
                 ],
@@ -388,22 +405,28 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               ],
             ),
           ),
-          ElevatedButton(
-            onPressed: () => showAssistanceRequestSheet(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          Flexible(
+            child: ElevatedButton(
+              onPressed: () => showAssistanceRequestSheet(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-            ),
-            child: Text(
-              'I need assistance',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
+              child: Text(
+                'I need assistance',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -443,7 +466,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 8),
             Text(
-              'Send a message to the Happy Heart research team. We\'re here to help with any questions about your study.',
+              'Send a message to the Happy Hearts research team. We\'re here to help with any questions about your study.',
               textAlign: TextAlign.center,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,

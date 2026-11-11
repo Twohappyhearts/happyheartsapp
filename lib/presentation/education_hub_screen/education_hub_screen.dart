@@ -127,9 +127,8 @@ class _EducationHubScreenState extends State<EducationHubScreen> {
                   children: [
                     HomeAppBarWidget(
                       userName: _currentProfile.profile?.firstName ?? '',
-                      hasNotifications: true,
-                      onNotificationTap: () {},
-                      onAvatarTap: () {},
+                      initial: _currentProfile.profile?.initial ?? '',
+                      onAvatarTap: () => context.go(AppRoutes.profile),
                     ),
                     const SizedBox(height: 20),
                     const Text(

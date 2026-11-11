@@ -193,7 +193,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     final audioUrl = module['audioUrl'] as String?;
     final references = <Map<String, String>>[
       for (final r in (module['references'] as List? ?? const []))
-        if (r is Map) {'title': '${r['title'] ?? ''}', 'url': '${r['url'] ?? ''}'},
+        if (r is Map)
+          {'title': '${r['title'] ?? ''}', 'url': '${r['url'] ?? ''}'},
     ];
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -209,107 +210,113 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             return false;
           },
           child: SafeArea(
-        child: Column(
-          children: [
-            LessonDetailAppBarWidget(
-              isBookmarked: _isBookmarked,
-              // Normally pushed from Education; if not (e.g. restored link), go there.
-              onBack: () => context.canPop()
-                  ? context.pop()
-                  : context.go(AppRoutes.educationHub),
-              onBookmark: () => setState(() => _isBookmarked = !_isBookmarked),
-              onShare: () {},
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Module title + category
-                    _buildModuleHeader(module),
-                    const SizedBox(height: 24),
-
-                    // Section 1: Infographic (optional)
-                    if (infographicUrl != null) ...[
-                      InfographicSectionWidget(
-                        infographicUrl: infographicUrl,
-                        moduleTitle: module['title'] as String,
-                        onFullscreenChanged: (open) =>
-                            _tracker?.setInfographicOpen(open),
-                        onInteraction: () => _tracker?.touch(),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-
-                    // Section 2: Video (optional)
-                    if (videoId != null) ...[
-                      VideoSectionWidget(
-                        videoId: videoId,
-                        duration: (module['videoDuration'] as String?) ??
-                            (module['duration'] as String? ?? ''),
-                        onPlayerState: (state) =>
-                            _tracker?.onVideoState(state),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-
-                    // Section 2b: Audio (optional, SoundCloud)
-                    if (audioUrl != null) ...[
-                      AudioSectionWidget(
-                        audioUrl: audioUrl,
-                        duration: (module['audioDuration'] as String?) ?? '',
-                        onPlayerState: (state) =>
-                            _tracker?.onAudioState(state),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-
-                    // Section 3: Lesson notes / script (optional)
-                    if (scriptHtml != null) ...[
-                      // Reading time counts while at least half of the notes
-                      // (or 40% of the screen) show lesson notes.
-                      VisibilityDetector(
-                        key: Key('lesson-notes-${module['id']}'),
-                        onVisibilityChanged: (info) {
-                          if (!mounted) return;
-                          final visible = info.visibleFraction >= 0.5 ||
-                              info.visibleBounds.height >= screenHeight * 0.4;
-                          _tracker?.setScriptVisible(visible);
-                        },
-                        child: ScriptSectionWidget(scriptHtml: scriptHtml),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-
-                    // Section 4: Quiz (optional)
-                    if (kahootUrl != null) ...[
-                      KahootSectionWidget(
-                        kahootUrl: kahootUrl,
-                        username: _currentProfile.profile?.username ?? '...',
-                        quizCompleted: module['quizCompleted'] == true,
-                        onQuizStarted: () => _tracker?.quizStarted(),
-                        onQuizCompleted: () => _tracker?.quizCompleted(),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-
-                    // Section 5: References (the lesson's links + staff-added)
-                    if (references.isNotEmpty) ...[
-                      ReferencesSectionWidget(references: references),
-                      const SizedBox(height: 24),
-                    ],
-
-                    // Finish: the lesson counts as completed once tapped.
-                    _buildCompleteCard(),
-                    const SizedBox(height: 16),
-                  ],
+            child: Column(
+              children: [
+                LessonDetailAppBarWidget(
+                  isBookmarked: _isBookmarked,
+                  // Normally pushed from Education; if not (e.g. restored link), go there.
+                  onBack: () => context.canPop()
+                      ? context.pop()
+                      : context.go(AppRoutes.educationHub),
+                  onBookmark: () =>
+                      setState(() => _isBookmarked = !_isBookmarked),
+                  onShare: () {},
                 ),
-              ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Module title + category
+                        _buildModuleHeader(module),
+                        const SizedBox(height: 24),
+
+                        // Section 1: Infographic (optional)
+                        if (infographicUrl != null) ...[
+                          InfographicSectionWidget(
+                            infographicUrl: infographicUrl,
+                            moduleTitle: module['title'] as String,
+                            onFullscreenChanged: (open) =>
+                                _tracker?.setInfographicOpen(open),
+                            onInteraction: () => _tracker?.touch(),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Section 2: Video (optional)
+                        if (videoId != null) ...[
+                          VideoSectionWidget(
+                            videoId: videoId,
+                            duration:
+                                (module['videoDuration'] as String?) ??
+                                (module['duration'] as String? ?? ''),
+                            onPlayerState: (state) =>
+                                _tracker?.onVideoState(state),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Section 2b: Audio (optional, SoundCloud)
+                        if (audioUrl != null) ...[
+                          AudioSectionWidget(
+                            audioUrl: audioUrl,
+                            duration:
+                                (module['audioDuration'] as String?) ?? '',
+                            onPlayerState: (state) =>
+                                _tracker?.onAudioState(state),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Section 3: Lesson notes / script (optional)
+                        if (scriptHtml != null) ...[
+                          // Reading time counts while at least half of the notes
+                          // (or 40% of the screen) show lesson notes.
+                          VisibilityDetector(
+                            key: Key('lesson-notes-${module['id']}'),
+                            onVisibilityChanged: (info) {
+                              if (!mounted) return;
+                              final visible =
+                                  info.visibleFraction >= 0.5 ||
+                                  info.visibleBounds.height >=
+                                      screenHeight * 0.4;
+                              _tracker?.setScriptVisible(visible);
+                            },
+                            child: ScriptSectionWidget(scriptHtml: scriptHtml),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Section 4: Quiz (optional)
+                        if (kahootUrl != null) ...[
+                          KahootSectionWidget(
+                            kahootUrl: kahootUrl,
+                            username:
+                                _currentProfile.profile?.username ?? '...',
+                            quizCompleted: module['quizCompleted'] == true,
+                            onQuizStarted: () => _tracker?.quizStarted(),
+                            onQuizCompleted: () => _tracker?.quizCompleted(),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Section 5: References (the lesson's links + staff-added)
+                        if (references.isNotEmpty) ...[
+                          ReferencesSectionWidget(references: references),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Finish: the lesson counts as completed once tapped.
+                        _buildCompleteCard(),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
         ),
       ),
     );
@@ -437,37 +444,40 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           ),
         ),
         const SizedBox(height: 10),
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
           children: [
-            if (duration.isNotEmpty) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceVariantLight,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.access_time_rounded,
-                    size: 13,
-                    color: AppTheme.textMedium,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    duration,
-                    style: const TextStyle(
-                      fontSize: 12,
+            if (duration.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceVariantLight,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 13,
                       color: AppTheme.textMedium,
-                      fontWeight: FontWeight.w500,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    Text(
+                      duration,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textMedium,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            ],
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
@@ -477,7 +487,11 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.layers_rounded, size: 13, color: AppTheme.purple),
+                  const Icon(
+                    Icons.layers_rounded,
+                    size: 13,
+                    color: AppTheme.purple,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     '$sections ${sections == 1 ? 'section' : 'sections'}',

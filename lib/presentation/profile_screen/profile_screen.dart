@@ -14,8 +14,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _notificationsEnabled = true;
-  bool _reminderEnabled = true;
   final CurrentProfile _current = CurrentProfile.instance;
 
   @override
@@ -53,7 +51,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(
+            e is ProfileException
+                ? e.message
+                : 'Could not save your name. Check your connection and try again.',
+          ),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
         ),
@@ -189,30 +191,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Settings section
-                    _SectionLabel(label: 'Preferences'),
-                    const SizedBox(height: 10),
-                    _ToggleTile(
-                      icon: Icons.notifications_rounded,
-                      iconColor: AppTheme.primary,
-                      iconBg: AppTheme.primaryContainer,
-                      title: 'Push Notifications',
-                      subtitle: 'Receive updates and reminders',
-                      value: _notificationsEnabled,
-                      onChanged: (v) =>
-                          setState(() => _notificationsEnabled = v),
-                    ),
-                    const SizedBox(height: 8),
-                    _ToggleTile(
-                      icon: Icons.alarm_rounded,
-                      iconColor: const Color(0xFF7C3AED),
-                      iconBg: const Color(0xFFEDE9FE),
-                      title: 'Learning Reminders',
-                      subtitle: 'Daily nudges to continue your modules',
-                      value: _reminderEnabled,
-                      onChanged: (v) => setState(() => _reminderEnabled = v),
-                    ),
-                    const SizedBox(height: 24),
+                    // The Push Notifications / Learning Reminders switches were
+                    // removed: nothing sends notifications yet, so they only
+                    // changed what the page showed. Add them back with real
+                    // reminders.
 
                     // About section
                     _SectionLabel(label: 'About'),
@@ -530,12 +512,14 @@ class _ProgressSummaryCardState extends State<_ProgressSummaryCard> {
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
-                'Learning Summary',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textDark,
+              const Flexible(
+                child: Text(
+                  'Learning Summary',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textDark,
+                  ),
                 ),
               ),
             ],
@@ -636,93 +620,6 @@ class _SectionLabel extends StatelessWidget {
         fontSize: 16,
         fontWeight: FontWeight.w700,
         color: AppTheme.textDark,
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Toggle Tile
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _ToggleTile extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final Color iconBg;
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _ToggleTile({
-    required this.icon,
-    required this.iconColor,
-    required this.iconBg,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(6),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: iconBg,
-                borderRadius: BorderRadius.circular(11),
-              ),
-              child: Icon(icon, size: 20, color: iconColor),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textDark,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.textLight,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Switch(
-              value: value,
-              onChanged: onChanged,
-              activeThumbColor: AppTheme.primary,
-            ),
-          ],
-        ),
       ),
     );
   }
