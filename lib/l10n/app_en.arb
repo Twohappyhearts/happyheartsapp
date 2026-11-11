@@ -1342,5 +1342,58 @@
   "contentErrorProgress": "Could not load your progress. Check your connection and try again.",
   "@contentErrorProgress": {
     "description": ""
+  },
+  "materialsTitle": "Materials",
+  "@materialsTitle": {
+    "description": "Lesson section with images and PDF files uploaded by the study team."
+  },
+  "materialsPdf": "PDF document",
+  "@materialsPdf": {
+    "description": ""
+  },
+  "materialsPdfSize": "PDF · {size}",
+  "@materialsPdfSize": {
+    "description": "",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeMb": "{size} MB",
+  "@fileSizeMb": {
+    "description": "",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeKb": "{size} KB",
+  "@fileSizeKb": {
+    "description": "",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "materialsOpenImage": "Open image: {name}",
+  "@materialsOpenImage": {
+    "description": "Screen reader label of an image thumbnail.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "materialsOpenPdf": "Open PDF: {name}",
+  "@materialsOpenPdf": {
+    "description": "Screen reader label of a PDF row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

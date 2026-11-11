@@ -1016,4 +1016,35 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get contentErrorProgress =>
       'Không tải được tiến độ. Hãy kiểm tra kết nối mạng và thử lại.';
+
+  @override
+  String get materialsTitle => 'Tài liệu';
+
+  @override
+  String get materialsPdf => 'Tài liệu PDF';
+
+  @override
+  String materialsPdfSize(String size) {
+    return 'PDF · $size';
+  }
+
+  @override
+  String fileSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String fileSizeKb(String size) {
+    return '$size KB';
+  }
+
+  @override
+  String materialsOpenImage(String name) {
+    return 'Mở hình: $name';
+  }
+
+  @override
+  String materialsOpenPdf(String name) {
+    return 'Mở PDF: $name';
+  }
 }

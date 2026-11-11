@@ -1024,4 +1024,35 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get contentErrorProgress =>
       'No se pudo cargar su progreso. Revise su conexión e inténtelo de nuevo.';
+
+  @override
+  String get materialsTitle => 'Materiales';
+
+  @override
+  String get materialsPdf => 'Documento PDF';
+
+  @override
+  String materialsPdfSize(String size) {
+    return 'PDF · $size';
+  }
+
+  @override
+  String fileSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String fileSizeKb(String size) {
+    return '$size KB';
+  }
+
+  @override
+  String materialsOpenImage(String name) {
+    return 'Abrir imagen: $name';
+  }
+
+  @override
+  String materialsOpenPdf(String name) {
+    return 'Abrir PDF: $name';
+  }
 }

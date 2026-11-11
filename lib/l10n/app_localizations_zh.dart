@@ -955,6 +955,37 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get contentErrorProgress => '无法加载您的进度。请检查网络连接后再试一次。';
+
+  @override
+  String get materialsTitle => '学习资料';
+
+  @override
+  String get materialsPdf => 'PDF 文档';
+
+  @override
+  String materialsPdfSize(String size) {
+    return 'PDF · $size';
+  }
+
+  @override
+  String fileSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String fileSizeKb(String size) {
+    return '$size KB';
+  }
+
+  @override
+  String materialsOpenImage(String name) {
+    return '打开图片：$name';
+  }
+
+  @override
+  String materialsOpenPdf(String name) {
+    return '打开 PDF：$name';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1908,4 +1939,35 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get contentErrorProgress => '無法載入您的進度。請檢查網路連線後再試一次。';
+
+  @override
+  String get materialsTitle => '學習資料';
+
+  @override
+  String get materialsPdf => 'PDF 文件';
+
+  @override
+  String materialsPdfSize(String size) {
+    return 'PDF · $size';
+  }
+
+  @override
+  String fileSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String fileSizeKb(String size) {
+    return '$size KB';
+  }
+
+  @override
+  String materialsOpenImage(String name) {
+    return '開啟圖片：$name';
+  }
+
+  @override
+  String materialsOpenPdf(String name) {
+    return '開啟 PDF：$name';
+  }
 }

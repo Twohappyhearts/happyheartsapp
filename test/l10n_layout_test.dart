@@ -16,12 +16,14 @@ import 'package:happyhearts/presentation/education_hub_screen/widgets/progress_c
 import 'package:happyhearts/presentation/lesson_detail_screen/widgets/audio_section_widget.dart';
 import 'package:happyhearts/presentation/lesson_detail_screen/widgets/kahoot_section_widget.dart';
 import 'package:happyhearts/presentation/lesson_detail_screen/widgets/lesson_detail_app_bar_widget.dart';
+import 'package:happyhearts/presentation/lesson_detail_screen/widgets/materials_section_widget.dart';
 import 'package:happyhearts/presentation/lesson_detail_screen/widgets/references_section_widget.dart';
 import 'package:happyhearts/presentation/lesson_detail_screen/widgets/script_section_widget.dart';
 import 'package:happyhearts/presentation/profile_screen/profile_screen.dart';
 import 'package:happyhearts/presentation/progress_screen/progress_screen.dart';
 import 'package:happyhearts/presentation/sign_in_create_account_screen/sign_in_create_account_screen.dart';
 import 'package:happyhearts/services/app_language.dart';
+import 'package:happyhearts/services/content_service.dart';
 
 const _maxTextScale = 1.4;
 
@@ -198,6 +200,26 @@ void main() {
                           AudioSectionWidget(
                             audioUrl: 'https://example.org/lesson.mp3',
                             duration: '4:30',
+                          ),
+                          SizedBox(height: 24),
+                          // PDFs only: image thumbnails need the cache
+                          // plugin, which tests don't have.
+                          MaterialsSectionWidget(
+                            attachments: [
+                              LessonAttachment(
+                                name:
+                                    'Blood pressure log for the first six '
+                                    'weeks after birth',
+                                url: 'https://example.org/log.pdf',
+                                kind: 'pdf',
+                                sizeBytes: 2400000,
+                              ),
+                              LessonAttachment(
+                                name: 'Handout',
+                                url: 'https://example.org/handout.pdf',
+                                kind: 'pdf',
+                              ),
+                            ],
                           ),
                           SizedBox(height: 24),
                           KahootSectionWidget(

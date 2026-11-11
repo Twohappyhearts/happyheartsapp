@@ -22,6 +22,54 @@ class ContentException implements Exception {
   String toString() => message;
 }
 
+/// A file staff uploaded for a lesson on the dashboard (bucket
+/// "lesson-materials"): an image (jpg / png / webp) or a PDF.
+class LessonAttachment {
+  final String name;
+  final String url;
+
+  /// 'image' or 'pdf'.
+  final String kind;
+  final int? sizeBytes;
+
+  const LessonAttachment({
+    required this.name,
+    required this.url,
+    required this.kind,
+    this.sizeBytes,
+  });
+
+  bool get isImage => kind == 'image';
+  bool get isPdf => kind == 'pdf';
+
+  /// content_items.attachments: [{name, url, kind: image|pdf, size_bytes}].
+  /// Entries that are not https, or of another kind, are skipped.
+  static List<LessonAttachment> listFromJson(Object? value) {
+    if (value is! List) return const [];
+    final out = <LessonAttachment>[];
+    for (final e in value) {
+      if (e is! Map) continue;
+      final url = '${e['url'] ?? ''}'.trim();
+      final kind = '${e['kind'] ?? ''}'.trim().toLowerCase();
+      if (!url.toLowerCase().startsWith('https://')) continue;
+      if (kind != 'image' && kind != 'pdf') continue;
+      final name = '${e['name'] ?? ''}'.trim();
+      final size = e['size_bytes'];
+      out.add(
+        LessonAttachment(
+          name: name.isEmpty
+              ? Uri.parse(url).pathSegments.lastOrNull ?? ''
+              : name,
+          url: url,
+          kind: kind,
+          sizeBytes: size is num ? size.toInt() : null,
+        ),
+      );
+    }
+    return out;
+  }
+}
+
 class EducationContent {
   final List<String> categories; // ordered, active only
   final List<Map<String, dynamic>> sessions; // ordered by Session 1, 2, ...
@@ -124,11 +172,36 @@ class ContentService {
 
   SupabaseClient get _client => Supabase.instance.client;
 
-  static const String _columns =
+  static const String _baseColumns =
       'id, title, description, group_id, group_number, group_name, tags, '
       'video_url, audio_url, thumbnail_url, thumbnail_alt, infographic_url, '
       'quiz_url, script_html, video_duration, audio_duration, reference_links, '
       'category:content_categories(name)';
+
+  /// content_items.attachments comes from migration 20261111000100. Until
+  /// that has run, the query is retried without it (no Materials section),
+  /// so the lessons still load.
+  static bool _attachmentsColumn = true;
+
+  Future<List<Map<String, dynamic>>> _sessionRows() async {
+    Future<List<Map<String, dynamic>>> query(String columns) => _client
+        .from('content_items')
+        .select(columns)
+        .eq('kind', 'session')
+        .eq('is_active', true)
+        .order('group_number');
+    if (_attachmentsColumn) {
+      try {
+        return await query('$_baseColumns, attachments');
+      } on PostgrestException catch (e) {
+        // 42703 = undefined column.
+        if (e.code != '42703' && !e.message.contains('attachments')) rethrow;
+        debugPrint('content_items.attachments missing; loading without it');
+        _attachmentsColumn = false;
+      }
+    }
+    return query(_baseColumns);
+  }
 
   Future<EducationContent> loadEducation() async {
     try {
@@ -141,20 +214,11 @@ class ContentService {
           .eq('is_active', true)
           .order('sort_order')
           .order('name');
-      final List<Map<String, dynamic>> sessionRows = await _client
-          .from('content_items')
-          .select(_columns)
-          .eq('kind', 'session')
-          .eq('is_active', true)
-          .order('group_number');
+      final sessionRows = await _sessionRows();
       final progress = await _progress();
 
-      final categories = categoryRows
-          .map((r) => r['name'] as String)
-          .toList();
-      final sessions = sessionRows
-          .map((r) => _toModule(r, progress))
-          .toList();
+      final categories = categoryRows.map((r) => r['name'] as String).toList();
+      final sessions = sessionRows.map((r) => _toModule(r, progress)).toList();
       return EducationContent(categories, sessions);
     } catch (e) {
       // The raw database error is for developers, not patients.
@@ -194,7 +258,8 @@ class ContentService {
 
     // Merge what was done in the last few seconds / offline.
     LessonProgress entry(String id) =>
-        map[id] ?? LessonProgress(contentId: id, completed: false, timeOnPageSec: 0);
+        map[id] ??
+        LessonProgress(contentId: id, completed: false, timeOnPageSec: 0);
     final t = TrackingService.instance;
     for (final e in t.pendingEvents(TrackingEvents.sessionClosed)) {
       final p = entry(e.contentId);
@@ -205,7 +270,9 @@ class ContentService {
     }
     for (final e in t.pendingEvents(TrackingEvents.sessionOpened)) {
       final p = entry(e.contentId);
-      map[e.contentId] = p.copyWith(lastActivityAt: _later(p.lastActivityAt, e.at));
+      map[e.contentId] = p.copyWith(
+        lastActivityAt: _later(p.lastActivityAt, e.at),
+      );
     }
     for (final e in t.pendingEvents(TrackingEvents.sessionCompleted)) {
       final p = entry(e.contentId);
@@ -375,7 +442,8 @@ class ContentService {
         _nonEmpty(r['audio_duration']),
       ),
       'status': _status(id, progress[id]),
-      'quizCompleted': (progress[id]?.quizCompleted ?? false) ||
+      'quizCompleted':
+          (progress[id]?.quizCompleted ?? false) ||
           TrackingService.instance.hasPending(id, TrackingEvents.quizCompleted),
       'imageUrl': _nonEmpty(r['thumbnail_url']) ?? '',
       'semanticLabel': _nonEmpty(r['thumbnail_alt']) ?? title,
@@ -394,6 +462,7 @@ class ContentService {
         added: r['reference_links'],
       ),
       'tags': (r['tags'] as List?)?.cast<String>() ?? const <String>[],
+      'attachments': LessonAttachment.listFromJson(r['attachments']),
     };
   }
 }

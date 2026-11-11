@@ -293,5 +293,12 @@
   "profileErrorNameEmpty": "نام نمی‌تواند خالی باشد.",
   "profileErrorSaveName": "نام شما ذخیره نشد. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.",
   "contentErrorLessons": "درس‌ها بارگیری نشد. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.",
-  "contentErrorProgress": "پیشرفت شما بارگیری نشد. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."
+  "contentErrorProgress": "پیشرفت شما بارگیری نشد. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.",
+  "materialsTitle": "مطالب درس",
+  "materialsPdf": "سند PDF",
+  "materialsPdfSize": "PDF · {size}",
+  "fileSizeMb": "{size} مگابایت",
+  "fileSizeKb": "{size} کیلوبایت",
+  "materialsOpenImage": "باز کردن تصویر: {name}",
+  "materialsOpenPdf": "باز کردن PDF: {name}"
 }

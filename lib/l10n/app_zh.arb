@@ -293,5 +293,12 @@
   "profileErrorNameEmpty": "姓名不能为空。",
   "profileErrorSaveName": "无法保存您的姓名。请检查网络连接后再试一次。",
   "contentErrorLessons": "无法加载课程。请检查网络连接后再试一次。",
-  "contentErrorProgress": "无法加载您的进度。请检查网络连接后再试一次。"
+  "contentErrorProgress": "无法加载您的进度。请检查网络连接后再试一次。",
+  "materialsTitle": "学习资料",
+  "materialsPdf": "PDF 文档",
+  "materialsPdfSize": "PDF · {size}",
+  "fileSizeMb": "{size} MB",
+  "fileSizeKb": "{size} KB",
+  "materialsOpenImage": "打开图片：{name}",
+  "materialsOpenPdf": "打开 PDF：{name}"
 }

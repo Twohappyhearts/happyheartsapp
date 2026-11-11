@@ -965,4 +965,35 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get contentErrorProgress =>
       '진행 상황을 불러올 수 없습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.';
+
+  @override
+  String get materialsTitle => '자료';
+
+  @override
+  String get materialsPdf => 'PDF 문서';
+
+  @override
+  String materialsPdfSize(String size) {
+    return 'PDF · $size';
+  }
+
+  @override
+  String fileSizeMb(String size) {
+    return '${size}MB';
+  }
+
+  @override
+  String fileSizeKb(String size) {
+    return '${size}KB';
+  }
+
+  @override
+  String materialsOpenImage(String name) {
+    return '이미지 열기: $name';
+  }
+
+  @override
+  String materialsOpenPdf(String name) {
+    return 'PDF 열기: $name';
+  }
 }

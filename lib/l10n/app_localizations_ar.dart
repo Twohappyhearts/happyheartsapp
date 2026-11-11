@@ -1006,4 +1006,35 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get contentErrorProgress =>
       'تعذّر تحميل تقدّمك. تحقّق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get materialsTitle => 'المواد';
+
+  @override
+  String get materialsPdf => 'مستند PDF';
+
+  @override
+  String materialsPdfSize(String size) {
+    return 'PDF · $size';
+  }
+
+  @override
+  String fileSizeMb(String size) {
+    return '$size ميجابايت';
+  }
+
+  @override
+  String fileSizeKb(String size) {
+    return '$size كيلوبايت';
+  }
+
+  @override
+  String materialsOpenImage(String name) {
+    return 'فتح الصورة: $name';
+  }
+
+  @override
+  String materialsOpenPdf(String name) {
+    return 'فتح ملف PDF: $name';
+  }
 }

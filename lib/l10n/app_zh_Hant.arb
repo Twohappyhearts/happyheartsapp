@@ -293,5 +293,12 @@
   "profileErrorNameEmpty": "姓名不能空白。",
   "profileErrorSaveName": "無法儲存您的姓名。請檢查網路連線後再試一次。",
   "contentErrorLessons": "無法載入課程。請檢查網路連線後再試一次。",
-  "contentErrorProgress": "無法載入您的進度。請檢查網路連線後再試一次。"
+  "contentErrorProgress": "無法載入您的進度。請檢查網路連線後再試一次。",
+  "materialsTitle": "學習資料",
+  "materialsPdf": "PDF 文件",
+  "materialsPdfSize": "PDF · {size}",
+  "fileSizeMb": "{size} MB",
+  "fileSizeKb": "{size} KB",
+  "materialsOpenImage": "開啟圖片：{name}",
+  "materialsOpenPdf": "開啟 PDF：{name}"
 }

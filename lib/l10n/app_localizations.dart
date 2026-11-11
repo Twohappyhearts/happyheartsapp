@@ -1866,6 +1866,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load your progress. Check your connection and try again.'**
   String get contentErrorProgress;
+
+  /// Lesson section with images and PDF files uploaded by the study team.
+  ///
+  /// In en, this message translates to:
+  /// **'Materials'**
+  String get materialsTitle;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'PDF document'**
+  String get materialsPdf;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'PDF · {size}'**
+  String materialsPdfSize(String size);
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'{size} MB'**
+  String fileSizeMb(String size);
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'{size} KB'**
+  String fileSizeKb(String size);
+
+  /// Screen reader label of an image thumbnail.
+  ///
+  /// In en, this message translates to:
+  /// **'Open image: {name}'**
+  String materialsOpenImage(String name);
+
+  /// Screen reader label of a PDF row.
+  ///
+  /// In en, this message translates to:
+  /// **'Open PDF: {name}'**
+  String materialsOpenPdf(String name);
 }
 
 class _AppLocalizationsDelegate

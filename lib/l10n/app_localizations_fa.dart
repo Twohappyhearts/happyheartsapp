@@ -1010,4 +1010,35 @@ class AppLocalizationsFa extends AppLocalizations {
   @override
   String get contentErrorProgress =>
       'پیشرفت شما بارگیری نشد. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.';
+
+  @override
+  String get materialsTitle => 'مطالب درس';
+
+  @override
+  String get materialsPdf => 'سند PDF';
+
+  @override
+  String materialsPdfSize(String size) {
+    return 'PDF · $size';
+  }
+
+  @override
+  String fileSizeMb(String size) {
+    return '$size مگابایت';
+  }
+
+  @override
+  String fileSizeKb(String size) {
+    return '$size کیلوبایت';
+  }
+
+  @override
+  String materialsOpenImage(String name) {
+    return 'باز کردن تصویر: $name';
+  }
+
+  @override
+  String materialsOpenPdf(String name) {
+    return 'باز کردن PDF: $name';
+  }
 }

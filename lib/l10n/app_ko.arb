@@ -293,5 +293,12 @@
   "profileErrorNameEmpty": "이름을 비워 둘 수 없습니다.",
   "profileErrorSaveName": "이름을 저장할 수 없습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.",
   "contentErrorLessons": "강의를 불러올 수 없습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.",
-  "contentErrorProgress": "진행 상황을 불러올 수 없습니다. 인터넷 연결을 확인하고 다시 시도해 주세요."
+  "contentErrorProgress": "진행 상황을 불러올 수 없습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.",
+  "materialsTitle": "자료",
+  "materialsPdf": "PDF 문서",
+  "materialsPdfSize": "PDF · {size}",
+  "fileSizeMb": "{size}MB",
+  "fileSizeKb": "{size}KB",
+  "materialsOpenImage": "이미지 열기: {name}",
+  "materialsOpenPdf": "PDF 열기: {name}"
 }

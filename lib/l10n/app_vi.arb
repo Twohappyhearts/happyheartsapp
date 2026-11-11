@@ -293,5 +293,12 @@
   "profileErrorNameEmpty": "Tên không được để trống.",
   "profileErrorSaveName": "Không lưu được tên. Hãy kiểm tra kết nối mạng và thử lại.",
   "contentErrorLessons": "Không tải được bài học. Hãy kiểm tra kết nối mạng và thử lại.",
-  "contentErrorProgress": "Không tải được tiến độ. Hãy kiểm tra kết nối mạng và thử lại."
+  "contentErrorProgress": "Không tải được tiến độ. Hãy kiểm tra kết nối mạng và thử lại.",
+  "materialsTitle": "Tài liệu",
+  "materialsPdf": "Tài liệu PDF",
+  "materialsPdfSize": "PDF · {size}",
+  "fileSizeMb": "{size} MB",
+  "fileSizeKb": "{size} KB",
+  "materialsOpenImage": "Mở hình: {name}",
+  "materialsOpenPdf": "Mở PDF: {name}"
 }

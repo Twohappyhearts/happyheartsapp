@@ -293,5 +293,12 @@
   "profileErrorNameEmpty": "لا يمكن ترك الاسم فارغًا.",
   "profileErrorSaveName": "تعذّر حفظ اسمك. تحقّق من اتصالك وحاول مرة أخرى.",
   "contentErrorLessons": "تعذّر تحميل الدروس. تحقّق من اتصالك وحاول مرة أخرى.",
-  "contentErrorProgress": "تعذّر تحميل تقدّمك. تحقّق من اتصالك وحاول مرة أخرى."
+  "contentErrorProgress": "تعذّر تحميل تقدّمك. تحقّق من اتصالك وحاول مرة أخرى.",
+  "materialsTitle": "المواد",
+  "materialsPdf": "مستند PDF",
+  "materialsPdfSize": "PDF · {size}",
+  "fileSizeMb": "{size} ميجابايت",
+  "fileSizeKb": "{size} كيلوبايت",
+  "materialsOpenImage": "فتح الصورة: {name}",
+  "materialsOpenPdf": "فتح ملف PDF: {name}"
 }

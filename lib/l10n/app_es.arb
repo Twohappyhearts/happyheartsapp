@@ -293,5 +293,12 @@
   "profileErrorNameEmpty": "El nombre no puede estar vacío.",
   "profileErrorSaveName": "No se pudo guardar su nombre. Revise su conexión e inténtelo de nuevo.",
   "contentErrorLessons": "No se pudieron cargar las lecciones. Revise su conexión e inténtelo de nuevo.",
-  "contentErrorProgress": "No se pudo cargar su progreso. Revise su conexión e inténtelo de nuevo."
+  "contentErrorProgress": "No se pudo cargar su progreso. Revise su conexión e inténtelo de nuevo.",
+  "materialsTitle": "Materiales",
+  "materialsPdf": "Documento PDF",
+  "materialsPdfSize": "PDF · {size}",
+  "fileSizeMb": "{size} MB",
+  "fileSizeKb": "{size} KB",
+  "materialsOpenImage": "Abrir imagen: {name}",
+  "materialsOpenPdf": "Abrir PDF: {name}"
 }
