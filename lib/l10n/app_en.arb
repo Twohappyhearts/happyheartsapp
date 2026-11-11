@@ -1,0 +1,1346 @@
+{
+  "@@locale": "en",
+  "@@x-translation-status": "Source text (English).",
+  "retry": "Retry",
+  "@retry": {
+    "description": ""
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": ""
+  },
+  "save": "Save",
+  "@save": {
+    "description": ""
+  },
+  "done": "Done",
+  "@done": {
+    "description": ""
+  },
+  "close": "Close",
+  "@close": {
+    "description": ""
+  },
+  "back": "Back",
+  "@back": {
+    "description": ""
+  },
+  "view": "View",
+  "@view": {
+    "description": ""
+  },
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": ""
+  },
+  "errorGeneric": "Something went wrong. Please try again.",
+  "@errorGeneric": {
+    "description": ""
+  },
+  "errorConnection": "Something went wrong. Check your connection and try again.",
+  "@errorConnection": {
+    "description": ""
+  },
+  "errorServerUnreachable": "Could not reach the server. Check your connection and try again.",
+  "@errorServerUnreachable": {
+    "description": ""
+  },
+  "couldNotOpenLink": "Could not open this link.",
+  "@couldNotOpenLink": {
+    "description": ""
+  },
+  "requestSent": "Request sent. A team member will follow up with you.",
+  "@requestSent": {
+    "description": ""
+  },
+  "statusCompleted": "Completed",
+  "@statusCompleted": {
+    "description": ""
+  },
+  "statusInProgress": "In progress",
+  "@statusInProgress": {
+    "description": ""
+  },
+  "statusAvailable": "Available",
+  "@statusAvailable": {
+    "description": ""
+  },
+  "statusNotStarted": "Not started",
+  "@statusNotStarted": {
+    "description": ""
+  },
+  "dateToday": "Today",
+  "@dateToday": {
+    "description": ""
+  },
+  "dateYesterday": "Yesterday",
+  "@dateYesterday": {
+    "description": ""
+  },
+  "dateTodayAt": "Today, {time}",
+  "@dateTodayAt": {
+    "description": "",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "dateYesterdayAt": "Yesterday, {time}",
+  "@dateYesterdayAt": {
+    "description": "",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "dateAt": "{date}, {time}",
+  "@dateAt": {
+    "description": "",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "minutesShort": "{minutes} min",
+  "@minutesShort": {
+    "description": "Estimated length of a lesson.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "timeMinutes": "{minutes}m",
+  "@timeMinutes": {
+    "description": "Time spent, under an hour (short).",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursMinutes": "{hours}h {minutes}m",
+  "@timeHoursMinutes": {
+    "description": "Time spent, an hour or more (short).",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "linkSemantic": "Link: {text}",
+  "@linkSemantic": {
+    "description": "Screen reader label of a link.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "languageTitle": "Language",
+  "@languageTitle": {
+    "description": ""
+  },
+  "languagePhone": "Phone language",
+  "@languagePhone": {
+    "description": "Picker option: follow the phone language."
+  },
+  "languagePhoneDetail": "Same as your phone ({language})",
+  "@languagePhoneDetail": {
+    "description": "",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "languagePickerTitle": "Choose a language",
+  "@languagePickerTitle": {
+    "description": ""
+  },
+  "languageButtonSemantic": "Language: {language}. Tap to change.",
+  "@languageButtonSemantic": {
+    "description": "",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "authTagline": "Your personal health education companion",
+  "@authTagline": {
+    "description": ""
+  },
+  "authTabSignIn": "Sign In",
+  "@authTabSignIn": {
+    "description": ""
+  },
+  "authTabCreateAccount": "Create Account",
+  "@authTabCreateAccount": {
+    "description": ""
+  },
+  "signInWelcome": "Welcome back 👋",
+  "@signInWelcome": {
+    "description": ""
+  },
+  "signInSubtitle": "Sign in to continue your health journey",
+  "@signInSubtitle": {
+    "description": ""
+  },
+  "fieldEmail": "Email address",
+  "@fieldEmail": {
+    "description": ""
+  },
+  "fieldEmailHint": "Enter your email",
+  "@fieldEmailHint": {
+    "description": ""
+  },
+  "validationEmailRequired": "Please enter your email",
+  "@validationEmailRequired": {
+    "description": ""
+  },
+  "validationEmailInvalid": "Please enter a valid email",
+  "@validationEmailInvalid": {
+    "description": ""
+  },
+  "fieldPassword": "Password",
+  "@fieldPassword": {
+    "description": ""
+  },
+  "fieldPasswordHint": "Enter your password",
+  "@fieldPasswordHint": {
+    "description": ""
+  },
+  "validationPasswordRequired": "Please enter your password",
+  "@validationPasswordRequired": {
+    "description": ""
+  },
+  "showPassword": "Show password",
+  "@showPassword": {
+    "description": ""
+  },
+  "hidePassword": "Hide password",
+  "@hidePassword": {
+    "description": ""
+  },
+  "signInForgot": "Forgot password?",
+  "@signInForgot": {
+    "description": ""
+  },
+  "createTitle": "Create your account",
+  "@createTitle": {
+    "description": ""
+  },
+  "createSubtitle": "Start your health education journey today",
+  "@createSubtitle": {
+    "description": ""
+  },
+  "fieldFullName": "Full name",
+  "@fieldFullName": {
+    "description": ""
+  },
+  "fieldFullNameHint": "Enter your full name",
+  "@fieldFullNameHint": {
+    "description": ""
+  },
+  "validationNameRequired": "Please enter your name",
+  "@validationNameRequired": {
+    "description": ""
+  },
+  "fieldUsername": "Username",
+  "@fieldUsername": {
+    "description": ""
+  },
+  "fieldUsernameHint": "The username your study team gave you",
+  "@fieldUsernameHint": {
+    "description": ""
+  },
+  "fieldUsernameHelper": "Use the username your study team gave you. It links your surveys to your account and can’t be changed later.",
+  "@fieldUsernameHelper": {
+    "description": ""
+  },
+  "validationUsernameRequired": "Please enter your username",
+  "@validationUsernameRequired": {
+    "description": ""
+  },
+  "validationUsernameFormat": "Use 3–20 letters or numbers (no spaces or symbols)",
+  "@validationUsernameFormat": {
+    "description": ""
+  },
+  "fieldPhone": "Phone number",
+  "@fieldPhone": {
+    "description": ""
+  },
+  "fieldPhoneHint": "e.g. (949) 555-0100",
+  "@fieldPhoneHint": {
+    "description": ""
+  },
+  "validationPhoneRequired": "Please enter your phone number",
+  "@validationPhoneRequired": {
+    "description": ""
+  },
+  "validationPhoneInvalid": "Please enter a valid phone number",
+  "@validationPhoneInvalid": {
+    "description": ""
+  },
+  "fieldCreatePasswordHint": "Create a password",
+  "@fieldCreatePasswordHint": {
+    "description": ""
+  },
+  "validationNewPasswordRequired": "Please enter a password",
+  "@validationNewPasswordRequired": {
+    "description": ""
+  },
+  "validationPasswordMin8": "Password must be at least 8 characters",
+  "@validationPasswordMin8": {
+    "description": ""
+  },
+  "fieldConfirmPassword": "Confirm password",
+  "@fieldConfirmPassword": {
+    "description": ""
+  },
+  "fieldConfirmPasswordHint": "Type your password again",
+  "@fieldConfirmPasswordHint": {
+    "description": ""
+  },
+  "validationConfirmRequired": "Please confirm your password",
+  "@validationConfirmRequired": {
+    "description": ""
+  },
+  "validationPasswordsMismatch": "Passwords do not match",
+  "@validationPasswordsMismatch": {
+    "description": ""
+  },
+  "legalTerms": "Terms of Use",
+  "@legalTerms": {
+    "description": ""
+  },
+  "legalPrivacy": "Privacy Policy",
+  "@legalPrivacy": {
+    "description": ""
+  },
+  "createAgree": "I agree to the {terms} and {privacy}",
+  "@createAgree": {
+    "description": "Sign-up check box. {terms} and {privacy} are the links legalTerms and legalPrivacy.",
+    "placeholders": {
+      "terms": {
+        "type": "String"
+      },
+      "privacy": {
+        "type": "String"
+      }
+    }
+  },
+  "createAgreeRequired": "Please agree to the Terms of Use and Privacy Policy",
+  "@createAgreeRequired": {
+    "description": ""
+  },
+  "authErrorCredentials": "Incorrect email or password.",
+  "@authErrorCredentials": {
+    "description": ""
+  },
+  "authErrorUsernameRejected": "That username is already taken or not allowed. Please choose another.",
+  "@authErrorUsernameRejected": {
+    "description": ""
+  },
+  "authErrorUsernameTaken": "That username is already taken. Use the username your study team gave you, or contact the care team if it is already registered.",
+  "@authErrorUsernameTaken": {
+    "description": ""
+  },
+  "authErrorDisabled": "This account has been disabled. Please contact your care team.",
+  "@authErrorDisabled": {
+    "description": ""
+  },
+  "authErrorEmailNotConfirmed": "Please confirm your email before signing in.",
+  "@authErrorEmailNotConfirmed": {
+    "description": ""
+  },
+  "authErrorEmailExists": "An account with this email already exists. Try signing in.",
+  "@authErrorEmailExists": {
+    "description": ""
+  },
+  "authErrorRateLimited": "Too many attempts. Please wait a minute and try again.",
+  "@authErrorRateLimited": {
+    "description": ""
+  },
+  "authErrorPassword": "Please choose a different password.",
+  "@authErrorPassword": {
+    "description": ""
+  },
+  "checkEmailTitle": "Check your email",
+  "@checkEmailTitle": {
+    "description": ""
+  },
+  "checkEmailBody": "We sent a confirmation link to\n{email}\nOpen it on this device to finish creating your account.",
+  "@checkEmailBody": {
+    "description": "",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "checkEmailResent": "Confirmation email sent again.",
+  "@checkEmailResent": {
+    "description": ""
+  },
+  "checkEmailResend": "Resend confirmation email",
+  "@checkEmailResend": {
+    "description": ""
+  },
+  "backToSignIn": "Back to sign in",
+  "@backToSignIn": {
+    "description": ""
+  },
+  "forgotTitle": "Reset your password",
+  "@forgotTitle": {
+    "description": ""
+  },
+  "forgotIntro": "Enter your email and we will send you a reset link.",
+  "@forgotIntro": {
+    "description": ""
+  },
+  "forgotSent": "If an account exists for {email}, a reset link is on its way. Open it on this device.",
+  "@forgotSent": {
+    "description": "",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "forgotSend": "Send reset link",
+  "@forgotSend": {
+    "description": ""
+  },
+  "resetTitle": "Choose a new password",
+  "@resetTitle": {
+    "description": ""
+  },
+  "passwordMinShort": "Use at least 8 characters.",
+  "@passwordMinShort": {
+    "description": ""
+  },
+  "fieldNewPassword": "New password",
+  "@fieldNewPassword": {
+    "description": ""
+  },
+  "fieldConfirmNewPassword": "Confirm new password",
+  "@fieldConfirmNewPassword": {
+    "description": ""
+  },
+  "resetButton": "Update password",
+  "@resetButton": {
+    "description": ""
+  },
+  "gateTitle": "Set a new password",
+  "@gateTitle": {
+    "description": ""
+  },
+  "gateBody": "Your care team created this account with a temporary password. Please choose your own to continue.",
+  "@gateBody": {
+    "description": ""
+  },
+  "gateRule": "At least 8 characters with an uppercase letter, a lowercase letter, and a number.",
+  "@gateRule": {
+    "description": ""
+  },
+  "gateErrorMix": "Include an uppercase letter, a lowercase letter, and a number.",
+  "@gateErrorMix": {
+    "description": ""
+  },
+  "gateSuccess": "Password updated. Welcome!",
+  "@gateSuccess": {
+    "description": ""
+  },
+  "gateErrorSame": "Choose a password different from the temporary one.",
+  "@gateErrorSame": {
+    "description": ""
+  },
+  "gateErrorFailed": "Could not update your password. Check your connection.",
+  "@gateErrorFailed": {
+    "description": ""
+  },
+  "gateSave": "Save password",
+  "@gateSave": {
+    "description": ""
+  },
+  "menuOpen": "Open menu",
+  "@menuOpen": {
+    "description": ""
+  },
+  "menuAssessments": "Holistic Assessments",
+  "@menuAssessments": {
+    "description": ""
+  },
+  "menuAssessmentsSubtitle": "Questionnaires from your care team",
+  "@menuAssessmentsSubtitle": {
+    "description": ""
+  },
+  "menuAssistance": "I need assistance",
+  "@menuAssistance": {
+    "description": ""
+  },
+  "menuAssistanceSubtitle": "Ask your care team for help",
+  "@menuAssistanceSubtitle": {
+    "description": ""
+  },
+  "menuMyRequests": "My help requests",
+  "@menuMyRequests": {
+    "description": ""
+  },
+  "menuMyRequestsSubtitle": "See the status of what you sent",
+  "@menuMyRequestsSubtitle": {
+    "description": ""
+  },
+  "menuEmergency": "In an emergency, call 911.",
+  "@menuEmergency": {
+    "description": ""
+  },
+  "navEducation": "Education",
+  "@navEducation": {
+    "description": ""
+  },
+  "navResources": "Resources",
+  "@navResources": {
+    "description": ""
+  },
+  "navProgress": "Progress",
+  "@navProgress": {
+    "description": ""
+  },
+  "navChat": "Chat",
+  "@navChat": {
+    "description": ""
+  },
+  "navProfile": "Profile",
+  "@navProfile": {
+    "description": ""
+  },
+  "crashTitle": "Something went wrong",
+  "@crashTitle": {
+    "description": ""
+  },
+  "crashBody": "Please restart the app. If this keeps happening, contact the research team.",
+  "@crashBody": {
+    "description": ""
+  },
+  "homeGoodMorning": "Good morning",
+  "@homeGoodMorning": {
+    "description": ""
+  },
+  "homeGoodAfternoon": "Good afternoon",
+  "@homeGoodAfternoon": {
+    "description": ""
+  },
+  "homeGoodEvening": "Good evening",
+  "@homeGoodEvening": {
+    "description": ""
+  },
+  "homeHi": "Hi 👋",
+  "@homeHi": {
+    "description": ""
+  },
+  "homeHiName": "Hi, {name} 👋",
+  "@homeHiName": {
+    "description": "",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTitle": "Your Health\nEducation Hub",
+  "@homeTitle": {
+    "description": ""
+  },
+  "homeSearchHint": "Search lessons, topics...",
+  "@homeSearchHint": {
+    "description": ""
+  },
+  "homeCategoryAll": "All",
+  "@homeCategoryAll": {
+    "description": ""
+  },
+  "homeNoLessons": "No lessons are available yet. Check back soon.",
+  "@homeNoLessons": {
+    "description": ""
+  },
+  "homeNoMatches": "No lessons match your search.",
+  "@homeNoMatches": {
+    "description": ""
+  },
+  "progressCardTitle": "Your progress",
+  "@progressCardTitle": {
+    "description": ""
+  },
+  "progressCardLessons": "{completed} / {total} lessons",
+  "@progressCardLessons": {
+    "description": "",
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "progressCardStart": "Let's get started!",
+  "@progressCardStart": {
+    "description": ""
+  },
+  "progressCardGreat": "{percent}% complete — you're doing great!",
+  "@progressCardGreat": {
+    "description": "",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "progressCardKeepGoing": "{percent}% complete — keep going!",
+  "@progressCardKeepGoing": {
+    "description": "",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "progressCardDone": "100% complete — amazing work!",
+  "@progressCardDone": {
+    "description": ""
+  },
+  "lessonHeader": "Lesson",
+  "@lessonHeader": {
+    "description": ""
+  },
+  "lessonNoLessonsShort": "No lessons are available yet.",
+  "@lessonNoLessonsShort": {
+    "description": ""
+  },
+  "lessonNoneSelected": "No lesson selected.",
+  "@lessonNoneSelected": {
+    "description": ""
+  },
+  "lessonMarked": "Lesson marked as completed. Great job!",
+  "@lessonMarked": {
+    "description": ""
+  },
+  "lessonCompletedTitle": "Lesson completed",
+  "@lessonCompletedTitle": {
+    "description": ""
+  },
+  "lessonFinishPrompt": "Finished this lesson?",
+  "@lessonFinishPrompt": {
+    "description": ""
+  },
+  "lessonCompletedBody": "Great job! You can come back and review it any time.",
+  "@lessonCompletedBody": {
+    "description": ""
+  },
+  "lessonFinishBody": "Mark it as completed to keep track of your progress.",
+  "@lessonFinishBody": {
+    "description": ""
+  },
+  "lessonMarkButton": "Mark as completed",
+  "@lessonMarkButton": {
+    "description": ""
+  },
+  "lessonSections": "{count, plural, =1{1 section} other{{count} sections}}",
+  "@lessonSections": {
+    "description": "How many parts the lesson has (video, notes, quiz, ...).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "refTitle": "References",
+  "@refTitle": {
+    "description": ""
+  },
+  "refLessonVideo": "Lesson video",
+  "@refLessonVideo": {
+    "description": ""
+  },
+  "refLessonAudio": "Lesson audio",
+  "@refLessonAudio": {
+    "description": ""
+  },
+  "scriptTitle": "Lesson notes",
+  "@scriptTitle": {
+    "description": ""
+  },
+  "scriptReadMore": "Read more",
+  "@scriptReadMore": {
+    "description": ""
+  },
+  "scriptShowLess": "Show less",
+  "@scriptShowLess": {
+    "description": ""
+  },
+  "infoTitle": "Infographic",
+  "@infoTitle": {
+    "description": ""
+  },
+  "infoCardTitle": "Lesson infographic",
+  "@infoCardTitle": {
+    "description": ""
+  },
+  "infoCardSubtitle": "Visual summary of {title}",
+  "@infoCardSubtitle": {
+    "description": "",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "infoSemantic": "Infographic for {title}",
+  "@infoSemantic": {
+    "description": "",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "infoTapHint": "Tap the image to view full screen and zoom",
+  "@infoTapHint": {
+    "description": ""
+  },
+  "imageOpenFullscreen": "View full screen",
+  "@imageOpenFullscreen": {
+    "description": ""
+  },
+  "imageLoadFailed": "Could not load the image.",
+  "@imageLoadFailed": {
+    "description": ""
+  },
+  "imageCloseFullscreen": "Close full screen view",
+  "@imageCloseFullscreen": {
+    "description": ""
+  },
+  "imageZoomHint": "Pinch or double-tap to zoom",
+  "@imageZoomHint": {
+    "description": ""
+  },
+  "videoTitle": "Video lesson",
+  "@videoTitle": {
+    "description": ""
+  },
+  "videoPlaying": "Playing video",
+  "@videoPlaying": {
+    "description": ""
+  },
+  "videoTapToPlay": "Tap to play video",
+  "@videoTapToPlay": {
+    "description": ""
+  },
+  "videoYouTube": "YouTube video",
+  "@videoYouTube": {
+    "description": ""
+  },
+  "audioTitle": "Audio lesson",
+  "@audioTitle": {
+    "description": ""
+  },
+  "audioOpen": "Open audio",
+  "@audioOpen": {
+    "description": ""
+  },
+  "audioListen": "Listen to this lesson",
+  "@audioListen": {
+    "description": ""
+  },
+  "kahootTitle": "Knowledge game",
+  "@kahootTitle": {
+    "description": ""
+  },
+  "kahootMarked": "Nice work! Quiz marked as finished.",
+  "@kahootMarked": {
+    "description": ""
+  },
+  "kahootCopied": "Username copied.",
+  "@kahootCopied": {
+    "description": ""
+  },
+  "kahootCopyTooltip": "Copy username",
+  "@kahootCopyTooltip": {
+    "description": ""
+  },
+  "kahootUsernameLabel": "Your Kahoot username",
+  "@kahootUsernameLabel": {
+    "description": ""
+  },
+  "kahootUsernameHint": "Use this username when the Kahoot game asks for a nickname",
+  "@kahootUsernameHint": {
+    "description": ""
+  },
+  "kahootIntro": "Test what you've learned with an interactive Kahoot! game",
+  "@kahootIntro": {
+    "description": ""
+  },
+  "kahootBadgeTime": "⏱ ~5 min",
+  "@kahootBadgeTime": {
+    "description": ""
+  },
+  "kahootBadgeInteractive": "✨ Interactive",
+  "@kahootBadgeInteractive": {
+    "description": ""
+  },
+  "kahootBadgeFun": "🎉 Fun!",
+  "@kahootBadgeFun": {
+    "description": ""
+  },
+  "kahootStart": "Start Kahoot! game",
+  "@kahootStart": {
+    "description": ""
+  },
+  "kahootEmbedHint": "The game opens below when you tap the button above",
+  "@kahootEmbedHint": {
+    "description": ""
+  },
+  "kahootFinished": "Quiz finished",
+  "@kahootFinished": {
+    "description": ""
+  },
+  "kahootIFinished": "I finished the quiz",
+  "@kahootIFinished": {
+    "description": ""
+  },
+  "chatAiTitle": "AI Assistant",
+  "@chatAiTitle": {
+    "description": ""
+  },
+  "chatAiSubtitle": "Automated answers, 24/7",
+  "@chatAiSubtitle": {
+    "description": ""
+  },
+  "chatTeamTitle": "Research Team",
+  "@chatTeamTitle": {
+    "description": ""
+  },
+  "chatTeamSubtitle": "Happy Hearts Study",
+  "@chatTeamSubtitle": {
+    "description": ""
+  },
+  "chatTabTeam": "Care Team",
+  "@chatTabTeam": {
+    "description": ""
+  },
+  "chatSignInAi": "Please sign in to use the AI assistant.",
+  "@chatSignInAi": {
+    "description": ""
+  },
+  "chatSignIn": "Please sign in to use chat.",
+  "@chatSignIn": {
+    "description": ""
+  },
+  "chatNeedHelp": "Need help with something?",
+  "@chatNeedHelp": {
+    "description": ""
+  },
+  "chatViewRequests": "View my requests",
+  "@chatViewRequests": {
+    "description": ""
+  },
+  "chatEmptyTitle": "Start a conversation",
+  "@chatEmptyTitle": {
+    "description": ""
+  },
+  "chatEmptyBody": "Send a message to the Happy Hearts research team. We're here to help with any questions about your study.",
+  "@chatEmptyBody": {
+    "description": ""
+  },
+  "chatNotSent": "Not sent",
+  "@chatNotSent": {
+    "description": ""
+  },
+  "chatDelete": "Delete",
+  "@chatDelete": {
+    "description": ""
+  },
+  "chatSending": "Sending…",
+  "@chatSending": {
+    "description": ""
+  },
+  "chatInputHint": "Message the research team...",
+  "@chatInputHint": {
+    "description": ""
+  },
+  "chatSend": "Send",
+  "@chatSend": {
+    "description": ""
+  },
+  "chatErrorWrongAccount": "This account cannot use patient chat. Please sign in with a patient account.",
+  "@chatErrorWrongAccount": {
+    "description": ""
+  },
+  "chatErrorOpen": "Could not open your conversation. Please try again.",
+  "@chatErrorOpen": {
+    "description": ""
+  },
+  "chatErrorLoad": "Could not load messages. Check your connection and try again.",
+  "@chatErrorLoad": {
+    "description": ""
+  },
+  "chatErrorKept": "Could not reach the server. Your message was kept. Tap Retry.",
+  "@chatErrorKept": {
+    "description": ""
+  },
+  "chatErrorNoPermission": "You do not have permission to send messages in this conversation.",
+  "@chatErrorNoPermission": {
+    "description": ""
+  },
+  "chatErrorLength": "Messages must be 1–4000 characters.",
+  "@chatErrorLength": {
+    "description": ""
+  },
+  "chatErrorNotSent": "Message not sent. Please try again.",
+  "@chatErrorNotSent": {
+    "description": ""
+  },
+  "chatErrorGeneric": "Something went wrong loading your conversation.",
+  "@chatErrorGeneric": {
+    "description": ""
+  },
+  "aiErrorConnection": "Could not load the AI assistant. Check your connection.",
+  "@aiErrorConnection": {
+    "description": ""
+  },
+  "aiErrorUnavailable": "The AI assistant is unavailable right now.",
+  "@aiErrorUnavailable": {
+    "description": ""
+  },
+  "aiErrorStart": "Could not start the AI assistant.",
+  "@aiErrorStart": {
+    "description": ""
+  },
+  "aiErrorTimeout": "The AI assistant is taking too long to load.",
+  "@aiErrorTimeout": {
+    "description": ""
+  },
+  "aiWebOnly": "The AI assistant is available in the HappyHearts iOS and Android app.",
+  "@aiWebOnly": {
+    "description": ""
+  },
+  "assistMyRequests": "My requests",
+  "@assistMyRequests": {
+    "description": ""
+  },
+  "assistIntro": "Tell the research team what you need help with. A team member will follow up, usually by message in Care Team chat.",
+  "@assistIntro": {
+    "description": ""
+  },
+  "assistEmergency": "This is not monitored around the clock. If this is an emergency, call 911.",
+  "@assistEmergency": {
+    "description": ""
+  },
+  "assistHint": "For example: \"I have a question about my medication\" or \"The video in Session 3 won't play.\"",
+  "@assistHint": {
+    "description": ""
+  },
+  "assistSend": "Send request",
+  "@assistSend": {
+    "description": ""
+  },
+  "assistErrorEmpty": "Please describe what you need help with.",
+  "@assistErrorEmpty": {
+    "description": ""
+  },
+  "assistErrorTooLong": "Please keep your message under {max} characters.",
+  "@assistErrorTooLong": {
+    "description": "",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "assistErrorOffline": "Could not reach the server. Your message was kept — please try again.",
+  "@assistErrorOffline": {
+    "description": ""
+  },
+  "assistErrorLoad": "Could not load your requests. Check your connection and try again.",
+  "@assistErrorLoad": {
+    "description": ""
+  },
+  "assistErrorNotParticipant": "Only participant accounts can send assistance requests.",
+  "@assistErrorNotParticipant": {
+    "description": ""
+  },
+  "assistErrorLength": "Please write a message between 1 and {max} characters.",
+  "@assistErrorLength": {
+    "description": "",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "assistErrorRateLimited": "You have sent several requests recently. The team will get back to you soon. If it is urgent, call your care team. In an emergency, call 911.",
+  "@assistErrorRateLimited": {
+    "description": ""
+  },
+  "assistErrorNotSent": "Your request was not sent. Your message was kept — please try again.",
+  "@assistErrorNotSent": {
+    "description": ""
+  },
+  "requestsTitle": "My assistance requests",
+  "@requestsTitle": {
+    "description": ""
+  },
+  "requestsNew": "New request",
+  "@requestsNew": {
+    "description": ""
+  },
+  "requestsEmptyTitle": "No requests yet",
+  "@requestsEmptyTitle": {
+    "description": ""
+  },
+  "requestsEmptyBody": "When you need help from the research team, send a request and you can follow its status here.",
+  "@requestsEmptyBody": {
+    "description": ""
+  },
+  "requestStatusSent": "Sent",
+  "@requestStatusSent": {
+    "description": ""
+  },
+  "requestStatusSeen": "Seen by the team",
+  "@requestStatusSeen": {
+    "description": ""
+  },
+  "requestStatusResolved": "Resolved",
+  "@requestStatusResolved": {
+    "description": ""
+  },
+  "requestWaiting": "Waiting for a team member to review it.",
+  "@requestWaiting": {
+    "description": ""
+  },
+  "requestFollowing": "A team member is following up.",
+  "@requestFollowing": {
+    "description": ""
+  },
+  "requestFollowingSince": "A team member is following up ({time}).",
+  "@requestFollowingSince": {
+    "description": "",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "requestResolved": "Marked resolved.",
+  "@requestResolved": {
+    "description": ""
+  },
+  "requestResolvedSince": "Marked resolved ({time}).",
+  "@requestResolvedSince": {
+    "description": "",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "assessSubtitleSurvey": "Questionnaires from your care team.",
+  "@assessSubtitleSurvey": {
+    "description": ""
+  },
+  "assessSubtitleResources": "Track your mental and physical health with these validated screening tools.",
+  "@assessSubtitleResources": {
+    "description": ""
+  },
+  "assessEmptySurvey": "No holistic assessments right now. Your care team will add them here.",
+  "@assessEmptySurvey": {
+    "description": ""
+  },
+  "assessEmptyResources": "No resources right now. Your care team will add them here.",
+  "@assessEmptyResources": {
+    "description": ""
+  },
+  "assessUsernameError": "Could not load your username. Please try again.",
+  "@assessUsernameError": {
+    "description": ""
+  },
+  "assessLastCompleted": "Last completed {date}",
+  "@assessLastCompleted": {
+    "description": "",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "assessStart": "Start assessment",
+  "@assessStart": {
+    "description": ""
+  },
+  "surveyErrorLoad": "Could not load surveys. Check your connection and try again.",
+  "@surveyErrorLoad": {
+    "description": ""
+  },
+  "surveyRecordFailed": "Your answers were submitted, but the app could not mark the survey as completed.",
+  "@surveyRecordFailed": {
+    "description": ""
+  },
+  "surveyThanks": "Thank you!",
+  "@surveyThanks": {
+    "description": ""
+  },
+  "surveyThanksBody": "Your responses were submitted. You can see this survey in your Progress calendar.",
+  "@surveyThanksBody": {
+    "description": ""
+  },
+  "surveyLoading": "Loading survey...",
+  "@surveyLoading": {
+    "description": ""
+  },
+  "surveyLoadFailedTitle": "Unable to load survey",
+  "@surveyLoadFailedTitle": {
+    "description": ""
+  },
+  "surveyLoadFailedBody": "Please check your internet connection and try again.",
+  "@surveyLoadFailedBody": {
+    "description": ""
+  },
+  "progressSubtitle": "Track your learning journey and celebrate milestones.",
+  "@progressSubtitle": {
+    "description": ""
+  },
+  "progressCalendar": "Activity calendar",
+  "@progressCalendar": {
+    "description": ""
+  },
+  "progressBreakdown": "Lessons",
+  "@progressBreakdown": {
+    "description": ""
+  },
+  "activityCompleted": "Completed: {title}",
+  "@activityCompleted": {
+    "description": "",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "activityQuizFinished": "Finished quiz: {title}",
+  "@activityQuizFinished": {
+    "description": "",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "activitySurveyFallback": "Survey ({code})",
+  "@activitySurveyFallback": {
+    "description": "",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "calPrevMonth": "Previous month",
+  "@calPrevMonth": {
+    "description": ""
+  },
+  "calNextMonth": "Next month",
+  "@calNextMonth": {
+    "description": ""
+  },
+  "legendLesson": "Lesson",
+  "@legendLesson": {
+    "description": ""
+  },
+  "legendQuiz": "Quiz",
+  "@legendQuiz": {
+    "description": ""
+  },
+  "legendSurvey": "Survey",
+  "@legendSurvey": {
+    "description": ""
+  },
+  "calLessonDone": "lesson completed",
+  "@calLessonDone": {
+    "description": "Screen reader text for a calendar day."
+  },
+  "calQuizDone": "quiz finished",
+  "@calQuizDone": {
+    "description": "Screen reader text for a calendar day."
+  },
+  "calSurveyDone": "survey completed",
+  "@calSurveyDone": {
+    "description": "Screen reader text for a calendar day."
+  },
+  "activityRecent": "Recent activity",
+  "@activityRecent": {
+    "description": ""
+  },
+  "activityOnDay": "Activity on {date}",
+  "@activityOnDay": {
+    "description": "",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "activityShowAll": "Show all",
+  "@activityShowAll": {
+    "description": ""
+  },
+  "activityEmpty": "Complete a lesson, quiz, or survey and it will show up here.",
+  "@activityEmpty": {
+    "description": ""
+  },
+  "activityEmptyDay": "Nothing completed on this day.",
+  "@activityEmptyDay": {
+    "description": ""
+  },
+  "overallTitle": "Overall completion",
+  "@overallTitle": {
+    "description": ""
+  },
+  "overallCount": "{completed} of {total} lessons",
+  "@overallCount": {
+    "description": "",
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "overallAllDone": "🎉 All lessons complete!",
+  "@overallAllDone": {
+    "description": ""
+  },
+  "overallKeepGoing": "Keep going — you're making great progress!",
+  "@overallKeepGoing": {
+    "description": ""
+  },
+  "overallStart": "Start your first lesson to begin.",
+  "@overallStart": {
+    "description": ""
+  },
+  "statTimeSpent": "Time spent",
+  "@statTimeSpent": {
+    "description": ""
+  },
+  "timeSpentSuffix": "{time} spent",
+  "@timeSpentSuffix": {
+    "description": "",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSignOutConfirm": "Are you sure you want to sign out?",
+  "@profileSignOutConfirm": {
+    "description": ""
+  },
+  "profileResetSent": "Password reset link sent to {email}",
+  "@profileResetSent": {
+    "description": "",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "profileAccount": "Account",
+  "@profileAccount": {
+    "description": ""
+  },
+  "profileChangePassword": "Change password (send reset email)",
+  "@profileChangePassword": {
+    "description": ""
+  },
+  "profilePreferences": "Preferences",
+  "@profilePreferences": {
+    "description": ""
+  },
+  "profileAbout": "About",
+  "@profileAbout": {
+    "description": ""
+  },
+  "profileVersion": "App version",
+  "@profileVersion": {
+    "description": ""
+  },
+  "profileNotAvailable": "Your profile is not available.",
+  "@profileNotAvailable": {
+    "description": ""
+  },
+  "profileEditName": "Edit name",
+  "@profileEditName": {
+    "description": ""
+  },
+  "profileLearningSummary": "Learning summary",
+  "@profileLearningSummary": {
+    "description": ""
+  },
+  "profileStatComplete": "Complete",
+  "@profileStatComplete": {
+    "description": ""
+  },
+  "profileProgressFailed": "Could not load your progress. Tap to retry.",
+  "@profileProgressFailed": {
+    "description": ""
+  },
+  "profileErrorSignIn": "Please sign in.",
+  "@profileErrorSignIn": {
+    "description": ""
+  },
+  "profileErrorSessionChanged": "Session changed. Please try again.",
+  "@profileErrorSessionChanged": {
+    "description": ""
+  },
+  "profileErrorMissing": "Your profile could not be found. Pull down to retry; if this keeps happening, contact the research team.",
+  "@profileErrorMissing": {
+    "description": ""
+  },
+  "profileErrorPermission": "You do not have permission to view this profile.",
+  "@profileErrorPermission": {
+    "description": ""
+  },
+  "profileErrorLoad": "Could not load your profile. Check your connection and try again.",
+  "@profileErrorLoad": {
+    "description": ""
+  },
+  "profileErrorNameEmpty": "Name cannot be empty.",
+  "@profileErrorNameEmpty": {
+    "description": ""
+  },
+  "profileErrorSaveName": "Could not save your name. Check your connection and try again.",
+  "@profileErrorSaveName": {
+    "description": ""
+  },
+  "contentErrorLessons": "Could not load lessons. Check your connection and try again.",
+  "@contentErrorLessons": {
+    "description": ""
+  },
+  "contentErrorProgress": "Could not load your progress. Check your connection and try again.",
+  "@contentErrorProgress": {
+    "description": ""
+  }
+}

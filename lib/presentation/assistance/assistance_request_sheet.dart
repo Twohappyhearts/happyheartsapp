@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../services/app_language.dart';
 import '../../services/assistance_service.dart';
 import '../../theme/app_theme.dart';
 import 'my_assistance_requests_screen.dart';
@@ -31,13 +32,11 @@ Future<AssistanceRequest?> showAssistanceRequestSheet(
       SnackBar(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppTheme.textDark,
-        content: const Text(
-          'Request sent. A team member will follow up with you.',
-        ),
+        content: Text(context.l10n.requestSent),
         action: fromRequestList
             ? null
             : SnackBarAction(
-                label: 'View',
+                label: context.l10n.view,
                 textColor: AppTheme.primaryContainer,
                 onPressed: () {
                   if (context.mounted) openMyAssistanceRequests(context);
@@ -58,7 +57,8 @@ class _AssistanceRequestSheet extends StatefulWidget {
   });
 
   @override
-  State<_AssistanceRequestSheet> createState() => _AssistanceRequestSheetState();
+  State<_AssistanceRequestSheet> createState() =>
+      _AssistanceRequestSheetState();
 }
 
 class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
@@ -110,6 +110,7 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + bottomInset),
@@ -147,7 +148,7 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'I need assistance',
+                    l10n.menuAssistance,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -157,20 +158,19 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
                 ),
                 if (widget.showListLink)
                   TextButton(
-                  onPressed: _sending
-                      ? null
-                      : () {
-                          Navigator.of(context).pop();
-                          widget.onOpenList();
-                        },
-                  child: const Text('My requests'),
-                ),
+                    onPressed: _sending
+                        ? null
+                        : () {
+                            Navigator.of(context).pop();
+                            widget.onOpenList();
+                          },
+                    child: Text(l10n.assistMyRequests),
+                  ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
-              'Tell the research team what you need help with. A team member '
-              'will follow up, usually by message in Care Team chat.',
+              l10n.assistIntro,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
                 height: 1.45,
@@ -196,8 +196,7 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'This is not monitored around the clock. If this is an '
-                      'emergency, call 911.',
+                      l10n.assistEmergency,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12.5,
                         height: 1.4,
@@ -218,10 +217,8 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
               maxLength: AssistanceService.maxLength,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                hintText:
-                    'For example: "I have a question about my medication" or '
-                    '"The video in Session 3 won\'t play."',
-                hintMaxLines: 3,
+                hintText: l10n.assistHint,
+                hintMaxLines: 4,
                 filled: true,
                 fillColor: AppTheme.backgroundLight,
                 border: OutlineInputBorder(
@@ -234,7 +231,10 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
+                  borderSide: const BorderSide(
+                    color: AppTheme.primary,
+                    width: 1.5,
+                  ),
                 ),
               ),
               style: GoogleFonts.plusJakartaSans(
@@ -257,14 +257,16 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: _sending ? null : () => Navigator.of(context).pop(),
+                    onPressed: _sending
+                        ? null
+                        : () => Navigator.of(context).pop(),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Cancel'),
+                    child: Text(l10n.cancel),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -282,7 +284,7 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
                             ),
                           )
                         : const Icon(Icons.send_rounded, size: 18),
-                    label: Text(_sending ? 'Sending…' : 'Send request'),
+                    label: Text(_sending ? l10n.chatSending : l10n.assistSend),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
                       foregroundColor: Colors.white,

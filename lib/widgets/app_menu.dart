@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../presentation/assessments_screen/assessments_screen.dart';
 import '../presentation/assistance/assistance_request_sheet.dart';
 import '../presentation/assistance/my_assistance_requests_screen.dart';
+import '../services/app_language.dart';
 import '../services/current_profile.dart';
 import '../services/survey_service.dart';
 import '../theme/app_theme.dart';
@@ -23,7 +24,7 @@ class AppMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Open menu',
+      label: context.l10n.menuOpen,
       child: InkWell(
         onTap: openAppMenu,
         borderRadius: BorderRadius.circular(12),
@@ -60,6 +61,7 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Drawer(
       backgroundColor: AppTheme.surfaceLight,
       child: SafeArea(
@@ -73,8 +75,8 @@ class AppDrawer extends StatelessWidget {
               icon: Icons.assignment_outlined,
               iconColor: AppTheme.purple,
               iconBg: AppTheme.purpleContainer,
-              label: 'Holistic Assessments',
-              subtitle: 'Questionnaires from your care team',
+              label: l10n.menuAssessments,
+              subtitle: l10n.menuAssessmentsSubtitle,
               onTap: () => _closeThen(context, () {
                 Navigator.of(shellContext).push(
                   MaterialPageRoute(
@@ -90,8 +92,8 @@ class AppDrawer extends StatelessWidget {
               icon: Icons.support_rounded,
               iconColor: AppTheme.primary,
               iconBg: AppTheme.primaryContainer,
-              label: 'I need assistance',
-              subtitle: 'Ask your care team for help',
+              label: l10n.menuAssistance,
+              subtitle: l10n.menuAssistanceSubtitle,
               onTap: () => _closeThen(
                 context,
                 () => showAssistanceRequestSheet(shellContext),
@@ -101,19 +103,19 @@ class AppDrawer extends StatelessWidget {
               icon: Icons.history_rounded,
               iconColor: AppTheme.textMedium,
               iconBg: AppTheme.surfaceVariantLight,
-              label: 'My help requests',
-              subtitle: 'See the status of what you sent',
+              label: l10n.menuMyRequests,
+              subtitle: l10n.menuMyRequestsSubtitle,
               onTap: () => _closeThen(
                 context,
                 () => openMyAssistanceRequests(shellContext),
               ),
             ),
             const Spacer(),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 8, 20, 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
               child: Text(
-                'In an emergency, call 911.',
-                style: TextStyle(fontSize: 12, color: AppTheme.textLight),
+                l10n.menuEmergency,
+                style: const TextStyle(fontSize: 12, color: AppTheme.textLight),
               ),
             ),
           ],

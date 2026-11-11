@@ -1,4 +1,5 @@
 import '../../../core/app_export.dart';
+import '../../../services/app_language.dart';
 
 class ModuleCardWidget extends StatefulWidget {
   final Map<String, dynamic> module;
@@ -53,77 +54,50 @@ class _ModuleCardWidgetState extends State<ModuleCardWidget>
   }
 
   Widget _buildStatusIndicator(String status) {
-    switch (status) {
-      case 'completed':
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: AppTheme.secondary,
-                shape: BoxShape.circle,
-              ),
+    final l10n = context.l10n;
+    final (label, color, textColor, weight) = switch (status) {
+      'completed' => (
+        l10n.statusCompleted,
+        AppTheme.secondary,
+        AppTheme.secondary,
+        FontWeight.w600,
+      ),
+      'in_progress' => (
+        l10n.statusInProgress,
+        AppTheme.primary,
+        AppTheme.primary,
+        FontWeight.w600,
+      ),
+      _ => (
+        l10n.statusAvailable,
+        AppTheme.secondary.withAlpha(153),
+        AppTheme.textMedium,
+        FontWeight.w500,
+      ),
+    };
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11,
+              color: textColor,
+              fontWeight: weight,
             ),
-            const SizedBox(width: 4),
-            const Text(
-              'Completed',
-              style: TextStyle(
-                fontSize: 11,
-                color: AppTheme.secondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        );
-      case 'in_progress':
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: AppTheme.primary,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 4),
-            const Text(
-              'In Progress',
-              style: TextStyle(
-                fontSize: 11,
-                color: AppTheme.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        );
-      default:
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: AppTheme.secondary.withAlpha(153),
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 4),
-            const Text(
-              'Available',
-              style: TextStyle(
-                fontSize: 11,
-                color: AppTheme.textMedium,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        );
-    }
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -198,9 +172,9 @@ class _ModuleCardWidgetState extends State<ModuleCardWidget>
                 children: [
                   // Completed overlay
                   if (isCompleted)
-                    Positioned(
+                    PositionedDirectional(
                       top: 12,
-                      right: 12,
+                      end: 12,
                       child: Container(
                         width: 26,
                         height: 26,
@@ -265,41 +239,44 @@ class _ModuleCardWidgetState extends State<ModuleCardWidget>
                               const Spacer(),
                               Row(
                                 children: [
-                                  _buildStatusIndicator(status),
-                                  const Spacer(),
+                                  Expanded(
+                                    child: _buildStatusIndicator(status),
+                                  ),
+                                  const SizedBox(width: 6),
                                   // Duration comes from the dashboard's
                                   // video/audio estimates; hidden if none.
-                                  if ((module['duration'] as String? ?? '')
-                                      .isNotEmpty)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withAlpha(179),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.access_time_rounded,
-                                          size: 11,
-                                          color: AppTheme.textMedium,
-                                        ),
-                                        const SizedBox(width: 3),
-                                        Text(
-                                          module['duration'] as String,
-                                          style: const TextStyle(
-                                            fontSize: 11,
+                                  if (module['durationMinutes'] is int)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withAlpha(179),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.access_time_rounded,
+                                            size: 11,
                                             color: AppTheme.textMedium,
-                                            fontWeight: FontWeight.w500,
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(width: 3),
+                                          Text(
+                                            context.l10n.minutesShort(
+                                              module['durationMinutes'] as int,
+                                            ),
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: AppTheme.textMedium,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
                                 ],
                               ),
                             ],
@@ -310,9 +287,9 @@ class _ModuleCardWidgetState extends State<ModuleCardWidget>
                       // Thumbnail image — IgnorePointer prevents image from absorbing taps
                       IgnorePointer(
                         child: ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            topRight: Radius.circular(20),
-                            bottomRight: Radius.circular(20),
+                          borderRadius: const BorderRadiusDirectional.only(
+                            topEnd: Radius.circular(20),
+                            bottomEnd: Radius.circular(20),
                           ),
                           child: SizedBox(
                             width: 110,

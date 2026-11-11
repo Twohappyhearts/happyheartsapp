@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../services/app_language.dart';
 import '../../services/survey_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -105,11 +106,8 @@ class _AssessmentWebViewScreenState extends State<AssessmentWebViewScreen> {
       // The answers are already saved in REDCap; only our record failed.
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Your answers were submitted, but the app could not mark the '
-            'survey as completed.',
-          ),
+        SnackBar(
+          content: Text(context.l10n.surveyRecordFailed),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -117,6 +115,7 @@ class _AssessmentWebViewScreenState extends State<AssessmentWebViewScreen> {
   }
 
   Widget _buildCompleted() {
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -137,20 +136,19 @@ class _AssessmentWebViewScreenState extends State<AssessmentWebViewScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Thank you!',
-              style: TextStyle(
+            Text(
+              l10n.surveyThanks,
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textDark,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Your responses were submitted. You can see this survey in your '
-              'Progress calendar.',
+            Text(
+              l10n.surveyThanksBody,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: AppTheme.textMedium,
                 height: 1.4,
@@ -170,7 +168,7 @@ class _AssessmentWebViewScreenState extends State<AssessmentWebViewScreen> {
                   borderRadius: BorderRadius.circular(24),
                 ),
               ),
-              child: const Text('Done'),
+              child: Text(l10n.done),
             ),
           ],
         ),
@@ -187,6 +185,7 @@ class _AssessmentWebViewScreenState extends State<AssessmentWebViewScreen> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
+          tooltip: context.l10n.back,
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
             size: 20,
@@ -211,90 +210,90 @@ class _AssessmentWebViewScreenState extends State<AssessmentWebViewScreen> {
       body: _completed
           ? _buildCompleted()
           : Stack(
-        children: [
-          if (!_hasError) WebViewWidget(controller: _controller),
-          if (_isLoading && !_hasError)
-            Container(
-              color: AppTheme.backgroundLight,
-              child: const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(
-                      color: AppTheme.primary,
-                      strokeWidth: 3,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Loading survey...',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.textMedium,
+              children: [
+                if (!_hasError) WebViewWidget(controller: _controller),
+                if (_isLoading && !_hasError)
+                  Container(
+                    color: AppTheme.backgroundLight,
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(
+                            color: AppTheme.primary,
+                            strokeWidth: 3,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            context.l10n.surveyLoading,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: AppTheme.textMedium,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                if (_hasError)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.wifi_off_rounded,
+                            size: 56,
+                            color: AppTheme.textLight,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            context.l10n.surveyLoadFailedTitle,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textDark,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            context.l10n.surveyLoadFailedBody,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: AppTheme.textMedium,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _isLoading = true;
+                                _hasError = false;
+                              });
+                              _controller.reload();
+                            },
+                            icon: const Icon(Icons.refresh_rounded, size: 18),
+                            label: Text(context.l10n.retry),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          if (_hasError)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.wifi_off_rounded,
-                      size: 56,
-                      color: AppTheme.textLight,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Unable to load survey',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textDark,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Please check your internet connection and try again.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.textMedium,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          _isLoading = true;
-                          _hasError = false;
-                        });
-                        _controller.reload();
-                      },
-                      icon: const Icon(Icons.refresh_rounded, size: 18),
-                      label: const Text('Try Again'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

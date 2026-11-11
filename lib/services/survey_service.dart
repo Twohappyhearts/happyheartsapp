@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import './app_language.dart';
+
 /// Where a link is listed in the app (survey_links.placement), set by staff
 /// on the dashboard. Both kinds are REDCap links opened the same way.
 enum SurveyPlacement {
@@ -113,9 +115,7 @@ class SurveyService {
           .toList();
     } catch (e) {
       debugPrint('SurveyService.loadSurveys failed: $e');
-      throw const SurveyException(
-        'Could not load surveys. Check your connection and try again.',
-      );
+      throw SurveyException(appL10n.surveyErrorLoad);
     }
   }
 
@@ -153,10 +153,7 @@ class SurveyService {
       );
     } on PostgrestException catch (e) {
       debugPrint('SurveyService.recordCompletion failed: $e');
-      throw const SurveyException(
-        'Your answers were submitted, but the app could not mark the survey '
-        'as completed.',
-      );
+      throw SurveyException(appL10n.surveyRecordFailed);
     }
   }
 

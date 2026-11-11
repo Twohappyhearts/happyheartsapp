@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../services/app_language.dart';
 import '../../services/current_profile.dart';
 import '../../services/survey_service.dart';
 import '../../theme/app_theme.dart';
@@ -29,7 +30,11 @@ class AssessmentsScreen extends StatefulWidget {
 }
 
 class _AssessmentsScreenState extends State<AssessmentsScreen> {
-  static const _sectionOrder = ['Emotional Assessment', 'Basic Needs Assessment'];
+  static const _sectionOrder = [
+    'Emotional Assessment',
+    'Basic Needs Assessment',
+  ];
+
   /// Group key for links without a section (no heading is shown for it).
   static const _noSection = '';
 
@@ -82,8 +87,8 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
       if (!mounted) return;
       if (username == null || username.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not load your username. Please try again.'),
+          SnackBar(
+            content: Text(context.l10n.assessUsernameError),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -200,23 +205,16 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
 
   bool get _isSurvey => widget.placement == SurveyPlacement.survey;
 
-  String get _title => _isSurvey ? 'Holistic Assessments' : 'Resources';
+  String get _title =>
+      _isSurvey ? context.l10n.menuAssessments : context.l10n.navResources;
 
   String get _subtitle => _isSurvey
-      ? 'Questionnaires from your care team.'
-      : 'Track your mental and physical health with these validated screening tools.';
+      ? context.l10n.assessSubtitleSurvey
+      : context.l10n.assessSubtitleResources;
 
   String get _emptyMessage => _isSurvey
-      ? 'No holistic assessments right now. Your care team will add them here.'
-      : 'No resources right now. Your care team will add them here.';
-
-  static String _shortDate(DateTime d) {
-    const m = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${m[d.month - 1]} ${d.day}';
-  }
+      ? context.l10n.assessEmptySurvey
+      : context.l10n.assessEmptyResources;
 
   List<Widget> _buildContent() {
     if (_loading) {
@@ -234,7 +232,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
         _MessageBox(
           icon: Icons.cloud_off_rounded,
           message: _error!,
-          actionLabel: 'Retry',
+          actionLabel: context.l10n.retry,
           onAction: () {
             setState(() => _loading = true);
             _load();
@@ -245,7 +243,9 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
     if (_surveys.isEmpty) {
       return [
         _MessageBox(
-          icon: _isSurvey ? Icons.assignment_outlined : Icons.library_books_outlined,
+          icon: _isSurvey
+              ? Icons.assignment_outlined
+              : Icons.library_books_outlined,
           message: _emptyMessage,
         ),
       ];
@@ -282,8 +282,8 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
             duration: survey.duration,
             completedLabel: done == null
                 ? null
-                : 'Last completed ${_shortDate(done)}',
-            buttonLabel: 'Start Assessment',
+                : context.l10n.assessLastCompleted(context.l10n.monthDay(done)),
+            buttonLabel: context.l10n.assessStart,
             onTap: () => _openAssessment(survey),
           ),
         );
@@ -367,7 +367,7 @@ class _BackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Back',
+      label: context.l10n.back,
       child: InkWell(
         onTap: () => Navigator.of(context).maybePop(),
         borderRadius: BorderRadius.circular(12),
@@ -557,15 +557,15 @@ class _AssessmentCard extends StatelessWidget {
                       ),
                     ),
                     if (description.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppTheme.textMedium,
-                        height: 1.4,
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textMedium,
+                          height: 1.4,
+                        ),
                       ),
-                    ),
                     ],
                     const SizedBox(height: 10),
                     // Badges (wrap onto a second line with large text)
@@ -576,45 +576,45 @@ class _AssessmentCard extends StatelessWidget {
                       children: [
                         // Frequency badge
                         if (frequency != null) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: frequencyBg,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            frequency!,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: frequencyColor,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: frequencyBg,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              frequency!,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: frequencyColor,
+                              ),
                             ),
                           ),
-                        ),
                         ],
                         // Duration badge
                         if (duration != null)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.access_time_rounded,
-                              size: 13,
-                              color: AppTheme.textLight,
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              duration!,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.textMedium,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.access_time_rounded,
+                                size: 13,
+                                color: AppTheme.textLight,
                               ),
-                            ),
-                          ],
-                        ),
+                              const SizedBox(width: 3),
+                              Text(
+                                duration!,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.textMedium,
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                     if (completedLabel != null) ...[

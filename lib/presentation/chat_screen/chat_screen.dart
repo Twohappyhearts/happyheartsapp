@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
+import '../../services/app_language.dart';
 import '../../services/auth_service.dart';
 import '../../services/chat_controller.dart';
 import '../../services/chat_service.dart';
@@ -142,22 +143,17 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     }
   }
 
-  String _formatTime(DateTime dt) {
-    final l = dt.toLocal();
-    final hour = l.hour.toString().padLeft(2, '0');
-    final minute = l.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
+  String _formatTime(DateTime dt) => context.l10n.time(dt.toLocal());
 
   String _formatDate(DateTime dt) {
     final l = dt.toLocal();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final msgDay = DateTime(l.year, l.month, l.day);
-    if (msgDay == today) return 'Today';
+    if (msgDay == today) return context.l10n.dateToday;
     final yesterday = today.subtract(const Duration(days: 1));
-    if (msgDay == yesterday) return 'Yesterday';
-    return '${l.day}/${l.month}/${l.year}';
+    if (msgDay == yesterday) return context.l10n.dateYesterday;
+    return context.l10n.monthDayYear(l);
   }
 
   bool _showDateSeparator(List<ChatMessage> msgs, int index) {
@@ -216,7 +212,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isAi ? 'AI Assistant' : 'Research Team',
+                    isAi
+                        ? context.l10n.chatAiTitle
+                        : context.l10n.chatTeamTitle,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -224,7 +222,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     ),
                   ),
                   Text(
-                    isAi ? 'Automated answers, 24/7' : 'Happy Hearts Study',
+                    isAi
+                        ? context.l10n.chatAiSubtitle
+                        : context.l10n.chatTeamSubtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.plusJakartaSans(
@@ -253,7 +253,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           if (!_aiStarted)
             const SizedBox.shrink()
           else if (userId == null)
-            _buildErrorState('Please sign in to use the AI assistant.', null)
+            _buildErrorState(context.l10n.chatSignInAi, null)
           else
             ai_platform.buildAiAssistantView(userId: userId),
         ],
@@ -330,8 +330,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         ),
         child: Row(
           children: [
-            tab(0, Icons.support_agent_rounded, 'Care Team'),
-            tab(1, Icons.smart_toy_outlined, 'AI Assistant'),
+            tab(0, Icons.support_agent_rounded, context.l10n.chatTabTeam),
+            tab(1, Icons.smart_toy_outlined, context.l10n.chatAiTitle),
           ],
         ),
       ),
@@ -344,7 +344,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         if (chat != null) _buildAssistanceBanner(),
         Expanded(
           child: chat == null
-              ? _buildErrorState('Please sign in to use chat.', null)
+              ? _buildErrorState(context.l10n.chatSignIn, null)
               : chat.isLoading
               ? const Center(
                   child: CircularProgressIndicator(color: AppTheme.primary),
@@ -368,7 +368,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+      padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 8, 10),
       decoration: BoxDecoration(
         color: AppTheme.primaryContainer.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(14),
@@ -382,7 +382,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Need help with something?',
+                  context.l10n.chatNeedHelp,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -392,7 +392,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 GestureDetector(
                   onTap: () => openMyAssistanceRequests(context),
                   child: Text(
-                    'View my requests',
+                    context.l10n.chatViewRequests,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -421,7 +421,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 ),
               ),
               child: Text(
-                'I need assistance',
+                context.l10n.menuAssistance,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12.5,
@@ -457,7 +457,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 16),
             Text(
-              'Start a conversation',
+              context.l10n.chatEmptyTitle,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -466,7 +466,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 8),
             Text(
-              'Send a message to the Happy Hearts research team. We\'re here to help with any questions about your study.',
+              context.l10n.chatEmptyBody,
               textAlign: TextAlign.center,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
@@ -504,7 +504,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
-              ElevatedButton(onPressed: onRetry, child: const Text('Retry')),
+              ElevatedButton(
+                onPressed: onRetry,
+                child: Text(context.l10n.retry),
+              ),
             ],
           ],
         ),
@@ -586,7 +589,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             Container(
               width: 28,
               height: 28,
-              margin: const EdgeInsets.only(right: 8, bottom: 2),
+              margin: const EdgeInsetsDirectional.only(end: 8, bottom: 2),
               decoration: BoxDecoration(
                 color: AppTheme.surfaceVariantLight,
                 shape: BoxShape.circle,
@@ -606,9 +609,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               children: [
                 if (!isUser)
                   Padding(
-                    padding: const EdgeInsets.only(left: 4, bottom: 3),
+                    padding: const EdgeInsetsDirectional.only(
+                      start: 4,
+                      bottom: 3,
+                    ),
                     child: Text(
-                      'Research Team',
+                      context.l10n.chatTeamTitle,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
@@ -626,11 +632,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     ),
                     decoration: BoxDecoration(
                       color: isUser ? AppTheme.primary : AppTheme.surfaceLight,
-                      borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(16),
-                        topRight: const Radius.circular(16),
-                        bottomLeft: Radius.circular(isUser ? 16 : 4),
-                        bottomRight: Radius.circular(isUser ? 4 : 16),
+                      // The small corner points at the sender's side (mirrored
+                      // in right-to-left languages).
+                      borderRadius: BorderRadiusDirectional.only(
+                        topStart: const Radius.circular(16),
+                        topEnd: const Radius.circular(16),
+                        bottomStart: Radius.circular(isUser ? 16 : 4),
+                        bottomEnd: Radius.circular(isUser ? 4 : 16),
                       ),
                       border: failed
                           ? Border.all(color: AppTheme.errorColor, width: 1.5)
@@ -663,7 +671,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Not sent',
+                              context.l10n.chatNotSent,
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 10,
                                 color: AppTheme.errorColor,
@@ -673,7 +681,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                             GestureDetector(
                               onTap: () => _chat?.retry(message.id),
                               child: Text(
-                                'Retry',
+                                context.l10n.retry,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -685,7 +693,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                             GestureDetector(
                               onTap: () => _chat?.discard(message.id),
                               child: Text(
-                                'Delete',
+                                context.l10n.chatDelete,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 10,
                                   color: AppTheme.textLight,
@@ -696,7 +704,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         )
                       : Text(
                           pending
-                              ? 'Sending...'
+                              ? context.l10n.chatSending
                               : _formatTime(message.createdAt),
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 10,
@@ -748,7 +756,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   color: AppTheme.textDark,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Message the research team...',
+                  hintText: context.l10n.chatInputHint,
                   hintStyle: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
                     color: AppTheme.textLight,
@@ -773,9 +781,16 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: enabled ? _sendMessage : null,
-              child: const Padding(
-                padding: EdgeInsets.all(10),
-                child: Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              child: Tooltip(
+                message: context.l10n.chatSend,
+                child: const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Icon(
+                    Icons.send_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
               ),
             ),
           ),

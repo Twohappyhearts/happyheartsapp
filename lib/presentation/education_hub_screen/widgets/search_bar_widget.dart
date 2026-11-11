@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
 class SearchBarInputWidget extends StatelessWidget {
@@ -31,10 +32,10 @@ class SearchBarInputWidget extends StatelessWidget {
         controller: controller,
         onChanged: onChanged,
         style: const TextStyle(fontSize: 14, color: AppTheme.textDark),
-        decoration: const InputDecoration(
-          hintText: 'Search lessons, topics...',
-          hintStyle: TextStyle(fontSize: 14, color: AppTheme.textLight),
-          prefixIcon: Icon(
+        decoration: InputDecoration(
+          hintText: context.l10n.homeSearchHint,
+          hintStyle: const TextStyle(fontSize: 14, color: AppTheme.textLight),
+          prefixIcon: const Icon(
             Icons.search_rounded,
             color: AppTheme.textLight,
             size: 20,
@@ -42,7 +43,7 @@ class SearchBarInputWidget extends StatelessWidget {
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
           filled: false,
         ),
       ),

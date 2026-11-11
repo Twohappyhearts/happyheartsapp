@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../services/app_language.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 
@@ -95,12 +96,13 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
     super.dispose();
   }
 
-  static String? _problem(String pw) {
-    if (pw.length < 8) return 'Use at least 8 characters.';
+  String? _problem(String pw) {
+    final l10n = context.l10n;
+    if (pw.length < 8) return l10n.passwordMinShort;
     if (!RegExp(r'[a-z]').hasMatch(pw) ||
         !RegExp(r'[A-Z]').hasMatch(pw) ||
         !RegExp(r'[0-9]').hasMatch(pw)) {
-      return 'Include an uppercase letter, a lowercase letter, and a number.';
+      return l10n.gateErrorMix;
     }
     return null;
   }
@@ -113,7 +115,7 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
       return;
     }
     if (_confirm.text != pw) {
-      setState(() => _error = 'Passwords do not match.');
+      setState(() => _error = context.l10n.validationPasswordsMismatch);
       return;
     }
     setState(() {
@@ -126,8 +128,8 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
       await client.rpc('complete_password_change');
       if (!mounted) return;
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        const SnackBar(
-          content: Text('Password updated. Welcome!'),
+        SnackBar(
+          content: Text(context.l10n.gateSuccess),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -137,14 +139,14 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
       setState(() {
         _saving = false;
         _error = e.message.toLowerCase().contains('different')
-            ? 'Choose a password different from the temporary one.'
+            ? context.l10n.gateErrorSame
             : AuthService.friendlyError(e);
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _saving = false;
-        _error = 'Could not update your password. Check your connection.';
+        _error = context.l10n.gateErrorFailed;
       });
     }
   }
@@ -153,7 +155,7 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
     labelText: label,
     prefixIcon: const Icon(Icons.lock_outline_rounded),
     suffixIcon: IconButton(
-      tooltip: _obscure ? 'Show password' : 'Hide password',
+      tooltip: _obscure ? context.l10n.showPassword : context.l10n.hidePassword,
       icon: Icon(
         _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
       ),
@@ -164,6 +166,7 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return PopScope(
       canPop: false,
       child: Material(
@@ -192,20 +195,20 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
                         size: 28,
                       ),
                     ),
-                    const Text(
-                      'Set a new password',
+                    Text(
+                      l10n.gateTitle,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textDark,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
-                      'Your care team created this account with a temporary password. Please choose your own to continue.',
+                    Text(
+                      l10n.gateBody,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         color: AppTheme.textMedium,
                         height: 1.4,
@@ -216,7 +219,7 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
                       controller: _password,
                       obscureText: _obscure,
                       autofillHints: const [AutofillHints.newPassword],
-                      decoration: _decoration('New password'),
+                      decoration: _decoration(l10n.fieldNewPassword),
                     ),
                     const SizedBox(height: 14),
                     TextField(
@@ -224,12 +227,15 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
                       obscureText: _obscure,
                       autofillHints: const [AutofillHints.newPassword],
                       onSubmitted: (_) => _save(),
-                      decoration: _decoration('Confirm new password'),
+                      decoration: _decoration(l10n.fieldConfirmNewPassword),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'At least 8 characters with an uppercase letter, a lowercase letter, and a number.',
-                      style: TextStyle(fontSize: 12, color: AppTheme.textLight),
+                    Text(
+                      l10n.gateRule,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textLight,
+                      ),
                     ),
                     if (_error != null) ...[
                       const SizedBox(height: 12),
@@ -262,9 +268,9 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text(
-                                'Save password',
-                                style: TextStyle(
+                            : Text(
+                                l10n.gateSave,
+                                style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -276,7 +282,7 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
                       onPressed: _saving
                           ? null
                           : () => AuthService.instance.signOut(),
-                      child: const Text('Sign out'),
+                      child: Text(l10n.signOut),
                     ),
                   ],
                 ),

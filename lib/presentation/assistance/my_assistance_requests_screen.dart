@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../services/app_language.dart';
 import '../../services/assistance_service.dart';
 import '../../theme/app_theme.dart';
 import 'assistance_request_sheet.dart';
 
 /// Opens the patient's list of assistance requests.
 Future<void> openMyAssistanceRequests(BuildContext context) {
-  return Navigator.of(context).push(
-    MaterialPageRoute(builder: (_) => const MyAssistanceRequestsScreen()),
-  );
+  return Navigator.of(
+    context,
+  ).push(MaterialPageRoute(builder: (_) => const MyAssistanceRequestsScreen()));
 }
 
 class MyAssistanceRequestsScreen extends StatefulWidget {
@@ -95,7 +96,7 @@ class _MyAssistanceRequestsScreenState extends State<MyAssistanceRequestsScreen>
         elevation: 0,
         scrolledUnderElevation: 1,
         title: Text(
-          'My assistance requests',
+          context.l10n.requestsTitle,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -108,7 +109,7 @@ class _MyAssistanceRequestsScreenState extends State<MyAssistanceRequestsScreen>
         backgroundColor: AppTheme.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('New request'),
+        label: Text(context.l10n.requestsNew),
       ),
       body: RefreshIndicator(
         color: AppTheme.primary,
@@ -159,7 +160,7 @@ class _MyAssistanceRequestsScreenState extends State<MyAssistanceRequestsScreen>
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _load,
-                          child: const Text('Retry'),
+                          child: Text(context.l10n.retry),
                         ),
                       ],
                     ),
@@ -176,14 +177,10 @@ class _MyAssistanceRequestsScreenState extends State<MyAssistanceRequestsScreen>
       padding: const EdgeInsets.symmetric(horizontal: 32),
       children: [
         const SizedBox(height: 96),
-        const Icon(
-          Icons.support_rounded,
-          color: AppTheme.textLight,
-          size: 48,
-        ),
+        const Icon(Icons.support_rounded, color: AppTheme.textLight, size: 48),
         const SizedBox(height: 12),
         Text(
-          'No requests yet',
+          context.l10n.requestsEmptyTitle,
           textAlign: TextAlign.center,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 16,
@@ -193,8 +190,7 @@ class _MyAssistanceRequestsScreenState extends State<MyAssistanceRequestsScreen>
         ),
         const SizedBox(height: 6),
         Text(
-          'When you need help from the research team, send a request and '
-          'you can follow its status here.',
+          context.l10n.requestsEmptyBody,
           textAlign: TextAlign.center,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 13,
@@ -213,31 +209,37 @@ class _RequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final (label, color, icon) = switch (request.status) {
       AssistanceStatus.newRequest => (
-        'Sent',
+        l10n.requestStatusSent,
         AppTheme.primary,
         Icons.schedule_rounded,
       ),
       AssistanceStatus.acknowledged => (
-        'Seen by the team',
+        l10n.requestStatusSeen,
         AppTheme.warningColor,
         Icons.visibility_outlined,
       ),
       AssistanceStatus.resolved => (
-        'Resolved',
+        l10n.requestStatusResolved,
         AppTheme.secondary,
         Icons.check_circle_outline_rounded,
       ),
     };
 
+    final acknowledged = request.acknowledgedAt;
+    final resolved = request.resolvedAt;
     final detail = switch (request.status) {
-      AssistanceStatus.newRequest =>
-        'Waiting for a team member to review it.',
+      AssistanceStatus.newRequest => l10n.requestWaiting,
       AssistanceStatus.acknowledged =>
-        'A team member is following up${_since(request.acknowledgedAt)}.',
+        acknowledged == null
+            ? l10n.requestFollowing
+            : l10n.requestFollowingSince(l10n.relativeDateTime(acknowledged)),
       AssistanceStatus.resolved =>
-        'Marked resolved${_since(request.resolvedAt)}.',
+        resolved == null
+            ? l10n.requestResolved
+            : l10n.requestResolvedSince(l10n.relativeDateTime(resolved)),
     };
 
     return Container(
@@ -279,7 +281,7 @@ class _RequestCard extends StatelessWidget {
                 ),
               ),
               Text(
-                _formatDateTime(request.createdAt),
+                l10n.relativeDateTime(request.createdAt),
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 11.5,
                   color: AppTheme.textLight,
@@ -308,25 +310,4 @@ class _RequestCard extends StatelessWidget {
       ),
     );
   }
-
-  static String _since(DateTime? t) =>
-      t == null ? '' : ' (${_formatDateTime(t)})';
-}
-
-String _formatDateTime(DateTime t) {
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  final day = DateTime(t.year, t.month, t.day);
-  final hh = t.hour % 12 == 0 ? 12 : t.hour % 12;
-  final mm = t.minute.toString().padLeft(2, '0');
-  final ampm = t.hour < 12 ? 'AM' : 'PM';
-  final time = '$hh:$mm $ampm';
-  if (day == today) return 'Today, $time';
-  if (day == today.subtract(const Duration(days: 1))) return 'Yesterday, $time';
-  const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-  final date = '${months[t.month - 1]} ${t.day}';
-  return t.year == now.year ? '$date, $time' : '$date ${t.year}, $time';
 }

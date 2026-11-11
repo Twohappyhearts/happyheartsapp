@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../services/app_language.dart';
 import '../../../services/auth_service.dart';
 import '../../../theme/app_theme.dart';
 
@@ -59,23 +60,24 @@ class _SignInFormWidgetState extends State<SignInFormWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Welcome back 👋',
-            style: TextStyle(
+          Text(
+            l10n.signInWelcome,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
               color: AppTheme.textDark,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Sign in to continue your health journey',
-            style: TextStyle(fontSize: 14, color: AppTheme.textMedium),
+          Text(
+            l10n.signInSubtitle,
+            style: const TextStyle(fontSize: 14, color: AppTheme.textMedium),
           ),
           const SizedBox(height: 24),
 
@@ -83,19 +85,19 @@ class _SignInFormWidgetState extends State<SignInFormWidget> {
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             autofillHints: const [AutofillHints.email],
-            decoration: const InputDecoration(
-              labelText: 'Email Address',
-              hintText: 'Enter your email',
-              prefixIcon: Icon(
+            decoration: InputDecoration(
+              labelText: l10n.fieldEmail,
+              hintText: l10n.fieldEmailHint,
+              prefixIcon: const Icon(
                 Icons.mail_outline_rounded,
                 color: AppTheme.textLight,
               ),
             ),
             validator: (v) {
               if (v == null || v.trim().isEmpty) {
-                return 'Please enter your email';
+                return l10n.validationEmailRequired;
               }
-              if (!v.contains('@')) return 'Please enter a valid email';
+              if (!v.contains('@')) return l10n.validationEmailInvalid;
               return null;
             },
           ),
@@ -106,13 +108,16 @@ class _SignInFormWidgetState extends State<SignInFormWidget> {
             obscureText: !_passwordVisible,
             autofillHints: const [AutofillHints.password],
             decoration: InputDecoration(
-              labelText: 'Password',
-              hintText: 'Enter your password',
+              labelText: l10n.fieldPassword,
+              hintText: l10n.fieldPasswordHint,
               prefixIcon: const Icon(
                 Icons.lock_outline_rounded,
                 color: AppTheme.textLight,
               ),
               suffixIcon: IconButton(
+                tooltip: _passwordVisible
+                    ? l10n.hidePassword
+                    : l10n.showPassword,
                 icon: Icon(
                   _passwordVisible
                       ? Icons.visibility_off_outlined
@@ -124,7 +129,9 @@ class _SignInFormWidgetState extends State<SignInFormWidget> {
               ),
             ),
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Please enter your password';
+              if (v == null || v.isEmpty) {
+                return l10n.validationPasswordRequired;
+              }
               return null;
             },
             onFieldSubmitted: (_) => _isLoading ? null : _handleSignIn(),
@@ -132,7 +139,7 @@ class _SignInFormWidgetState extends State<SignInFormWidget> {
           const SizedBox(height: 8),
 
           Align(
-            alignment: Alignment.centerRight,
+            alignment: AlignmentDirectional.centerEnd,
             child: TextButton(
               onPressed: () =>
                   widget.onForgotPassword(_emailController.text.trim()),
@@ -141,9 +148,9 @@ class _SignInFormWidgetState extends State<SignInFormWidget> {
                 minimumSize: const Size(0, 0),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text(
-                'Forgot Password?',
-                style: TextStyle(
+              child: Text(
+                l10n.signInForgot,
+                style: const TextStyle(
                   fontSize: 13,
                   color: AppTheme.primary,
                   fontWeight: FontWeight.w500,
@@ -182,9 +189,9 @@ class _SignInFormWidgetState extends State<SignInFormWidget> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text(
-                      'Sign In',
-                      style: TextStyle(
+                  : Text(
+                      l10n.authTabSignIn,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../l10n/app_localizations.dart';
+import '../services/app_language.dart';
 import '../theme/app_theme.dart';
 
 class _TabSpec {
-  final String label;
+  final String Function(AppLocalizations l10n) label;
   final IconData icon;
   final IconData selectedIcon;
   final int? branchIndex;
@@ -28,33 +30,39 @@ class AppNavigation extends StatefulWidget {
 class _AppNavigationState extends State<AppNavigation> {
   int _selectedVisualIndex = 0;
 
+  static String _navEducation(AppLocalizations l) => l.navEducation;
+  static String _navResources(AppLocalizations l) => l.navResources;
+  static String _navProgress(AppLocalizations l) => l.navProgress;
+  static String _navChat(AppLocalizations l) => l.navChat;
+  static String _navProfile(AppLocalizations l) => l.navProfile;
+
   static const List<_TabSpec> _tabs = [
     _TabSpec(
-      label: 'Education',
+      label: _navEducation,
       icon: Icons.menu_book_outlined,
       selectedIcon: Icons.menu_book,
       branchIndex: 0,
     ),
     _TabSpec(
-      label: 'Resources',
+      label: _navResources,
       icon: Icons.library_books_outlined,
       selectedIcon: Icons.library_books,
       branchIndex: 1,
     ),
     _TabSpec(
-      label: 'Progress',
+      label: _navProgress,
       icon: Icons.bar_chart_outlined,
       selectedIcon: Icons.bar_chart,
       branchIndex: 2,
     ),
     _TabSpec(
-      label: 'Chat',
+      label: _navChat,
       icon: Icons.chat_bubble_outline_rounded,
       selectedIcon: Icons.chat_bubble_rounded,
       branchIndex: 3,
     ),
     _TabSpec(
-      label: 'Profile',
+      label: _navProfile,
       icon: Icons.person_outline,
       selectedIcon: Icons.person,
       branchIndex: 4,
@@ -143,7 +151,7 @@ class _AppNavigationState extends State<AppNavigation> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          tab.label,
+                          tab.label(context.l10n),
                           // The bar has a fixed height: labels follow the
                           // phone's text size only up to 120%.
                           textScaler: MediaQuery.textScalerOf(

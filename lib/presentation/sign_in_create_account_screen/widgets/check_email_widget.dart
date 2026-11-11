@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../services/app_language.dart';
 import '../../../services/auth_service.dart';
 import '../../../theme/app_theme.dart';
 
@@ -33,7 +34,7 @@ class _CheckEmailWidgetState extends State<CheckEmailWidget> {
       if (!mounted) return;
       setState(() {
         _isError = false;
-        _message = 'Confirmation email sent again.';
+        _message = context.l10n.checkEmailResent;
       });
     } catch (e) {
       if (!mounted) return;
@@ -48,6 +49,7 @@ class _CheckEmailWidgetState extends State<CheckEmailWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -67,10 +69,10 @@ class _CheckEmailWidgetState extends State<CheckEmailWidget> {
           ),
         ),
         const SizedBox(height: 20),
-        const Text(
-          'Check your email',
+        Text(
+          l10n.checkEmailTitle,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
             color: AppTheme.textDark,
@@ -78,7 +80,7 @@ class _CheckEmailWidgetState extends State<CheckEmailWidget> {
         ),
         const SizedBox(height: 8),
         Text(
-          'We sent a confirmation link to\n${widget.email}\nOpen it on this device to finish creating your account.',
+          l10n.checkEmailBody(widget.email),
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 14,
@@ -115,13 +117,13 @@ class _CheckEmailWidgetState extends State<CheckEmailWidget> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Resend confirmation email'),
+                : Text(l10n.checkEmailResend),
           ),
         ),
         const SizedBox(height: 8),
         TextButton(
           onPressed: widget.onBackToSignIn,
-          child: const Text('Back to sign in'),
+          child: Text(l10n.backToSignIn),
         ),
       ],
     );

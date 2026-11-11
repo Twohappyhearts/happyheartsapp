@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import './app_language.dart';
 import './auth_service.dart';
 import './chat_service.dart';
 
@@ -80,7 +81,7 @@ class ChatController extends ChangeNotifier {
     } catch (_) {
       if (_stale) return;
       isLoading = false;
-      error = 'Something went wrong loading your conversation.';
+      error = appL10n.chatErrorGeneric;
     } finally {
       _initializing = false;
       _notify();

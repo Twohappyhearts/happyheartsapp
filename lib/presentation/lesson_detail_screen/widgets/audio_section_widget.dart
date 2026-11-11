@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
 // Conditional imports: stub used on mobile, web_impl on web
@@ -35,7 +36,9 @@ class AudioSectionWidget extends StatefulWidget {
 
 class _AudioSectionWidgetState extends State<AudioSectionWidget> {
   Object? _mobileController;
-  late final bool _embeddable = AudioSectionWidget.isSoundCloud(widget.audioUrl);
+  late final bool _embeddable = AudioSectionWidget.isSoundCloud(
+    widget.audioUrl,
+  );
 
   @override
   void initState() {
@@ -78,7 +81,7 @@ class _AudioSectionWidgetState extends State<AudioSectionWidget> {
             const SizedBox(width: 10),
             Flexible(
               child: Text(
-                'Audio Lesson',
+                context.l10n.audioTitle,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -126,7 +129,7 @@ class _AudioSectionWidgetState extends State<AudioSectionWidget> {
                     child: OutlinedButton.icon(
                       onPressed: _openExternally,
                       icon: const Icon(Icons.open_in_new_rounded, size: 18),
-                      label: const Text('Open audio'),
+                      label: Text(context.l10n.audioOpen),
                     ),
                   ),
                 ),
@@ -172,10 +175,10 @@ class _AudioSectionWidgetState extends State<AudioSectionWidget> {
                       color: AppTheme.textLight,
                     ),
                     const SizedBox(width: 4),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Listen to this lesson',
-                        style: TextStyle(
+                        context.l10n.audioListen,
+                        style: const TextStyle(
                           fontSize: 12,
                           color: AppTheme.textLight,
                         ),

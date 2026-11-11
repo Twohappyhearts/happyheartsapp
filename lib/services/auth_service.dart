@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import './app_language.dart';
 import './supabase_service.dart';
 import './tracking_service.dart';
 
@@ -205,43 +206,36 @@ class AuthService extends ChangeNotifier {
   /// A plain-language message for an auth error. The server's own wording is
   /// logged, never shown.
   static String friendlyError(Object e) {
-    if (e is UsernameTakenException) {
-      return 'That username is already taken. Use the username your study '
-          'team gave you, or contact the care team if it is already '
-          'registered.';
-    }
+    final l10n = appL10n;
+    if (e is UsernameTakenException) return l10n.authErrorUsernameTaken;
     if (e is AuthException) {
       final m = e.message.toLowerCase();
       if (m.contains('invalid login credentials')) {
-        return 'Incorrect email or password.';
+        return l10n.authErrorCredentials;
       }
       if (m.contains('database error saving new user')) {
         // The sign-up trigger rejected the username (taken or invalid).
-        return 'That username is already taken or not allowed. Please choose another.';
+        return l10n.authErrorUsernameRejected;
       }
-      if (m.contains('banned')) {
-        return 'This account has been disabled. Please contact your care team.';
-      }
+      if (m.contains('banned')) return l10n.authErrorDisabled;
       if (m.contains('email not confirmed')) {
-        return 'Please confirm your email before signing in.';
+        return l10n.authErrorEmailNotConfirmed;
       }
       debugPrint('Auth error: ${e.message} (${e.statusCode})');
       if (m.contains('already registered') || m.contains('already exists')) {
-        return 'An account with this email already exists. Try signing in.';
+        return l10n.authErrorEmailExists;
       }
       if (m.contains('rate limit') ||
           m.contains('too many') ||
           m.contains('security purposes') ||
           e.statusCode == '429') {
-        return 'Too many attempts. Please wait a minute and try again.';
+        return l10n.authErrorRateLimited;
       }
-      if (m.contains('password')) {
-        return 'Please choose a different password.';
-      }
-      return 'Something went wrong. Please try again.';
+      if (m.contains('password')) return l10n.authErrorPassword;
+      return l10n.errorGeneric;
     }
     debugPrint('Auth error: $e');
-    return 'Something went wrong. Check your connection and try again.';
+    return l10n.errorConnection;
   }
 
   @override

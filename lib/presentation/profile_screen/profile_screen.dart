@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_menu.dart';
+import '../../widgets/language_picker.dart';
+import '../../services/app_language.dart';
 import '../../services/auth_service.dart';
 import '../../services/content_service.dart';
 import '../../services/current_profile.dart';
@@ -54,7 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           content: Text(
             e is ProfileException
                 ? e.message
-                : 'Could not save your name. Check your connection and try again.',
+                : context.l10n.profileErrorSaveName,
           ),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
@@ -71,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Password reset link sent to $email'),
+          content: Text(context.l10n.profileResetSent(email)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -92,24 +94,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Sign Out',
-          style: TextStyle(
+        title: Text(
+          context.l10n.signOut,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: AppTheme.textDark,
           ),
         ),
-        content: const Text(
-          'Are you sure you want to sign out?',
-          style: TextStyle(fontSize: 14, color: AppTheme.textMedium),
+        content: Text(
+          context.l10n.profileSignOutConfirm,
+          style: const TextStyle(fontSize: 14, color: AppTheme.textMedium),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: AppTheme.textMedium),
+            child: Text(
+              context.l10n.cancel,
+              style: const TextStyle(color: AppTheme.textMedium),
             ),
           ),
           ElevatedButton(
@@ -124,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Sign Out'),
+            child: Text(context.l10n.signOut),
           ),
         ],
       ),
@@ -133,6 +135,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final language = AppLanguageController.instance;
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
@@ -149,10 +153,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         const AppMenuButton(),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Profile',
-                            style: TextStyle(
+                            l10n.navProfile,
+                            style: const TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textDark,
@@ -180,30 +184,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 24),
 
                     // Account section
-                    _SectionLabel(label: 'Account'),
+                    _SectionLabel(label: l10n.profileAccount),
                     const SizedBox(height: 10),
                     _ActionTile(
                       icon: Icons.lock_reset_rounded,
                       iconColor: AppTheme.primary,
                       iconBg: AppTheme.primaryContainer,
-                      title: 'Change password (send reset email)',
+                      title: l10n.profileChangePassword,
                       onTap: _changePassword,
                     ),
                     const SizedBox(height: 24),
 
-                    // The Push Notifications / Learning Reminders switches were
-                    // removed: nothing sends notifications yet, so they only
-                    // changed what the page showed. Add them back with real
-                    // reminders.
+                    // Preferences. (The Push Notifications / Learning
+                    // Reminders switches were removed: nothing sends
+                    // notifications yet. Add them back with real reminders.)
+                    _SectionLabel(label: l10n.profilePreferences),
+                    const SizedBox(height: 10),
+                    _ActionTile(
+                      icon: Icons.language_rounded,
+                      iconColor: AppTheme.primary,
+                      iconBg: AppTheme.primaryContainer,
+                      title: l10n.languageTitle,
+                      trailing: language.chosen == null
+                          ? l10n.languagePhone
+                          : language.language.nativeName,
+                      onTap: () => showLanguagePicker(context),
+                    ),
+                    const SizedBox(height: 24),
 
                     // About section
-                    _SectionLabel(label: 'About'),
+                    _SectionLabel(label: l10n.profileAbout),
                     const SizedBox(height: 10),
                     _InfoTile(
                       icon: Icons.info_outline_rounded,
                       iconColor: const Color(0xFF0369A1),
                       iconBg: const Color(0xFFE0F2FE),
-                      title: 'App Version',
+                      title: l10n.profileVersion,
                       trailing: '1.0.0',
                     ),
                     const SizedBox(height: 8),
@@ -211,7 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: Icons.privacy_tip_outlined,
                       iconColor: const Color(0xFF15803D),
                       iconBg: const Color(0xFFDCFCE7),
-                      title: 'Privacy Policy',
+                      title: l10n.legalPrivacy,
                       onTap: () {},
                     ),
                     const SizedBox(height: 8),
@@ -219,7 +235,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: Icons.description_outlined,
                       iconColor: const Color(0xFFF59E0B),
                       iconBg: const Color(0xFFFEF3C7),
-                      title: 'Terms of Service',
+                      title: l10n.legalTerms,
                       onTap: () {},
                     ),
                     const SizedBox(height: 24),
@@ -234,9 +250,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           size: 18,
                           color: AppTheme.errorColor,
                         ),
-                        label: const Text(
-                          'Sign Out',
-                          style: TextStyle(
+                        label: Text(
+                          l10n.signOut,
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.errorColor,
@@ -317,14 +333,17 @@ class _ProfileHeaderCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      error ?? 'Your profile is not available.',
+                      error ?? context.l10n.profileNotAvailable,
                       style: const TextStyle(
                         fontSize: 13,
                         color: AppTheme.textMedium,
                       ),
                     ),
                   ),
-                  TextButton(onPressed: onRetry, child: const Text('Retry')),
+                  TextButton(
+                    onPressed: onRetry,
+                    child: Text(context.l10n.retry),
+                  ),
                 ],
               ),
       );
@@ -410,7 +429,7 @@ class _ProfileHeaderCard extends StatelessWidget {
           ),
           if (onEdit != null)
             IconButton(
-              tooltip: 'Edit name',
+              tooltip: context.l10n.profileEditName,
               onPressed: onEdit,
               icon: const Icon(
                 Icons.edit_outlined,
@@ -479,6 +498,7 @@ class _ProgressSummaryCardState extends State<_ProgressSummaryCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final summary = _summary;
     String v(String Function(LearningSummary s) f) =>
         summary == null ? '—' : f(summary);
@@ -512,10 +532,10 @@ class _ProgressSummaryCardState extends State<_ProgressSummaryCard> {
                 ),
               ),
               const SizedBox(width: 10),
-              const Flexible(
+              Flexible(
                 child: Text(
-                  'Learning Summary',
-                  style: TextStyle(
+                  l10n.profileLearningSummary,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textDark,
@@ -527,21 +547,26 @@ class _ProgressSummaryCardState extends State<_ProgressSummaryCard> {
           const SizedBox(height: 14),
           Row(
             children: [
-              _MiniStat(value: v((s) => '${s.completed}'), label: 'Completed'),
-              _Divider(),
               _MiniStat(
-                value: v((s) => '${s.inProgress}'),
-                label: 'In Progress',
+                value: v((s) => '${s.completed}'),
+                label: l10n.statusCompleted,
               ),
               _Divider(),
               _MiniStat(
-                value: v((s) => LearningSummary.formatTime(s.timeSpentSec)),
-                label: 'Time Spent',
+                value: v((s) => '${s.inProgress}'),
+                label: l10n.statusInProgress,
+              ),
+              _Divider(),
+              _MiniStat(
+                value: v(
+                  (s) => LearningSummary.formatTime(s.timeSpentSec, l10n),
+                ),
+                label: l10n.statTimeSpent,
               ),
               _Divider(),
               _MiniStat(
                 value: v((s) => '${(s.percent * 100).round()}%'),
-                label: 'Complete',
+                label: l10n.profileStatComplete,
               ),
             ],
           ),
@@ -549,9 +574,12 @@ class _ProgressSummaryCardState extends State<_ProgressSummaryCard> {
             const SizedBox(height: 10),
             GestureDetector(
               onTap: _load,
-              child: const Text(
-                'Could not load your progress. Tap to retry.',
-                style: TextStyle(fontSize: 11, color: AppTheme.textMedium),
+              child: Text(
+                l10n.profileProgressFailed,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.textMedium,
+                ),
               ),
             ),
           ],
@@ -707,6 +735,9 @@ class _ActionTile extends StatelessWidget {
   final Color iconColor;
   final Color iconBg;
   final String title;
+
+  /// Current value shown before the chevron (e.g. the chosen language).
+  final String? trailing;
   final VoidCallback onTap;
 
   const _ActionTile({
@@ -714,6 +745,7 @@ class _ActionTile extends StatelessWidget {
     required this.iconColor,
     required this.iconBg,
     required this.title,
+    this.trailing,
     required this.onTap,
   });
 
@@ -761,6 +793,20 @@ class _ActionTile extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (trailing != null) ...[
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      trailing!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.textMedium,
+                      ),
+                    ),
+                  ),
+                ],
                 const Icon(
                   Icons.chevron_right_rounded,
                   size: 20,
@@ -802,7 +848,7 @@ class _EditNameDialogState extends State<_EditNameDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('Edit name'),
+      title: Text(context.l10n.profileEditName),
       content: TextField(
         controller: _controller,
         autofocus: true,
@@ -810,14 +856,14 @@ class _EditNameDialogState extends State<_EditNameDialog> {
         textInputAction: TextInputAction.done,
         maxLength: 100,
         onSubmitted: (_) => _save(),
-        decoration: const InputDecoration(labelText: 'Full name'),
+        decoration: InputDecoration(labelText: context.l10n.fieldFullName),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.cancel),
         ),
-        ElevatedButton(onPressed: _save, child: const Text('Save')),
+        ElevatedButton(onPressed: _save, child: Text(context.l10n.save)),
       ],
     );
   }

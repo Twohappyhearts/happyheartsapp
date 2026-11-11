@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../l10n/app_localizations.dart';
+import './app_language.dart';
 import './tracking_service.dart';
 
 /// Education content managed in the staff dashboard (public.content_items and
@@ -9,8 +11,10 @@ import './tracking_service.dart';
 /// categories to patients, so anything staff hide disappears here.
 ///
 /// Sessions are returned as the Map shape the existing education widgets use
-/// (title, category, description, duration, status, imageUrl, semanticLabel,
-/// infographicUrl, videoUrl, videoId, kahootUrl, ...). Optional media are null.
+/// (title, category, description, durationMinutes, status, imageUrl,
+/// semanticLabel, infographicUrl, videoUrl, videoId, kahootUrl, ...). Optional
+/// media are null. Texts the app adds itself (durations, "Lesson video") are
+/// left to the widgets, which show them in the patient's language.
 class ContentException implements Exception {
   final String message;
   const ContentException(this.message);
@@ -105,11 +109,12 @@ class LearningSummary {
     );
   }
 
-  /// 45 min -> "45m", 135 min -> "2h 15m".
-  static String formatTime(int seconds) {
+  /// 45 min -> "45m", 135 min -> "2h 15m" (in the app's language).
+  static String formatTime(int seconds, [AppLocalizations? l10n]) {
+    final t = l10n ?? appL10n;
     final minutes = (seconds / 60).round();
-    if (minutes < 60) return '${minutes}m';
-    return '${minutes ~/ 60}h ${minutes % 60}m';
+    if (minutes < 60) return t.timeMinutes(minutes);
+    return t.timeHoursMinutes(minutes ~/ 60, minutes % 60);
   }
 }
 
@@ -154,9 +159,7 @@ class ContentService {
     } catch (e) {
       // The raw database error is for developers, not patients.
       debugPrint('ContentService.loadEducation failed: $e');
-      throw const ContentException(
-        'Could not load lessons. Check your connection and try again.',
-      );
+      throw ContentException(appL10n.contentErrorLessons);
     }
   }
 
@@ -186,9 +189,7 @@ class ContentService {
       }
     } catch (e) {
       debugPrint('ContentService.loadMyProgress failed: $e');
-      throw const ContentException(
-        'Could not load your progress. Check your connection and try again.',
-      );
+      throw ContentException(appL10n.contentErrorProgress);
     }
 
     // Merge what was done in the last few seconds / offline.
@@ -285,6 +286,9 @@ class ContentService {
   /// links in the lesson notes), then the links staff added in the dashboard
   /// (content_items.reference_links). https only, each link once.
   /// Keep in step with lessonOwnReferences() in the dashboard (src/lib/content.ts).
+  ///
+  /// `{title, url, kind}`; kind is 'video' / 'audio' for the lesson's own
+  /// media (titled by the widget in the patient's language), else 'link'.
   static List<Map<String, String>> _references({
     String? videoUrl,
     String? audioUrl,
@@ -293,16 +297,16 @@ class ContentService {
   }) {
     final out = <Map<String, String>>[];
     final seen = <String>{};
-    void add(String title, String? url) {
+    void add(String title, String? url, {String kind = 'link'}) {
       final u = url?.trim() ?? '';
       if (!u.toLowerCase().startsWith('https://')) return;
       final key = u.replaceFirst(RegExp(r'/+$'), '').toLowerCase();
       if (!seen.add(key)) return;
-      out.add({'title': title.trim(), 'url': u});
+      out.add({'title': title.trim(), 'url': u, 'kind': kind});
     }
 
-    add('Lesson video', videoUrl);
-    add('Lesson audio', audioUrl);
+    add('', videoUrl, kind: 'video');
+    add('', audioUrl, kind: 'audio');
     if (scriptHtml != null) {
       final links = html_parser.parseFragment(scriptHtml).querySelectorAll('a');
       for (final a in links) {
@@ -326,12 +330,11 @@ class ContentService {
     return (int.tryParse(parts[0]) ?? 0) * 60 + (int.tryParse(parts[1]) ?? 0);
   }
 
-  /// "6 min" from the video + audio estimates, or '' if none were entered.
-  static String _durationLabel(String? video, String? audio) {
+  /// Minutes from the video + audio estimates, or null if none were entered.
+  static int? _durationMinutes(String? video, String? audio) {
     final total = _seconds(video) + _seconds(audio);
-    if (total <= 0) return '';
-    final minutes = (total / 60).ceil();
-    return '$minutes min';
+    if (total <= 0) return null;
+    return (total / 60).ceil();
   }
 
   static String _status(String id, _Progress? p) {
@@ -367,7 +370,7 @@ class ContentService {
       'title': title,
       'category': catName ?? 'Other',
       'description': (r['description'] as String?) ?? '',
-      'duration': _durationLabel(
+      'durationMinutes': _durationMinutes(
         _nonEmpty(r['video_duration']),
         _nonEmpty(r['audio_duration']),
       ),

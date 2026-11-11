@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import './app_language.dart';
 import './chat_service.dart' show newMessageId;
 
 /// Status of an "I need assistance" request, as shown on the staff dashboard
@@ -78,12 +79,10 @@ class AssistanceService {
   }) async {
     final text = message.trim();
     if (text.isEmpty) {
-      throw const AssistanceException('Please describe what you need help with.');
+      throw AssistanceException(appL10n.assistErrorEmpty);
     }
     if (text.length > maxLength) {
-      throw const AssistanceException(
-        'Please keep your message under $maxLength characters.',
-      );
+      throw AssistanceException(appL10n.assistErrorTooLong(maxLength));
     }
     try {
       final row = await _client
@@ -106,9 +105,7 @@ class AssistanceService {
     } on AssistanceException {
       rethrow;
     } catch (_) {
-      throw const AssistanceException(
-        'Could not reach the server. Your message was kept — please try again.',
-      );
+      throw AssistanceException(appL10n.assistErrorOffline);
     }
   }
 
@@ -125,26 +122,18 @@ class AssistanceService {
           .toList();
     } catch (e) {
       debugPrint('AssistanceService.fetchMine failed: $e');
-      throw const AssistanceException(
-        'Could not load your requests. Check your connection and try again.',
-      );
+      throw AssistanceException(appL10n.assistErrorLoad);
     }
   }
 
   String _describe(PostgrestException e) {
     debugPrint('AssistanceService.submit failed: $e');
-    if (e.code == '42501') {
-      return 'Only participant accounts can send assistance requests.';
-    }
-    if (e.code == '23514') {
-      return 'Please write a message between 1 and $maxLength characters.';
-    }
+    final l10n = appL10n;
+    if (e.code == '42501') return l10n.assistErrorNotParticipant;
+    if (e.code == '23514') return l10n.assistErrorLength(maxLength);
     if (e.hint == 'rate_limited' || e.message.contains('too many requests')) {
-      return 'You have sent several requests recently. The team will get back '
-          'to you soon. If it is urgent, call your care team. In an emergency, '
-          'call 911.';
+      return l10n.assistErrorRateLimited;
     }
-    return 'Your request was not sent. Your message was kept — please try '
-        'again.';
+    return l10n.assistErrorNotSent;
   }
 }

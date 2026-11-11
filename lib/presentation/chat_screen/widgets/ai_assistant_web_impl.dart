@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
 Widget buildAiAssistantView({required String userId}) {
@@ -10,7 +11,7 @@ Widget buildAiAssistantView({required String userId}) {
     child: Padding(
       padding: const EdgeInsets.all(32),
       child: Text(
-        'The AI assistant is available in the HappyHearts iOS and Android app.',
+        appL10n.aiWebOnly,
         textAlign: TextAlign.center,
         style: GoogleFonts.plusJakartaSans(
           fontSize: 14,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
 class CategoryFilterWidget extends StatelessWidget {
@@ -6,7 +7,7 @@ class CategoryFilterWidget extends StatelessWidget {
   final ValueChanged<String> onCategoryChanged;
 
   /// Category names from the dashboard (active only, in dashboard order).
-  /// "All" is always shown first.
+  /// "All" is always shown first (the value 'All'; its label is translated).
   final List<String> categories;
 
   const CategoryFilterWidget({
@@ -53,7 +54,7 @@ class CategoryFilterWidget extends StatelessWidget {
                     : null,
               ),
               child: Text(
-                cat,
+                index == 0 ? context.l10n.homeCategoryAll : cat,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,

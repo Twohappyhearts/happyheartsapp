@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../services/app_language.dart';
 import '../../../services/auth_service.dart';
 import '../../../theme/app_theme.dart';
 
@@ -55,14 +56,15 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Reset your password',
-            style: TextStyle(
+          Text(
+            l10n.forgotTitle,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
               color: AppTheme.textDark,
@@ -71,8 +73,8 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
           const SizedBox(height: 4),
           Text(
             _sent
-                ? 'If an account exists for ${_emailController.text.trim()}, a reset link is on its way. Open it on this device.'
-                : 'Enter your email and we will send you a reset link.',
+                ? l10n.forgotSent(_emailController.text.trim())
+                : l10n.forgotIntro,
             style: const TextStyle(
               fontSize: 14,
               color: AppTheme.textMedium,
@@ -84,19 +86,19 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email Address',
-                hintText: 'Enter your email',
-                prefixIcon: Icon(
+              decoration: InputDecoration(
+                labelText: l10n.fieldEmail,
+                hintText: l10n.fieldEmailHint,
+                prefixIcon: const Icon(
                   Icons.mail_outline_rounded,
                   color: AppTheme.textLight,
                 ),
               ),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) {
-                  return 'Please enter your email';
+                  return l10n.validationEmailRequired;
                 }
-                if (!v.contains('@')) return 'Please enter a valid email';
+                if (!v.contains('@')) return l10n.validationEmailInvalid;
                 return null;
               },
             ),
@@ -124,14 +126,14 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Send reset link'),
+                    : Text(l10n.forgotSend),
               ),
             ),
           ],
           const SizedBox(height: 8),
           TextButton(
             onPressed: widget.onBack,
-            child: const Text('Back to sign in'),
+            child: Text(l10n.backToSignIn),
           ),
         ],
       ),

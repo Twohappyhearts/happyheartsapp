@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/rich_html_text.dart';
 
@@ -47,7 +48,7 @@ class _ScriptSectionWidgetState extends State<ScriptSectionWidget> {
             const SizedBox(width: 10),
             Flexible(
               child: Text(
-                'Lesson Notes',
+                context.l10n.scriptTitle,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -106,7 +107,11 @@ class _ScriptSectionWidgetState extends State<ScriptSectionWidget> {
                           ? Icons.keyboard_arrow_up_rounded
                           : Icons.keyboard_arrow_down_rounded,
                     ),
-                    label: Text(_expanded ? 'Show less' : 'Read more'),
+                    label: Text(
+                      _expanded
+                          ? context.l10n.scriptShowLess
+                          : context.l10n.scriptReadMore,
+                    ),
                   ),
                 ),
             ],

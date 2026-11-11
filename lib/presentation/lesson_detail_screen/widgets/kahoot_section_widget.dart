@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
 import 'kahoot_section_web_stub.dart'
@@ -51,7 +52,7 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
     widget.onQuizCompleted?.call();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Nice work! Quiz marked as finished.'),
+        content: Text(context.l10n.kahootMarked),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppTheme.textDark,
@@ -64,7 +65,7 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
     Clipboard.setData(ClipboardData(text: widget.username));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Username copied to clipboard!'),
+        content: Text(context.l10n.kahootCopied),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppTheme.textDark,
@@ -110,10 +111,10 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Text(
-                'Knowledge Game',
-                style: TextStyle(
+                context.l10n.kahootTitle,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.textDark,
@@ -127,7 +128,7 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
                   _mobileController = null;
                 }),
                 icon: const Icon(Icons.close_rounded, size: 16),
-                label: const Text('Close'),
+                label: Text(context.l10n.close),
                 style: TextButton.styleFrom(
                   foregroundColor: AppTheme.textMedium,
                 ),
@@ -171,9 +172,9 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Your Kahoot Username',
-            style: TextStyle(
+          Text(
+            context.l10n.kahootUsernameLabel,
+            style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: AppTheme.textMedium,
@@ -219,29 +220,33 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
                 ),
               ),
               const SizedBox(width: 10),
-              InkWell(
-                onTap: _copyUsername,
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppTheme.purpleContainer,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.copy_rounded,
-                    size: 18,
-                    color: AppTheme.purple,
+              Semantics(
+                button: true,
+                label: context.l10n.kahootCopyTooltip,
+                child: InkWell(
+                  onTap: _copyUsername,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppTheme.purpleContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.copy_rounded,
+                      size: 18,
+                      color: AppTheme.purple,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Use this username when prompted in the Kahoot game',
-            style: TextStyle(
+          Text(
+            context.l10n.kahootUsernameHint,
+            style: const TextStyle(
               fontSize: 11,
               color: AppTheme.textLight,
               fontStyle: FontStyle.italic,
@@ -287,27 +292,32 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Knowledge Game',
-            style: TextStyle(
+          Text(
+            context.l10n.kahootTitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: Colors.white,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            "Test what you've learned with an interactive Kahoot! game",
-            style: TextStyle(fontSize: 13, color: Colors.white70, height: 1.4),
+          Text(
+            context.l10n.kahootIntro,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.white70,
+              height: 1.4,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
             children: [
-              _buildBadgePill('⏱ ~5 min'),
-              _buildBadgePill('✨ Interactive'),
-              _buildBadgePill('🎉 Fun!'),
+              _buildBadgePill(context.l10n.kahootBadgeTime),
+              _buildBadgePill(context.l10n.kahootBadgeInteractive),
+              _buildBadgePill(context.l10n.kahootBadgeFun),
             ],
           ),
           const SizedBox(height: 20),
@@ -316,9 +326,12 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
             child: ElevatedButton.icon(
               onPressed: _startKahoot,
               icon: const Icon(Icons.play_arrow_rounded, size: 20),
-              label: const Text(
-                'Start Kahoot! Game',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              label: Text(
+                context.l10n.kahootStart,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -332,9 +345,9 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
             ),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'The game will open embedded below when you tap the button above',
-            style: TextStyle(
+          Text(
+            context.l10n.kahootEmbedHint,
+            style: const TextStyle(
               fontSize: 11,
               color: Colors.white54,
               fontStyle: FontStyle.italic,
@@ -374,22 +387,29 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
     if (_quizDone) {
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
           color: AppTheme.secondaryContainer,
           borderRadius: BorderRadius.circular(28),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle_rounded, size: 18, color: Color(0xFF15803D)),
-            SizedBox(width: 6),
-            Text(
-              'Quiz finished',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF15803D),
+            const Icon(
+              Icons.check_circle_rounded,
+              size: 18,
+              color: Color(0xFF15803D),
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                context.l10n.kahootFinished,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF15803D),
+                ),
               ),
             ),
           ],
@@ -401,9 +421,9 @@ class _KahootSectionWidgetState extends State<KahootSectionWidget> {
       child: OutlinedButton.icon(
         onPressed: _markQuizFinished,
         icon: const Icon(Icons.flag_rounded, size: 18),
-        label: const Text(
-          'I finished the quiz',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        label: Text(
+          context.l10n.kahootIFinished,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppTheme.purple,

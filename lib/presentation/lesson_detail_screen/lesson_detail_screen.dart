@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../routes/app_routes.dart';
+import '../../services/app_language.dart';
 import '../../services/current_profile.dart';
 import '../../services/lesson_visit_tracker.dart';
 import '../../theme/app_theme.dart';
@@ -54,7 +55,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       setState(() {
         _module = first;
         _loadingFallback = false;
-        if (first == null) _loadError = 'No lessons are available yet.';
+        if (first == null) _loadError = context.l10n.lessonNoLessonsShort;
       });
       _startTracking();
     } on ContentException catch (e) {
@@ -136,7 +137,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     _tracker?.sessionCompleted();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Lesson marked as completed. Great job!'),
+        content: Text(context.l10n.lessonMarked),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppTheme.textDark,
@@ -167,7 +168,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          _loadError ?? 'No lesson selected.',
+                          _loadError ?? context.l10n.lessonNoneSelected,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 14,
@@ -177,7 +178,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _loadFirstSession,
-                          child: const Text('Retry'),
+                          child: Text(context.l10n.retry),
                         ),
                       ],
                     ),
@@ -194,7 +195,11 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     final references = <Map<String, String>>[
       for (final r in (module['references'] as List? ?? const []))
         if (r is Map)
-          {'title': '${r['title'] ?? ''}', 'url': '${r['url'] ?? ''}'},
+          {
+            'title': '${r['title'] ?? ''}',
+            'url': '${r['url'] ?? ''}',
+            'kind': '${r['kind'] ?? 'link'}',
+          },
     ];
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -249,8 +254,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                           VideoSectionWidget(
                             videoId: videoId,
                             duration:
-                                (module['videoDuration'] as String?) ??
-                                (module['duration'] as String? ?? ''),
+                                (module['videoDuration'] as String?) ?? '',
                             onPlayerState: (state) =>
                                 _tracker?.onVideoState(state),
                           ),
@@ -342,7 +346,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _completed ? 'Lesson completed' : 'Finished this lesson?',
+            _completed
+                ? context.l10n.lessonCompletedTitle
+                : context.l10n.lessonFinishPrompt,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -352,8 +358,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           const SizedBox(height: 4),
           Text(
             _completed
-                ? 'Great job! You can come back and review it any time.'
-                : 'Mark it as completed to keep track of your progress.',
+                ? context.l10n.lessonCompletedBody
+                : context.l10n.lessonFinishBody,
             style: const TextStyle(
               fontSize: 13,
               color: AppTheme.textMedium,
@@ -372,7 +378,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 size: 20,
               ),
               label: Text(
-                _completed ? 'Completed' : 'Mark as completed',
+                _completed
+                    ? context.l10n.statusCompleted
+                    : context.l10n.lessonMarkButton,
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -398,7 +406,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
 
   Widget _buildModuleHeader(Map<String, dynamic> module) {
     final category = module['category'] as String;
-    final duration = module['duration'] as String? ?? '';
+    final minutes = module['durationMinutes'] as int?;
+    final duration = minutes == null ? '' : context.l10n.minutesShort(minutes);
     final sections = [
       module['infographicUrl'],
       module['videoId'],
@@ -494,7 +503,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '$sections ${sections == 1 ? 'section' : 'sections'}',
+                    context.l10n.lessonSections(sections),
                     style: TextStyle(
                       fontSize: 12,
                       color: AppTheme.purple,

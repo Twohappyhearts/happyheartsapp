@@ -8,6 +8,7 @@ import './widgets/home_app_bar_widget.dart';
 import './widgets/module_card_widget.dart';
 import './widgets/progress_card_widget.dart';
 import './widgets/search_bar_widget.dart';
+import '../../services/app_language.dart';
 import '../../services/content_service.dart';
 import '../../services/current_profile.dart';
 
@@ -131,9 +132,9 @@ class _EducationHubScreenState extends State<EducationHubScreen> {
                       onAvatarTap: () => context.go(AppRoutes.profile),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Your Health\nEducation Hub',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.homeTitle,
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textDark,
@@ -194,7 +195,7 @@ class _EducationHubScreenState extends State<EducationHubScreen> {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadContent,
-                        child: const Text('Retry'),
+                        child: Text(context.l10n.retry),
                       ),
                     ],
                   ),
@@ -206,8 +207,8 @@ class _EducationHubScreenState extends State<EducationHubScreen> {
                   padding: const EdgeInsets.fromLTRB(32, 40, 32, 0),
                   child: Text(
                     _modules.isEmpty
-                        ? 'No lessons are available yet. Check back soon.'
-                        : 'No lessons match your search.',
+                        ? context.l10n.homeNoLessons
+                        : context.l10n.homeNoMatches,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 14,

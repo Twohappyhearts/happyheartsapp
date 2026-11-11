@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
 class AuthTabToggleWidget extends StatelessWidget {
@@ -20,7 +21,10 @@ class AuthTabToggleWidget extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(4),
       child: Row(
-        children: [_buildTab('Sign In', 0), _buildTab('Create Account', 1)],
+        children: [
+          _buildTab(context.l10n.authTabSignIn, 0),
+          _buildTab(context.l10n.authTabCreateAccount, 1),
+        ],
       ),
     );
   }

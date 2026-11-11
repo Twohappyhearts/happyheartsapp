@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
 class ProgressCardWidget extends StatelessWidget {
@@ -16,19 +17,20 @@ class ProgressCardWidget extends StatelessWidget {
     final percent = total > 0 ? completed / total : 0.0;
     final percentInt = (percent * 100).round();
 
+    final l10n = context.l10n;
     String motivationalText;
     String emoji;
     if (percentInt == 0) {
-      motivationalText = "Let's get started on your journey!";
+      motivationalText = l10n.progressCardStart;
       emoji = '🚀';
     } else if (percentInt < 50) {
-      motivationalText = "$percentInt% complete — you're doing great!";
+      motivationalText = l10n.progressCardGreat(percentInt);
       emoji = '💪';
     } else if (percentInt < 100) {
-      motivationalText = "$percentInt% complete — keep going!";
+      motivationalText = l10n.progressCardKeepGoing(percentInt);
       emoji = '🎯';
     } else {
-      motivationalText = "100% complete — amazing work!";
+      motivationalText = l10n.progressCardDone;
       emoji = '🏆';
     }
 
@@ -55,9 +57,9 @@ class ProgressCardWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Your Progress',
-                  style: TextStyle(
+                Text(
+                  l10n.progressCardTitle,
+                  style: const TextStyle(
                     fontSize: 13,
                     color: Colors.white70,
                     fontWeight: FontWeight.w500,
@@ -65,7 +67,7 @@ class ProgressCardWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '$completed / $total lessons',
+                  l10n.progressCardLessons(completed, total),
                   style: const TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w700,

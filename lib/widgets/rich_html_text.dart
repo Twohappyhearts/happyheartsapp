@@ -4,6 +4,7 @@ import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html_parser;
 import 'package:url_launcher/url_launcher.dart';
 
+import '../services/app_language.dart';
 import '../theme/app_theme.dart';
 
 /// Renders the limited rich text produced by the dashboard's script editor
@@ -262,7 +263,7 @@ class _RichHtmlTextState extends State<RichHtmlText> {
         text: text.isEmpty ? href : text,
         style: linkStyle,
         recognizer: recognizer,
-        semanticsLabel: 'Link: ${text.isEmpty ? href : text}',
+        semanticsLabel: appL10n.linkSemantic(text.isEmpty ? href : text),
       ),
     ];
   }

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
 /// The lesson's sources, at the end of the lesson: its video and audio, the
 /// links in the lesson notes, and the links staff added in the dashboard
 /// (built by ContentService). Each one opens in the phone's browser.
 class ReferencesSectionWidget extends StatelessWidget {
-  /// `{title, url}`; the title may be empty (the site name is shown instead).
+  /// `{title, url, kind}`; the title may be empty (the site name is shown
+  /// instead). kind 'video' / 'audio' = the lesson's own media.
   final List<Map<String, String>> references;
 
   const ReferencesSectionWidget({required this.references, super.key});
@@ -17,9 +19,9 @@ class ReferencesSectionWidget extends StatelessWidget {
     return host.startsWith('www.') ? host.substring(4) : host;
   }
 
-  static IconData _icon(String title) => switch (title) {
-    'Lesson video' => Icons.play_circle_outline_rounded,
-    'Lesson audio' => Icons.headphones_rounded,
+  static IconData _icon(String kind) => switch (kind) {
+    'video' => Icons.play_circle_outline_rounded,
+    'audio' => Icons.headphones_rounded,
     _ => Icons.link_rounded,
   };
 
@@ -35,9 +37,10 @@ class ReferencesSectionWidget extends StatelessWidget {
       }
     }
     if (!opened) {
+      if (!context.mounted) return;
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Could not open this link.'),
+        SnackBar(
+          content: Text(context.l10n.couldNotOpenLink),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -68,7 +71,7 @@ class ReferencesSectionWidget extends StatelessWidget {
             const SizedBox(width: 10),
             Flexible(
               child: Text(
-                'References',
+                context.l10n.refTitle,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -120,7 +123,12 @@ class ReferencesSectionWidget extends StatelessWidget {
   Widget _row(BuildContext context, Map<String, String> reference) {
     final url = reference['url'] ?? '';
     final host = _host(url);
-    final rawTitle = (reference['title'] ?? '').trim();
+    final kind = reference['kind'] ?? 'link';
+    final rawTitle = switch (kind) {
+      'video' => context.l10n.refLessonVideo,
+      'audio' => context.l10n.refLessonAudio,
+      _ => (reference['title'] ?? '').trim(),
+    };
     final title = rawTitle.isEmpty ? (host.isEmpty ? url : host) : rawTitle;
     return Semantics(
       link: true,
@@ -130,7 +138,7 @@ class ReferencesSectionWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              Icon(_icon(rawTitle), size: 22, color: AppTheme.primary),
+              Icon(_icon(kind), size: 22, color: AppTheme.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

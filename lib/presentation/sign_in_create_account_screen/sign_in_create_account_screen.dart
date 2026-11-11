@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../services/app_language.dart';
 import '../../services/supabase_service.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/language_picker.dart';
 import './widgets/auth_tab_toggle_widget.dart';
 import './widgets/check_email_widget.dart';
 import './widgets/create_account_form_widget.dart';
@@ -113,98 +115,116 @@ class _SignInCreateAccountScreenState extends State<SignInCreateAccountScreen>
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: isTablet ? 0 : 24,
-              vertical: 32,
-            ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: isTablet ? 480 : double.infinity,
+        child: Column(
+          children: [
+            // Language first: patients need to read this screen before they
+            // can sign in.
+            const Align(
+              alignment: AlignmentDirectional.topEnd,
+              child: Padding(
+                padding: EdgeInsetsDirectional.only(top: 4, end: 8),
+                child: LanguageButton(),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Logo
-                  AnimatedBuilder(
-                    animation: _logoController,
-                    builder: (context, child) => FadeTransition(
-                      opacity: _logoFade,
-                      child: ScaleTransition(scale: _logoScale, child: child),
+            ),
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 0 : 24,
+                    vertical: 16,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: isTablet ? 480 : double.infinity,
                     ),
-                    child: Center(
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [AppTheme.primary, Color(0xFF60A5FA)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primary.withAlpha(77),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Logo
+                        AnimatedBuilder(
+                          animation: _logoController,
+                          builder: (context, child) => FadeTransition(
+                            opacity: _logoFade,
+                            child: ScaleTransition(
+                              scale: _logoScale,
+                              child: child,
                             ),
-                          ],
+                          ),
+                          child: Center(
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [AppTheme.primary, Color(0xFF60A5FA)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.primary.withAlpha(77),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.favorite_rounded,
+                                color: Colors.white,
+                                size: 40,
+                              ),
+                            ),
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.favorite_rounded,
-                          color: Colors.white,
-                          size: 40,
+                        const SizedBox(height: 8),
+                        Center(
+                          child: Text(
+                            'HappyHearts',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.primary,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Center(
-                    child: Text(
-                      'HappyHearts',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.primary,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  ),
-                  Center(
-                    child: Text(
-                      'Your personal health education companion',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppTheme.textLight,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
+                        Center(
+                          child: Text(
+                            context.l10n.authTagline,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppTheme.textLight,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 28),
 
-                  if (!SupabaseService.isConfigured) ...[
-                    _ConfigErrorBanner(
-                      message: SupabaseService.configurationError!,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                        if (!SupabaseService.isConfigured) ...[
+                          _ConfigErrorBanner(
+                            message: SupabaseService.configurationError!,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
 
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 250),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeInCubic,
-                    transitionBuilder: (child, animation) =>
-                        FadeTransition(opacity: animation, child: child),
-                    child: _buildBody(),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(opacity: animation, child: child),
+                          child: _buildBody(),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

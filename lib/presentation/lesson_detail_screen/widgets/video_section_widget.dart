@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
 // Conditional imports: stub used on mobile, web_impl on web
@@ -65,7 +66,7 @@ class _VideoSectionWidgetState extends State<VideoSectionWidget> {
             const SizedBox(width: 10),
             Flexible(
               child: Text(
-                'Video Lesson',
+                context.l10n.videoTitle,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -147,7 +148,9 @@ class _VideoSectionWidgetState extends State<VideoSectionWidget> {
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        _videoStarted ? 'Playing video' : 'Tap to play video',
+                        _videoStarted
+                            ? context.l10n.videoPlaying
+                            : context.l10n.videoTapToPlay,
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppTheme.textLight,
@@ -200,27 +203,27 @@ class _VideoSectionWidgetState extends State<VideoSectionWidget> {
                 size: 36,
               ),
             ),
-            Positioned(
+            PositionedDirectional(
               bottom: 12,
-              left: 12,
+              start: 12,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.black.withAlpha(179),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.play_circle_outline_rounded,
                       size: 12,
                       color: Colors.white,
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
-                      'YouTube Video',
-                      style: TextStyle(
+                      context.l10n.videoYouTube,
+                      style: const TextStyle(
                         fontSize: 11,
                         color: Colors.white,
                         fontWeight: FontWeight.w500,

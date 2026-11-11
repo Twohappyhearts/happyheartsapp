@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
+import '../../services/app_language.dart';
 import '../../services/content_service.dart';
 import '../../services/survey_service.dart';
 import '../../theme/app_theme.dart';
@@ -76,15 +78,17 @@ class _ProgressScreenState extends State<ProgressScreen> {
     var titles = <String, String>{};
     try {
       titles = {
-        for (final s in await SurveyService.instance.loadSurveys()) s.id: s.title,
+        for (final s in await SurveyService.instance.loadSurveys())
+          s.id: s.title,
       };
     } catch (_) {}
     return [
       for (final c in completions)
         _Activity(
           _ActivityKind.survey,
-          'Completed: ${titles[c.surveyId] ?? 'Survey (${c.code})'}',
+          titles[c.surveyId] ?? '',
           c.completedAt,
+          code: c.code,
         ),
     ];
   }
@@ -112,7 +116,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
     (sum, m) => sum + (_progress[m['id']]?.timeOnPageSec ?? 0),
   );
 
-  static String _fmtTime(int seconds) => LearningSummary.formatTime(seconds);
+  String _fmtTime(int seconds) =>
+      LearningSummary.formatTime(seconds, context.l10n);
 
   /// Completed lessons and finished quizzes, newest first.
   List<_Activity> get _activities {
@@ -124,10 +129,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
       final title = titles[p.contentId];
       if (title == null) continue; // lesson no longer shown in the app
       if (p.completedAt != null) {
-        list.add(_Activity(_ActivityKind.lesson, 'Completed: $title', p.completedAt!));
+        list.add(_Activity(_ActivityKind.lesson, title, p.completedAt!));
       }
       if (p.quizCompletedAt != null) {
-        list.add(_Activity(_ActivityKind.quiz, 'Finished quiz: $title', p.quizCompletedAt!));
+        list.add(_Activity(_ActivityKind.quiz, title, p.quizCompletedAt!));
       }
     }
     list.addAll(_surveyActivities);
@@ -140,12 +145,15 @@ class _ProgressScreenState extends State<ProgressScreen> {
     return {
       ...m,
       'status': _statusOf(m),
-      'timeSpent': p == null || p.timeOnPageSec < 60 ? '' : _fmtTime(p.timeOnPageSec),
+      'timeSpent': p == null || p.timeOnPageSec < 60
+          ? ''
+          : _fmtTime(p.timeOnPageSec),
       ..._iconFor(m['category'] as String? ?? ''),
     };
   }
 
   static Map<String, dynamic> _iconFor(String category) {
+    // Keyed by the dashboard's category names (data, not app text).
     switch (category) {
       case 'Heart Health':
         return {
@@ -201,10 +209,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         children: [
                           const AppMenuButton(),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              'Your Progress',
-                              style: TextStyle(
+                              context.l10n.progressCardTitle,
+                              style: const TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.textDark,
@@ -214,9 +222,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      const Text(
-                        'Track your learning journey and celebrate milestones.',
-                        style: TextStyle(
+                      Text(
+                        context.l10n.progressSubtitle,
+                        style: const TextStyle(
                           fontSize: 14,
                           color: AppTheme.textMedium,
                           height: 1.4,
@@ -254,9 +262,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         const SizedBox(height: 28),
 
                         // Activity calendar
-                        const Text(
-                          'Activity Calendar',
-                          style: TextStyle(
+                        Text(
+                          context.l10n.progressCalendar,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: AppTheme.textDark,
@@ -273,7 +281,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                           }),
                           onDaySelected: (d) => setState(() {
                             _selectedDay =
-                                _selectedDay != null && _sameDay(_selectedDay!, d)
+                                _selectedDay != null &&
+                                    _sameDay(_selectedDay!, d)
                                 ? null
                                 : d;
                           }),
@@ -291,9 +300,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         const SizedBox(height: 28),
 
                         // Module list header
-                        const Text(
-                          'Module Breakdown',
-                          style: TextStyle(
+                        Text(
+                          context.l10n.progressBreakdown,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: AppTheme.textDark,
@@ -301,9 +310,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         ),
                         const SizedBox(height: 14),
                         if (_modules.isEmpty)
-                          const Text(
-                            'No lessons are available yet.',
-                            style: TextStyle(
+                          Text(
+                            context.l10n.lessonNoLessonsShort,
+                            style: const TextStyle(
                               fontSize: 13,
                               color: AppTheme.textMedium,
                             ),
@@ -323,7 +332,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       final module = _withProgress(_modules[index]);
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
-                        child: _ModuleProgressTile(module: module, index: index),
+                        child: _ModuleProgressTile(
+                          module: module,
+                          index: index,
+                        ),
                       );
                     }, childCount: _modules.length),
                   ),
@@ -339,29 +351,29 @@ class _ProgressScreenState extends State<ProgressScreen> {
 bool _sameDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
 
-const _monthNames = [
-  'January', 'February', 'March', 'April', 'May', 'June', 'July',
-  'August', 'September', 'October', 'November', 'December',
-];
-const _shortMonths = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
-
-String _fmtDateTime(DateTime d) {
-  final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
-  final m = d.minute.toString().padLeft(2, '0');
-  final ampm = d.hour < 12 ? 'AM' : 'PM';
-  return '${_shortMonths[d.month - 1]} ${d.day}, ${d.year} · $h:$m $ampm';
-}
+String _fmtDateTime(AppLocalizations l10n, DateTime d) =>
+    '${l10n.monthDayYear(d)} · ${l10n.time(d)}';
 
 enum _ActivityKind { lesson, quiz, survey }
 
 class _Activity {
   final _ActivityKind kind;
-  final String label;
+
+  /// Lesson or survey title ('' when the survey is no longer listed).
+  final String title;
   final DateTime at;
-  const _Activity(this.kind, this.label, this.at);
+
+  /// Survey code, shown when the survey's title is unknown.
+  final String code;
+  const _Activity(this.kind, this.title, this.at, {this.code = ''});
+
+  String label(AppLocalizations l10n) => switch (kind) {
+    _ActivityKind.lesson => l10n.activityCompleted(title),
+    _ActivityKind.quiz => l10n.activityQuizFinished(title),
+    _ActivityKind.survey => l10n.activityCompleted(
+      title.isNotEmpty ? title : l10n.activitySurveyFallback(code),
+    ),
+  };
 
   Color get color => switch (kind) {
     _ActivityKind.lesson => AppTheme.primary,
@@ -402,7 +414,11 @@ class _ErrorBox extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(Icons.cloud_off_rounded, size: 32, color: AppTheme.textLight),
+          const Icon(
+            Icons.cloud_off_rounded,
+            size: 32,
+            color: AppTheme.textLight,
+          ),
           const SizedBox(height: 10),
           Text(
             message,
@@ -410,7 +426,7 @@ class _ErrorBox extends StatelessWidget {
             style: const TextStyle(fontSize: 13, color: AppTheme.textMedium),
           ),
           const SizedBox(height: 12),
-          ElevatedButton(onPressed: onRetry, child: const Text('Retry')),
+          ElevatedButton(onPressed: onRetry, child: Text(context.l10n.retry)),
         ],
       ),
     );
@@ -438,12 +454,16 @@ class _ActivityCalendar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    // Sun..Sat initials in the app's language (the grid starts on Sunday).
+    final weekdays = MaterialLocalizations.of(context).narrowWeekdays;
     final today = DateTime.now();
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
     final leading = DateTime(month.year, month.month, 1).weekday % 7; // Sun=0
     final cells = leading + daysInMonth;
     final rows = (cells / 7).ceil();
-    final isCurrentMonth = month.year == today.year && month.month == today.month;
+    final isCurrentMonth =
+        month.year == today.year && month.month == today.month;
 
     // day -> kinds done that day
     final byDay = <int, Set<_ActivityKind>>{};
@@ -472,7 +492,7 @@ class _ActivityCalendar extends StatelessWidget {
           Row(
             children: [
               IconButton(
-                tooltip: 'Previous month',
+                tooltip: l10n.calPrevMonth,
                 icon: const Icon(Icons.chevron_left_rounded),
                 color: AppTheme.textMedium,
                 onPressed: () =>
@@ -480,7 +500,7 @@ class _ActivityCalendar extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  '${_monthNames[month.month - 1]} ${month.year}',
+                  l10n.monthYear(month),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 15,
@@ -490,19 +510,22 @@ class _ActivityCalendar extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: 'Next month',
+                tooltip: l10n.calNextMonth,
                 icon: const Icon(Icons.chevron_right_rounded),
-                color: isCurrentMonth ? AppTheme.borderColor : AppTheme.textMedium,
+                color: isCurrentMonth
+                    ? AppTheme.borderColor
+                    : AppTheme.textMedium,
                 onPressed: isCurrentMonth
                     ? null
-                    : () => onMonthChanged(DateTime(month.year, month.month + 1)),
+                    : () =>
+                          onMonthChanged(DateTime(month.year, month.month + 1)),
               ),
             ],
           ),
           const SizedBox(height: 4),
           Row(
             children: [
-              for (final d in const ['S', 'M', 'T', 'W', 'T', 'F', 'S'])
+              for (final d in weekdays)
                 Expanded(
                   child: Center(
                     child: Text(
@@ -522,18 +545,26 @@ class _ActivityCalendar extends StatelessWidget {
             Row(
               children: [
                 for (var c = 0; c < 7; c++)
-                  Expanded(child: _dayCell(r * 7 + c - leading + 1, daysInMonth, today, byDay)),
+                  Expanded(
+                    child: _dayCell(
+                      l10n,
+                      r * 7 + c - leading + 1,
+                      daysInMonth,
+                      today,
+                      byDay,
+                    ),
+                  ),
               ],
             ),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              _LegendDot(color: AppTheme.primary, label: 'Lesson'),
-              SizedBox(width: 14),
-              _LegendDot(color: AppTheme.purple, label: 'Quiz'),
-              SizedBox(width: 14),
-              _LegendDot(color: AppTheme.secondary, label: 'Survey'),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 14,
+            runSpacing: 4,
+            children: [
+              _LegendDot(color: AppTheme.primary, label: l10n.legendLesson),
+              _LegendDot(color: AppTheme.purple, label: l10n.legendQuiz),
+              _LegendDot(color: AppTheme.secondary, label: l10n.legendSurvey),
             ],
           ),
         ],
@@ -542,6 +573,7 @@ class _ActivityCalendar extends StatelessWidget {
   }
 
   Widget _dayCell(
+    AppLocalizations l10n,
     int day,
     int daysInMonth,
     DateTime today,
@@ -554,11 +586,12 @@ class _ActivityCalendar extends StatelessWidget {
     final isSelected = selectedDay != null && _sameDay(date, selectedDay!);
     return Semantics(
       button: true,
-      label:
-          '${_monthNames[month.month - 1]} $day'
-          '${kinds.contains(_ActivityKind.lesson) ? ', lesson completed' : ''}'
-          '${kinds.contains(_ActivityKind.quiz) ? ', quiz finished' : ''}'
-          '${kinds.contains(_ActivityKind.survey) ? ', survey completed' : ''}',
+      label: [
+        l10n.monthDayLong(date),
+        if (kinds.contains(_ActivityKind.lesson)) l10n.calLessonDone,
+        if (kinds.contains(_ActivityKind.quiz)) l10n.calQuizDone,
+        if (kinds.contains(_ActivityKind.survey)) l10n.calSurveyDone,
+      ].join(', '),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
         onTap: () => onDaySelected(date),
@@ -580,7 +613,9 @@ class _ActivityCalendar extends StatelessWidget {
                 '$day',
                 style: TextStyle(
                   fontSize: 13,
-                  fontWeight: isToday || isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: isToday || isSelected
+                      ? FontWeight.w700
+                      : FontWeight.w500,
                   color: isSelected ? Colors.white : AppTheme.textDark,
                 ),
               ),
@@ -655,6 +690,7 @@ class _ActivityList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final day = selectedDay;
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -663,8 +699,8 @@ class _ActivityList extends StatelessWidget {
             Expanded(
               child: Text(
                 day == null
-                    ? 'Recent Activity'
-                    : 'Activity on ${_shortMonths[day.month - 1]} ${day.day}',
+                    ? l10n.activityRecent
+                    : l10n.activityOnDay(l10n.monthDay(day)),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -673,7 +709,10 @@ class _ActivityList extends StatelessWidget {
               ),
             ),
             if (day != null)
-              TextButton(onPressed: onClearDay, child: const Text('Show all')),
+              TextButton(
+                onPressed: onClearDay,
+                child: Text(l10n.activityShowAll),
+              ),
           ],
         ),
         const SizedBox(height: 8),
@@ -687,9 +726,7 @@ class _ActivityList extends StatelessWidget {
               border: Border.all(color: AppTheme.borderColor),
             ),
             child: Text(
-              day == null
-                  ? 'Complete a lesson, quiz, or survey and it will show up here.'
-                  : 'Nothing completed on this day.',
+              day == null ? l10n.activityEmpty : l10n.activityEmptyDay,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 13, color: AppTheme.textMedium),
             ),
@@ -721,7 +758,7 @@ class _ActivityList extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          a.label,
+                          a.label(l10n),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -732,7 +769,7 @@ class _ActivityList extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          _fmtDateTime(a.at),
+                          _fmtDateTime(l10n, a.at),
                           style: const TextStyle(
                             fontSize: 11,
                             color: AppTheme.textLight,
@@ -775,6 +812,7 @@ class _OverallProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -797,10 +835,10 @@ class _OverallProgressCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Overall Completion',
-                  style: TextStyle(
+                  l10n.overallTitle,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Colors.white70,
@@ -818,7 +856,7 @@ class _OverallProgressCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '$completedCount of $totalCount modules',
+                  l10n.overallCount(completedCount, totalCount),
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -841,10 +879,10 @@ class _OverallProgressCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             progressPercent >= 1.0
-                ? '🎉 All modules complete!'
+                ? l10n.overallAllDone
                 : inProgressCount > 0
-                ? 'Keep going — you\'re making great progress!'
-                : 'Start your first module to begin.',
+                ? l10n.overallKeepGoing
+                : l10n.overallStart,
             style: const TextStyle(fontSize: 13, color: Colors.white70),
           ),
           const SizedBox(height: 16),
@@ -889,7 +927,7 @@ class _StatsRow extends StatelessWidget {
             iconColor: AppTheme.secondary,
             iconBg: AppTheme.secondaryContainer,
             value: '$completedCount',
-            label: 'Completed',
+            label: context.l10n.statusCompleted,
           ),
         ),
         const SizedBox(width: 10),
@@ -899,7 +937,7 @@ class _StatsRow extends StatelessWidget {
             iconColor: AppTheme.primary,
             iconBg: AppTheme.primaryContainer,
             value: timeSpent,
-            label: 'Time Spent',
+            label: context.l10n.statTimeSpent,
           ),
         ),
         const SizedBox(width: 10),
@@ -909,7 +947,7 @@ class _StatsRow extends StatelessWidget {
             iconColor: const Color(0xFFF59E0B),
             iconBg: const Color(0xFFFEF3C7),
             value: '$inProgressCount',
-            label: 'In Progress',
+            label: context.l10n.statusInProgress,
           ),
         ),
       ],
@@ -1013,17 +1051,17 @@ class _ModuleProgressTile extends StatelessWidget {
     if (isCompleted) {
       statusColor = AppTheme.secondary;
       statusBg = AppTheme.secondaryContainer;
-      statusLabel = 'Completed';
+      statusLabel = context.l10n.statusCompleted;
       statusIcon = Icons.check_circle_rounded;
     } else if (isInProgress) {
       statusColor = AppTheme.primary;
       statusBg = AppTheme.primaryContainer;
-      statusLabel = 'In Progress';
+      statusLabel = context.l10n.statusInProgress;
       statusIcon = Icons.play_circle_rounded;
     } else {
       statusColor = AppTheme.textLight;
       statusBg = AppTheme.surfaceVariantLight;
-      statusLabel = 'Not Started';
+      statusLabel = context.l10n.statusNotStarted;
       statusIcon = Icons.radio_button_unchecked_rounded;
     }
 
@@ -1086,10 +1124,15 @@ class _ModuleProgressTile extends StatelessWidget {
                   Row(
                     children: [
                       for (final part in [
-                        module['duration'] as String? ?? '',
+                        if (module['durationMinutes'] is int)
+                          context.l10n.minutesShort(
+                            module['durationMinutes'] as int,
+                          ),
                         if ((module['timeSpent'] as String? ?? '').isNotEmpty)
-                          '${module['timeSpent']} spent',
-                      ].where((t) => t.isNotEmpty)) ...[
+                          context.l10n.timeSpentSuffix(
+                            module['timeSpent'] as String,
+                          ),
+                      ]) ...[
                         Text(
                           part,
                           style: const TextStyle(

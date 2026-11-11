@@ -1,4 +1,5 @@
 import '../../../core/app_export.dart';
+import '../../../services/app_language.dart';
 import '../../../widgets/app_menu.dart';
 
 /// Top of the Education tab: menu button, the patient's initial (opens
@@ -20,11 +21,11 @@ class HomeAppBarWidget extends StatelessWidget {
     super.key,
   });
 
-  String _getTimeGreeting() {
+  String _getTimeGreeting(BuildContext context) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return context.l10n.homeGoodMorning;
+    if (hour < 17) return context.l10n.homeGoodAfternoon;
+    return context.l10n.homeGoodEvening;
   }
 
   @override
@@ -37,7 +38,7 @@ class HomeAppBarWidget extends StatelessWidget {
         // Avatar
         Semantics(
           button: true,
-          label: 'Profile',
+          label: context.l10n.navProfile,
           child: GestureDetector(
             onTap: onAvatarTap,
             child: Container(
@@ -85,7 +86,9 @@ class HomeAppBarWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                userName.isEmpty ? 'Hi 👋' : 'Hi, $userName 👋',
+                userName.isEmpty
+                    ? context.l10n.homeHi
+                    : context.l10n.homeHiName(userName),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -95,7 +98,7 @@ class HomeAppBarWidget extends StatelessWidget {
                 ),
               ),
               Text(
-                _getTimeGreeting(),
+                _getTimeGreeting(context),
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppTheme.textMedium,

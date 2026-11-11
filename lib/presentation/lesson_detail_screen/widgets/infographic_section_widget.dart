@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 
 import '../../../core/app_export.dart';
+import '../../../services/app_language.dart';
 
 class InfographicSectionWidget extends StatefulWidget {
   final String infographicUrl;
@@ -84,7 +85,7 @@ class _InfographicSectionWidgetState extends State<InfographicSectionWidget> {
             const SizedBox(width: 10),
             Flexible(
               child: Text(
-                'Infographic',
+                context.l10n.infoTitle,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -125,26 +126,31 @@ class _InfographicSectionWidgetState extends State<InfographicSectionWidget> {
                       height: 320,
                       fit: BoxFit.fitWidth,
                       onTap: _openFullscreen,
-                      semanticLabel:
-                          'Educational infographic for ${widget.moduleTitle} showing visual health information and key facts',
+                      semanticLabel: context.l10n.infoSemantic(
+                        widget.moduleTitle,
+                      ),
                     ),
                     // Fullscreen toggle
-                    Positioned(
+                    PositionedDirectional(
                       bottom: 8,
-                      right: 8,
-                      child: GestureDetector(
-                        onTap: _openFullscreen,
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withAlpha(153),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.fullscreen_rounded,
-                            color: Colors.white,
-                            size: 20,
+                      end: 8,
+                      child: Semantics(
+                        button: true,
+                        label: context.l10n.imageOpenFullscreen,
+                        child: GestureDetector(
+                          onTap: _openFullscreen,
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withAlpha(153),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.fullscreen_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
                       ),
@@ -167,25 +173,25 @@ class _InfographicSectionWidgetState extends State<InfographicSectionWidget> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Lesson Infographic',
-                            style: TextStyle(
+                          Text(
+                            context.l10n.infoCardTitle,
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: AppTheme.textDark,
                             ),
                           ),
                           Text(
-                            'Visual summary of ${widget.moduleTitle}',
+                            context.l10n.infoCardSubtitle(widget.moduleTitle),
                             style: const TextStyle(
                               fontSize: 12,
                               color: AppTheme.textMedium,
                             ),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
-                            'Tap the image to view full screen and zoom',
-                            style: TextStyle(
+                          Text(
+                            context.l10n.infoTapHint,
+                            style: const TextStyle(
                               fontSize: 11,
                               color: AppTheme.textLight,
                             ),
@@ -227,13 +233,14 @@ class _InfographicViewerState extends State<_InfographicViewer>
   static const double _doubleTapScale = 2.5;
 
   final TransformationController _transform = TransformationController();
-  late final AnimationController _anim = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 220),
-  )..addListener(() {
-      final a = _zoomAnimation;
-      if (a != null) _transform.value = a.value;
-    });
+  late final AnimationController _anim =
+      AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 220),
+      )..addListener(() {
+        final a = _zoomAnimation;
+        if (a != null) _transform.value = a.value;
+      });
   Animation<Matrix4>? _zoomAnimation;
   Offset _doubleTapPosition = Offset.zero;
 
@@ -245,8 +252,10 @@ class _InfographicViewerState extends State<_InfographicViewer>
   }
 
   void _animateTo(Matrix4 target) {
-    _zoomAnimation = Matrix4Tween(begin: _transform.value, end: target)
-        .animate(CurvedAnimation(parent: _anim, curve: Curves.easeOut));
+    _zoomAnimation = Matrix4Tween(
+      begin: _transform.value,
+      end: target,
+    ).animate(CurvedAnimation(parent: _anim, curve: Curves.easeOut));
     _anim.forward(from: 0);
   }
 
@@ -294,10 +303,10 @@ class _InfographicViewerState extends State<_InfographicViewer>
                       placeholder: (_, __) => const Center(
                         child: CircularProgressIndicator(color: Colors.white),
                       ),
-                      errorWidget: (_, __, ___) => const Center(
+                      errorWidget: (_, __, ___) => Center(
                         child: Text(
-                          'Could not load the infographic.',
-                          style: TextStyle(color: Colors.white70),
+                          context.l10n.imageLoadFailed,
+                          style: const TextStyle(color: Colors.white70),
                         ),
                       ),
                     ),
@@ -308,7 +317,7 @@ class _InfographicViewerState extends State<_InfographicViewer>
             // Top bar: title + close
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+                padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 8, 0),
                 child: Row(
                   children: [
                     Expanded(
@@ -325,13 +334,16 @@ class _InfographicViewerState extends State<_InfographicViewer>
                       ),
                     ),
                     Semantics(
-                      label: 'Close full screen infographic',
+                      label: context.l10n.imageCloseFullscreen,
                       button: true,
                       child: Material(
                         color: Colors.black.withAlpha(140),
                         shape: const CircleBorder(),
                         child: IconButton(
-                          icon: const Icon(Icons.close_rounded, color: Colors.white),
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                          ),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                       ),
@@ -341,7 +353,7 @@ class _InfographicViewerState extends State<_InfographicViewer>
               ),
             ),
             // Hint
-            const Positioned(
+            Positioned(
               left: 0,
               right: 0,
               bottom: 24,
@@ -349,8 +361,8 @@ class _InfographicViewerState extends State<_InfographicViewer>
                 top: false,
                 child: Center(
                   child: Text(
-                    'Pinch or double-tap to zoom',
-                    style: TextStyle(color: Colors.white60, fontSize: 12),
+                    context.l10n.imageZoomHint,
+                    style: const TextStyle(color: Colors.white60, fontSize: 12),
                   ),
                 ),
               ),

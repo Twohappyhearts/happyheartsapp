@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
+import '../../../services/app_language.dart';
 import '../../../services/auth_service.dart';
 import '../../../theme/app_theme.dart';
 
@@ -46,9 +48,9 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
   Future<void> _handleCreateAccount() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_agreeToTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please agree to the Terms of Service')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.createAgreeRequired)));
       return;
     }
     setState(() {
@@ -76,42 +78,81 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
     }
   }
 
+  /// "I agree to the Terms of Use and Privacy Policy", with the two document
+  /// names styled as links. The sentence comes from the translations with
+  /// markers in place of the names, so word order can differ per language.
+  List<InlineSpan> _agreeSpans(AppLocalizations l10n) {
+    const termsMark = '\u0001', privacyMark = '\u0002';
+    const linkStyle = TextStyle(
+      color: AppTheme.primary,
+      fontWeight: FontWeight.w500,
+      decoration: TextDecoration.underline,
+      decorationColor: AppTheme.primary,
+    );
+    final spans = <InlineSpan>[];
+    final sentence = l10n.createAgree(termsMark, privacyMark);
+    final buffer = StringBuffer();
+    void flush() {
+      if (buffer.isEmpty) return;
+      spans.add(TextSpan(text: buffer.toString()));
+      buffer.clear();
+    }
+
+    for (final ch in sentence.split('')) {
+      if (ch == termsMark || ch == privacyMark) {
+        flush();
+        final terms = ch == termsMark;
+        spans.add(
+          TextSpan(
+            text: terms ? l10n.legalTerms : l10n.legalPrivacy,
+            style: linkStyle,
+          ),
+        );
+      } else {
+        buffer.write(ch);
+      }
+    }
+    flush();
+    return spans;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Create your account',
-            style: TextStyle(
+          Text(
+            l10n.createTitle,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
               color: AppTheme.textDark,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Start your health education journey today',
-            style: TextStyle(fontSize: 14, color: AppTheme.textMedium),
+          Text(
+            l10n.createSubtitle,
+            style: const TextStyle(fontSize: 14, color: AppTheme.textMedium),
           ),
           const SizedBox(height: 24),
 
           TextFormField(
             controller: _nameController,
             textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(
-              labelText: 'Full Name',
-              hintText: 'Enter your full name',
-              prefixIcon: Icon(
+            decoration: InputDecoration(
+              labelText: l10n.fieldFullName,
+              hintText: l10n.fieldFullNameHint,
+              prefixIcon: const Icon(
                 Icons.person_outline_rounded,
                 color: AppTheme.textLight,
               ),
             ),
             validator: (v) {
               if (v == null || v.trim().isEmpty) {
-                return 'Please enter your name';
+                return l10n.validationNameRequired;
               }
               return null;
             },
@@ -123,24 +164,22 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
             autocorrect: false,
             enableSuggestions: false,
             maxLength: 20,
-            decoration: const InputDecoration(
-              labelText: 'Username',
-              hintText: 'The username your study team gave you',
-              helperText:
-                  'Use the username your study team gave you. It links your '
-                  'surveys to your account and can’t be changed later.',
-              helperMaxLines: 3,
+            decoration: InputDecoration(
+              labelText: l10n.fieldUsername,
+              hintText: l10n.fieldUsernameHint,
+              helperText: l10n.fieldUsernameHelper,
+              helperMaxLines: 4,
               counterText: '',
-              prefixIcon: Icon(
+              prefixIcon: const Icon(
                 Icons.badge_outlined,
                 color: AppTheme.textLight,
               ),
             ),
             validator: (v) {
               final t = v?.trim() ?? '';
-              if (t.isEmpty) return 'Please enter your username';
+              if (t.isEmpty) return l10n.validationUsernameRequired;
               if (!RegExp(r'^[A-Za-z0-9]{3,20}$').hasMatch(t)) {
-                return 'Use 3–20 letters or numbers (no spaces or symbols)';
+                return l10n.validationUsernameFormat;
               }
               return null;
             },
@@ -151,22 +190,22 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             autofillHints: const [AutofillHints.telephoneNumber],
-            decoration: const InputDecoration(
-              labelText: 'Phone Number',
-              hintText: 'e.g. (949) 555-0100',
-              prefixIcon: Icon(
+            decoration: InputDecoration(
+              labelText: l10n.fieldPhone,
+              hintText: l10n.fieldPhoneHint,
+              prefixIcon: const Icon(
                 Icons.phone_outlined,
                 color: AppTheme.textLight,
               ),
             ),
             validator: (v) {
               final t = v?.trim() ?? '';
-              if (t.isEmpty) return 'Please enter your phone number';
+              if (t.isEmpty) return l10n.validationPhoneRequired;
               final digits = t.replaceAll(RegExp(r'[^0-9]'), '');
               if (!RegExp(r'^\+?[0-9 ().-]+$').hasMatch(t) ||
                   digits.length < 7 ||
                   digits.length > 15) {
-                return 'Please enter a valid phone number';
+                return l10n.validationPhoneInvalid;
               }
               return null;
             },
@@ -176,19 +215,19 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              labelText: 'Email Address',
-              hintText: 'Enter your email',
-              prefixIcon: Icon(
+            decoration: InputDecoration(
+              labelText: l10n.fieldEmail,
+              hintText: l10n.fieldEmailHint,
+              prefixIcon: const Icon(
                 Icons.mail_outline_rounded,
                 color: AppTheme.textLight,
               ),
             ),
             validator: (v) {
               if (v == null || v.trim().isEmpty) {
-                return 'Please enter your email';
+                return l10n.validationEmailRequired;
               }
-              if (!v.contains('@')) return 'Please enter a valid email';
+              if (!v.contains('@')) return l10n.validationEmailInvalid;
               return null;
             },
           ),
@@ -198,13 +237,16 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
             controller: _passwordController,
             obscureText: !_passwordVisible,
             decoration: InputDecoration(
-              labelText: 'Password',
-              hintText: 'Create a password',
+              labelText: l10n.fieldPassword,
+              hintText: l10n.fieldCreatePasswordHint,
               prefixIcon: const Icon(
                 Icons.lock_outline_rounded,
                 color: AppTheme.textLight,
               ),
               suffixIcon: IconButton(
+                tooltip: _passwordVisible
+                    ? l10n.hidePassword
+                    : l10n.showPassword,
                 icon: Icon(
                   _passwordVisible
                       ? Icons.visibility_off_outlined
@@ -216,8 +258,10 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
               ),
             ),
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Please enter a password';
-              if (v.length < 8) return 'Password must be at least 8 characters';
+              if (v == null || v.isEmpty) {
+                return l10n.validationNewPasswordRequired;
+              }
+              if (v.length < 8) return l10n.validationPasswordMin8;
               return null;
             },
           ),
@@ -227,13 +271,16 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
             controller: _confirmController,
             obscureText: !_confirmVisible,
             decoration: InputDecoration(
-              labelText: 'Confirm Password',
-              hintText: 'Confirm your password',
+              labelText: l10n.fieldConfirmPassword,
+              hintText: l10n.fieldConfirmPasswordHint,
               prefixIcon: const Icon(
                 Icons.lock_outline_rounded,
                 color: AppTheme.textLight,
               ),
               suffixIcon: IconButton(
+                tooltip: _confirmVisible
+                    ? l10n.hidePassword
+                    : l10n.showPassword,
                 icon: Icon(
                   _confirmVisible
                       ? Icons.visibility_off_outlined
@@ -245,9 +292,9 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
               ),
             ),
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Please confirm your password';
+              if (v == null || v.isEmpty) return l10n.validationConfirmRequired;
               if (v != _passwordController.text) {
-                return 'Passwords do not match';
+                return l10n.validationPasswordsMismatch;
               }
               return null;
             },
@@ -271,31 +318,14 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: RichText(
-                  text: const TextSpan(
-                    style: TextStyle(
+                child: Text.rich(
+                  TextSpan(
+                    style: const TextStyle(
                       fontSize: 13,
                       color: AppTheme.textMedium,
                       height: 1.4,
                     ),
-                    children: [
-                      TextSpan(text: 'I agree to the '),
-                      TextSpan(
-                        text: 'Terms of Service',
-                        style: TextStyle(
-                          color: AppTheme.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      TextSpan(text: ' and '),
-                      TextSpan(
-                        text: 'Privacy Policy',
-                        style: TextStyle(
-                          color: AppTheme.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                    children: _agreeSpans(l10n),
                   ),
                 ),
               ),
@@ -332,9 +362,9 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text(
-                      'Create Account',
-                      style: TextStyle(
+                  : Text(
+                      l10n.authTabCreateAccount,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),

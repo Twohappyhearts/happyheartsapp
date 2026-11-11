@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:       # CRITICAL: Required for every Flutter project - DO NOT REMOVE
     sdk: flutter # CRITICAL: Required for every Flutter project - DO NOT REMOVE
+  flutter_localizations: # app texts in 7 languages (lib/l10n, see l10n.yaml)
+    sdk: flutter
+  intl: any                  # version pinned by flutter_localizations
   
   # CRITICAL: Core UI and responsive design - DO NOT REMOVE OR MODIFY
   supabase_flutter: ^2.18.3
@@ -41,6 +44,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true # CRITICAL: Required for Material icon font - DO NOT REMOVE
+  generate: true # builds lib/l10n/app_localizations*.dart from the .arb files
   assets:
     - assets/
     - assets/images/

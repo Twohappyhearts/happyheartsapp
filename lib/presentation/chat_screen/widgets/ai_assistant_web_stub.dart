@@ -20,6 +20,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../services/agent_config.dart';
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 import '../../assistance/my_assistance_requests_screen.dart';
 
@@ -50,23 +51,26 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
   void initState() {
     super.initState();
     // Keep the page's token current: Supabase refreshes it about hourly.
-    _authSub = _auth.onAuthStateChange.listen((data) {
-      if (!_pageReady) return;
-      switch (data.event) {
-        case AuthChangeEvent.tokenRefreshed:
-        case AuthChangeEvent.signedIn:
-          _pushToken(data.session?.accessToken);
-          break;
-        case AuthChangeEvent.signedOut:
-          _pushToken(null);
-          break;
-        default:
-          break;
-      }
-    }, onError: (_) {
-      // Auth errors (e.g. an expired refresh token) are handled by the app's
-      // sign-in flow; the page asks again after its next 401.
-    });
+    _authSub = _auth.onAuthStateChange.listen(
+      (data) {
+        if (!_pageReady) return;
+        switch (data.event) {
+          case AuthChangeEvent.tokenRefreshed:
+          case AuthChangeEvent.signedIn:
+            _pushToken(data.session?.accessToken);
+            break;
+          case AuthChangeEvent.signedOut:
+            _pushToken(null);
+            break;
+          default:
+            break;
+        }
+      },
+      onError: (_) {
+        // Auth errors (e.g. an expired refresh token) are handled by the app's
+        // sign-in flow; the page asks again after its next 401.
+      },
+    );
     _start();
   }
 
@@ -101,20 +105,21 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
           onNavigationRequest: _onNavigationRequest,
           onWebResourceError: (error) {
             if (error.isForMainFrame ?? false) {
-              _fail('Could not load the AI assistant. Check your connection.');
+              _fail(appL10n.aiErrorConnection);
             }
           },
           onHttpError: (error) {
             final code = error.response?.statusCode ?? 0;
-            if (code >= 500 && error.request?.uri.path == AgentConfig.pageUri.path) {
-              _fail('The AI assistant is unavailable right now.');
+            if (code >= 500 &&
+                error.request?.uri.path == AgentConfig.pageUri.path) {
+              _fail(appL10n.aiErrorUnavailable);
             }
           },
         ),
       );
       await controller.loadRequest(AgentConfig.pageUri);
     } catch (_) {
-      _fail('Could not start the AI assistant.');
+      _fail(appL10n.aiErrorStart);
       return;
     }
 
@@ -122,7 +127,7 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
     setState(() => _controller = controller);
     _timeout = Timer(const Duration(seconds: 25), () {
       if (_phase == _Phase.loading) {
-        _fail('The AI assistant is taking too long to load.');
+        _fail(appL10n.aiErrorTimeout);
       }
     });
   }
@@ -192,9 +197,9 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
       SnackBar(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppTheme.textDark,
-        content: const Text('Request sent. A team member will follow up with you.'),
+        content: Text(context.l10n.requestSent),
         action: SnackBarAction(
-          label: 'View',
+          label: context.l10n.view,
           textColor: AppTheme.primaryContainer,
           onPressed: () {
             if (mounted) openMyAssistanceRequests(context);
@@ -205,10 +210,16 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
   }
 
   static bool _isExternalScheme(String scheme) =>
-      scheme == 'https' || scheme == 'http' || scheme == 'tel' || scheme == 'mailto' || scheme == 'sms';
+      scheme == 'https' ||
+      scheme == 'http' ||
+      scheme == 'tel' ||
+      scheme == 'mailto' ||
+      scheme == 'sms';
 
   /// Stay on the assistant page; open anything else in the phone's browser.
-  Future<NavigationDecision> _onNavigationRequest(NavigationRequest request) async {
+  Future<NavigationDecision> _onNavigationRequest(
+    NavigationRequest request,
+  ) async {
     final uri = Uri.tryParse(request.url);
     if (uri == null) return NavigationDecision.prevent;
     if (!request.isMainFrame ||
@@ -247,7 +258,9 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
                 Container(
                   color: AppTheme.backgroundLight,
                   alignment: Alignment.center,
-                  child: const CircularProgressIndicator(color: AppTheme.primary),
+                  child: const CircularProgressIndicator(
+                    color: AppTheme.primary,
+                  ),
                 ),
               if (_phase == _Phase.failed)
                 Container(
@@ -257,15 +270,25 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.smart_toy_outlined, color: AppTheme.textLight, size: 44),
+                      const Icon(
+                        Icons.smart_toy_outlined,
+                        color: AppTheme.textLight,
+                        size: 44,
+                      ),
                       const SizedBox(height: 12),
                       Text(
-                        _failure ?? 'Something went wrong.',
+                        _failure ?? context.l10n.errorGeneric,
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.plusJakartaSans(fontSize: 14, color: AppTheme.textMedium),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          color: AppTheme.textMedium,
+                        ),
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton(onPressed: _start, child: const Text('Retry')),
+                      ElevatedButton(
+                        onPressed: _start,
+                        child: Text(context.l10n.retry),
+                      ),
                     ],
                   ),
                 ),

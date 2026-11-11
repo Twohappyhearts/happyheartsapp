@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
 class LessonDetailAppBarWidget extends StatelessWidget {
@@ -27,30 +28,34 @@ class LessonDetailAppBarWidget extends StatelessWidget {
       child: Row(
         children: [
           // Back button
-          InkWell(
-            onTap: onBack,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceVariantLight,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 18,
-                color: AppTheme.textDark,
+          Semantics(
+            button: true,
+            label: context.l10n.back,
+            child: InkWell(
+              onTap: onBack,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceVariantLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 18,
+                  color: AppTheme.textDark,
+                ),
               ),
             ),
           ),
 
           // Centered title
-          const Expanded(
+          Expanded(
             child: Center(
               child: Text(
-                'Lesson',
-                style: TextStyle(
+                context.l10n.lessonHeader,
+                style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.textDark,

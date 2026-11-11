@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/app_language.dart';
 import '../theme/app_theme.dart';
 
 class CustomErrorWidget extends StatelessWidget {
@@ -8,6 +9,8 @@ class CustomErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Not context.l10n: this can be built where Localizations are missing.
+    final l10n = appL10n;
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
@@ -31,9 +34,9 @@ class CustomErrorWidget extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'Something went wrong',
-                  style: TextStyle(
+                Text(
+                  l10n.crashTitle,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textDark,
@@ -41,9 +44,9 @@ class CustomErrorWidget extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Please restart the app. If the problem persists, contact support.',
-                  style: TextStyle(
+                Text(
+                  l10n.crashBody,
+                  style: const TextStyle(
                     fontSize: 14,
                     color: AppTheme.textMedium,
                     height: 1.5,

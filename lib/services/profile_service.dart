@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import './app_language.dart';
 import './auth_service.dart';
 
 class UserProfile {
@@ -66,7 +67,7 @@ class ProfileService {
     final auth = AuthService.instance;
     final uid = auth.userId;
     final gen = auth.generation;
-    if (uid == null) throw const ProfileException('Please sign in.');
+    if (uid == null) throw ProfileException(appL10n.profileErrorSignIn);
 
     try {
       final row = await _client
@@ -76,14 +77,10 @@ class ProfileService {
           .maybeSingle();
 
       if (auth.generation != gen) {
-        throw const ProfileException('Session changed. Please try again.');
+        throw ProfileException(appL10n.profileErrorSessionChanged);
       }
       if (row == null) {
-        throw const ProfileException(
-          'Your profile could not be found. Pull to retry; if this persists, '
-          'contact the research team.',
-          missing: true,
-        );
+        throw ProfileException(appL10n.profileErrorMissing, missing: true);
       }
       return UserProfile(
         id: row['id'] as String,
@@ -95,35 +92,27 @@ class ProfileService {
     } on PostgrestException catch (e) {
       debugPrint('ProfileService.loadMine failed: $e');
       if (e.code == '42501') {
-        throw const ProfileException(
-          'You do not have permission to view this profile.',
-        );
+        throw ProfileException(appL10n.profileErrorPermission);
       }
-      throw const ProfileException(
-        'Could not load your profile. Check your connection and try again.',
-      );
+      throw ProfileException(appL10n.profileErrorLoad);
     } on ProfileException {
       rethrow;
     } catch (_) {
-      throw const ProfileException(
-        'Could not load your profile. Check your connection and try again.',
-      );
+      throw ProfileException(appL10n.profileErrorLoad);
     }
   }
 
   Future<UserProfile> updateFullName(String fullName) async {
     final auth = AuthService.instance;
     final uid = auth.userId;
-    if (uid == null) throw const ProfileException('Please sign in.');
+    if (uid == null) throw ProfileException(appL10n.profileErrorSignIn);
     final name = fullName.trim();
-    if (name.isEmpty) throw const ProfileException('Name cannot be empty.');
+    if (name.isEmpty) throw ProfileException(appL10n.profileErrorNameEmpty);
     try {
       await _client.from('profiles').update({'full_name': name}).eq('id', uid);
     } catch (e) {
       debugPrint('ProfileService.updateFullName failed: $e');
-      throw const ProfileException(
-        'Could not save your name. Check your connection and try again.',
-      );
+      throw ProfileException(appL10n.profileErrorSaveName);
     }
     return loadMine();
   }

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import './app_language.dart';
 import './auth_service.dart';
 
 enum SendState { sent, pending, failed }
@@ -91,23 +92,17 @@ class ChatService {
       final res = await _client.rpc('get_or_create_my_conversation');
       final row = res is List ? (res.isEmpty ? null : res.first) : res;
       if (row is Map && row['id'] != null) return row['id'] as String;
-      throw const ChatException('Could not open your conversation.');
+      throw ChatException(appL10n.chatErrorOpen);
     } on PostgrestException catch (e) {
       debugPrint('ChatService.getOrCreateConversationId failed: $e');
       if (e.code == '42501') {
-        throw const ChatException(
-          'This account cannot use patient chat. Please sign in with a patient account.',
-        );
+        throw ChatException(appL10n.chatErrorWrongAccount);
       }
-      throw const ChatException(
-        'Could not open your conversation. Please try again.',
-      );
+      throw ChatException(appL10n.chatErrorOpen);
     } on ChatException {
       rethrow;
     } catch (_) {
-      throw const ChatException(
-        'Could not reach the server. Check your connection and try again.',
-      );
+      throw ChatException(appL10n.errorServerUnreachable);
     }
   }
 
@@ -139,9 +134,7 @@ class ChatService {
       return ChatPage(list, rows.length >= pageSize);
     } catch (e) {
       debugPrint('ChatService.fetchPage failed: $e');
-      throw const ChatException(
-        'Could not load messages. Check your connection and try again.',
-      );
+      throw ChatException(appL10n.chatErrorLoad);
     }
   }
 
@@ -193,21 +186,15 @@ class ChatService {
       }
       throw ChatException(_sendMessage(e));
     } catch (_) {
-      throw const ChatException(
-        'Could not reach the server. Your message was kept - tap retry.',
-      );
+      throw ChatException(appL10n.chatErrorKept);
     }
   }
 
   String _sendMessage(PostgrestException e) {
     debugPrint('ChatService.send failed: $e');
-    if (e.code == '42501') {
-      return 'You do not have permission to send messages in this conversation.';
-    }
-    if (e.code == '23514') {
-      return 'Messages must be 1-4000 characters.';
-    }
-    return 'Message not sent. Please try again.';
+    if (e.code == '42501') return appL10n.chatErrorNoPermission;
+    if (e.code == '23514') return appL10n.chatErrorLength;
+    return appL10n.chatErrorNotSent;
   }
 
   RealtimeChannel subscribe(

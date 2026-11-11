@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../services/app_language.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -45,6 +46,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
@@ -58,18 +60,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'Choose a new password',
-                      style: TextStyle(
+                    Text(
+                      l10n.resetTitle,
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textDark,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'Use at least 8 characters.',
-                      style: TextStyle(
+                    Text(
+                      l10n.passwordMinShort,
+                      style: const TextStyle(
                         fontSize: 14,
                         color: AppTheme.textMedium,
                       ),
@@ -79,12 +81,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       controller: _passwordController,
                       obscureText: !_visible,
                       decoration: InputDecoration(
-                        labelText: 'New password',
+                        labelText: l10n.fieldNewPassword,
                         prefixIcon: const Icon(
                           Icons.lock_outline_rounded,
                           color: AppTheme.textLight,
                         ),
                         suffixIcon: IconButton(
+                          tooltip: _visible
+                              ? l10n.hidePassword
+                              : l10n.showPassword,
                           icon: Icon(
                             _visible
                                 ? Icons.visibility_off_outlined
@@ -96,10 +101,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) {
-                          return 'Please enter a password';
+                          return l10n.validationNewPasswordRequired;
                         }
                         if (v.length < 8) {
-                          return 'Password must be at least 8 characters';
+                          return l10n.validationPasswordMin8;
                         }
                         return null;
                       },
@@ -108,15 +113,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     TextFormField(
                       controller: _confirmController,
                       obscureText: !_visible,
-                      decoration: const InputDecoration(
-                        labelText: 'Confirm new password',
-                        prefixIcon: Icon(
+                      decoration: InputDecoration(
+                        labelText: l10n.fieldConfirmNewPassword,
+                        prefixIcon: const Icon(
                           Icons.lock_outline_rounded,
                           color: AppTheme.textLight,
                         ),
                       ),
                       validator: (v) => v != _passwordController.text
-                          ? 'Passwords do not match'
+                          ? l10n.validationPasswordsMismatch
                           : null,
                     ),
                     if (_error != null) ...[
@@ -143,7 +148,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text('Update password'),
+                            : Text(l10n.resetButton),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -151,7 +156,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       onPressed: _isLoading
                           ? null
                           : () => AuthService.instance.signOut(),
-                      child: const Text('Cancel'),
+                      child: Text(l10n.cancel),
                     ),
                   ],
                 ),
