@@ -4,12 +4,16 @@
 // a WebView. The page talks to our own AI agent; this widget only:
 //   - hands the page the patient's Supabase access token (and fresh ones when
 //     Supabase refreshes the session) through `window.HappyHeartsAgent.setToken`;
-//   - opens links from answers in the phone's browser;
+//   - opens the page in the app's language (?lang=..., reloaded when the
+//     patient switches language);
+//   - hands links from answers to the phone: web pages to the browser,
+//     tel: to the dialer (e.g. 911 / 988), mailto: / sms: to those apps;
 //   - shows the usual "Request sent" confirmation when the patient approved a
 //     message to the care team inside the chat.
 //
 // Bridge messages from the page (channel `AgentBridge`): ready, token_expired,
-// open_url, assistance_sent.
+// open_url (data: the absolute link as a string, e.g. "tel:911"; an object
+// {url} is accepted too), assistance_sent.
 import 'dart:async';
 import 'dart:convert';
 
@@ -24,14 +28,48 @@ import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 import '../../assistance/my_assistance_requests_screen.dart';
 
-Widget buildAiAssistantView({required String userId}) =>
-    _AiAssistantWebView(key: ValueKey('agent-$userId'), userId: userId);
+/// [language]: app language code. A new value creates a new page (reload).
+Widget buildAiAssistantView({
+  required String userId,
+  required String language,
+}) => _AiAssistantWebView(
+  key: ValueKey('agent-$userId-$language'),
+  userId: userId,
+  language: language,
+);
+
+/// Schemes the assistant may hand to the phone. Anything else is ignored.
+bool isExternalScheme(String scheme) => const {
+  'https',
+  'http',
+  'tel',
+  'mailto',
+  'sms',
+}.contains(scheme.toLowerCase());
+
+/// The link in an `open_url` bridge message: `data` is the absolute link as a
+/// string ("https://…", "tel:911", "mailto:…"); an object `{url: …}` is
+/// accepted too. Null when missing or not an allowed scheme.
+Uri? openUrlLink(Object? data) {
+  final raw = data is Map ? data['url'] : data;
+  if (raw is! String) return null;
+  final uri = Uri.tryParse(raw.trim());
+  if (uri == null || !uri.hasScheme || !isExternalScheme(uri.scheme)) {
+    return null;
+  }
+  return uri;
+}
 
 enum _Phase { loading, ready, failed }
 
 class _AiAssistantWebView extends StatefulWidget {
   final String userId;
-  const _AiAssistantWebView({super.key, required this.userId});
+  final String language;
+  const _AiAssistantWebView({
+    super.key,
+    required this.userId,
+    required this.language,
+  });
 
   @override
   State<_AiAssistantWebView> createState() => _AiAssistantWebViewState();
@@ -117,7 +155,7 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
           },
         ),
       );
-      await controller.loadRequest(AgentConfig.pageUri);
+      await controller.loadRequest(AgentConfig.pageUriFor(widget.language));
     } catch (_) {
       _fail(appL10n.aiErrorStart);
       return;
@@ -154,10 +192,8 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
         unawaited(_sendCurrentToken(forceRefresh: true));
         break;
       case 'open_url':
-        final uri = Uri.tryParse('${msg['data'] ?? ''}');
-        if (uri != null && _isExternalScheme(uri.scheme)) {
-          unawaited(launchUrl(uri, mode: LaunchMode.externalApplication));
-        }
+        final link = openUrlLink(msg['data']);
+        if (link != null) unawaited(_openExternally(link));
         break;
       case 'assistance_sent':
         _showSentConfirmation();
@@ -209,12 +245,15 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
     );
   }
 
-  static bool _isExternalScheme(String scheme) =>
-      scheme == 'https' ||
-      scheme == 'http' ||
-      scheme == 'tel' ||
-      scheme == 'mailto' ||
-      scheme == 'sms';
+  /// Hands [uri] to the phone (browser, dialer, mail or messages app).
+  static Future<void> _openExternally(Uri uri) async {
+    if (!isExternalScheme(uri.scheme)) return;
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint('AI assistant: could not open a ${uri.scheme} link: $e');
+    }
+  }
 
   /// Stay on the assistant page; open anything else in the phone's browser.
   Future<NavigationDecision> _onNavigationRequest(
@@ -229,9 +268,7 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
         uri.host == AgentConfig.host) {
       return NavigationDecision.navigate;
     }
-    if (_isExternalScheme(uri.scheme)) {
-      unawaited(launchUrl(uri, mode: LaunchMode.externalApplication));
-    }
+    unawaited(_openExternally(uri));
     return NavigationDecision.prevent;
   }
 

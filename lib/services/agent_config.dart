@@ -21,6 +21,11 @@ class AgentConfig {
 
   static Uri get pageUri => Uri.parse('$baseUrl/m/assistant');
 
+  /// The assistant page in the app's language, e.g. /m/assistant?lang=zh-Hant
+  /// (en, es, vi, ko, zh-Hans, zh-Hant, fa, ar).
+  static Uri pageUriFor(String language) =>
+      pageUri.replace(queryParameters: {'lang': language});
+
   /// Public page that redirects to the current Terms of Use / Privacy Policy
   /// PDF uploaded on the dashboard (or the built-in sample until one is).
   static Uri legalUri(LegalDocument document) =>

@@ -255,7 +255,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           else if (userId == null)
             _buildErrorState(context.l10n.chatSignInAi, null)
           else
-            ai_platform.buildAiAssistantView(userId: userId),
+            // Keyed by language: switching language reloads the page.
+            ai_platform.buildAiAssistantView(
+              userId: userId,
+              language: AppLanguageController.instance.code,
+            ),
         ],
       ),
     );

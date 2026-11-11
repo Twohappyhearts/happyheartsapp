@@ -6,7 +6,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
-Widget buildAiAssistantView({required String userId}) {
+Widget buildAiAssistantView({
+  required String userId,
+  required String language,
+}) {
   return Center(
     child: Padding(
       padding: const EdgeInsets.all(32),
