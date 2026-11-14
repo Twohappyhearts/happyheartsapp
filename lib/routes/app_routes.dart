@@ -96,6 +96,12 @@ CustomTransitionPage<void> _slide(
   transitionDuration: const Duration(milliseconds: 280),
 );
 
+/// A page pushed on top of a tab's first page. MaterialPage uses the platform's
+/// transition, so on iOS it slides in and can be swiped back from the left edge
+/// (the custom [_slide] transition has no back gesture).
+MaterialPage<void> _pushed(GoRouterState state, Widget child) =>
+    MaterialPage<void>(key: state.pageKey, child: child);
+
 class _SplashScreen extends StatelessWidget {
   const _SplashScreen();
   @override
@@ -144,7 +150,7 @@ final GoRouter appRouter = GoRouter(
                 // /education-hub-screen/lesson
                 GoRoute(
                   path: 'lesson',
-                  pageBuilder: (context, state) => _slide(
+                  pageBuilder: (context, state) => _pushed(
                     state,
                     LessonDetailScreen(
                       moduleData: state.extra as Map<String, dynamic>?,
@@ -176,7 +182,7 @@ final GoRouter appRouter = GoRouter(
                 // /progress-screen/lesson
                 GoRoute(
                   path: 'lesson',
-                  pageBuilder: (context, state) => _slide(
+                  pageBuilder: (context, state) => _pushed(
                     state,
                     LessonDetailScreen(
                       moduleData: state.extra as Map<String, dynamic>?,

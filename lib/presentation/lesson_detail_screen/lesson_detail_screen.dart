@@ -437,10 +437,11 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       children: [
         Text(
           category,
+          // Gray, not blue: in blue it read as a link.
           style: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: AppTheme.primaryDark,
+            color: AppTheme.textMedium,
           ),
         ),
         const SizedBox(height: 8),

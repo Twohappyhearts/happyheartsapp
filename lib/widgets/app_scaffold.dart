@@ -21,6 +21,10 @@ class AppScaffold extends StatelessWidget {
         // Side menu (☰ at the top-left of each tab): Survey and
         // "I need assistance", which used to be a floating Help button.
         drawer: AppDrawer(shellContext: context),
+        // Open it with ☰ only. The left-edge swipe is iOS's "back" gesture, and this
+        // scaffold wraps the pages pushed inside each tab (lessons, surveys), so an
+        // edge drag here opened the menu on pages that should go back instead.
+        drawerEnableOpenDragGesture: false,
       ),
     );
   }
