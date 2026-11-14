@@ -29,6 +29,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
   DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
   DateTime? _selectedDay;
 
+  /// The "Lessons" header; the summary cards scroll down to it.
+  final GlobalKey _lessonsKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +74,17 @@ class _ProgressScreenState extends State<ProgressScreen> {
         if (!silent || _modules.isEmpty) _error = e.message;
       });
     }
+  }
+
+  /// The summary cards are tappable: they lead to the lesson list below.
+  void _scrollToLessons() {
+    final target = _lessonsKey.currentContext;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   /// Opens a lesson inside the Progress tab; back returns here.
@@ -259,6 +273,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                           progressPercent: _progressPercent,
                           totalMinutes: (_totalSeconds / 60).round(),
                           inProgressCount: _inProgressCount,
+                          onTap: _scrollToLessons,
                         ),
                         const SizedBox(height: 24),
 
@@ -267,6 +282,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                           completedCount: _completedCount,
                           timeSpent: _fmtTime(_totalSeconds),
                           inProgressCount: _inProgressCount,
+                          onTap: _scrollToLessons,
                         ),
                         const SizedBox(height: 28),
 
@@ -311,6 +327,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         // Module list header
                         Text(
                           context.l10n.progressBreakdown,
+                          key: _lessonsKey,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -811,6 +828,7 @@ class _OverallProgressCard extends StatelessWidget {
   final double progressPercent;
   final int totalMinutes;
   final int inProgressCount;
+  final VoidCallback onTap;
 
   const _OverallProgressCard({
     required this.completedCount,
@@ -818,10 +836,22 @@ class _OverallProgressCard extends StatelessWidget {
     required this.progressPercent,
     required this.totalMinutes,
     required this.inProgressCount,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: _buildCard(context),
+      ),
+    );
+  }
+
+  Widget _buildCard(BuildContext context) {
     final l10n = context.l10n;
     return Container(
       decoration: BoxDecoration(
@@ -920,11 +950,13 @@ class _StatsRow extends StatelessWidget {
   final int completedCount;
   final String timeSpent;
   final int inProgressCount;
+  final VoidCallback onTap;
 
   const _StatsRow({
     required this.completedCount,
     required this.timeSpent,
     required this.inProgressCount,
+    required this.onTap,
   });
 
   @override
@@ -938,6 +970,7 @@ class _StatsRow extends StatelessWidget {
             iconBg: AppTheme.secondaryContainer,
             value: '$completedCount',
             label: context.l10n.statusCompleted,
+            onTap: onTap,
           ),
         ),
         const SizedBox(width: 10),
@@ -948,6 +981,7 @@ class _StatsRow extends StatelessWidget {
             iconBg: AppTheme.primaryContainer,
             value: timeSpent,
             label: context.l10n.statTimeSpent,
+            onTap: onTap,
           ),
         ),
         const SizedBox(width: 10),
@@ -958,6 +992,7 @@ class _StatsRow extends StatelessWidget {
             iconBg: const Color(0xFFFEF3C7),
             value: '$inProgressCount',
             label: context.l10n.statusInProgress,
+            onTap: onTap,
           ),
         ),
       ],
@@ -971,6 +1006,7 @@ class _StatCard extends StatelessWidget {
   final Color iconBg;
   final String value;
   final String label;
+  final VoidCallback onTap;
 
   const _StatCard({
     required this.icon,
@@ -978,10 +1014,22 @@ class _StatCard extends StatelessWidget {
     required this.iconBg,
     required this.value,
     required this.label,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: _buildCard(),
+      ),
+    );
+  }
+
+  Widget _buildCard() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
       decoration: BoxDecoration(

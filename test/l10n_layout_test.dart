@@ -179,12 +179,7 @@ void main() {
             body: SafeArea(
               child: Column(
                 children: [
-                  LessonDetailAppBarWidget(
-                    isBookmarked: false,
-                    onBack: () {},
-                    onBookmark: () {},
-                    onShare: () {},
-                  ),
+                  LessonDetailAppBarWidget(onBack: () {}),
                   const Expanded(
                     child: SingleChildScrollView(
                       padding: EdgeInsets.all(20),
