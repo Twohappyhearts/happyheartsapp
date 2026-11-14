@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../routes/app_routes.dart';
 import '../../services/app_language.dart';
 import '../../services/content_service.dart';
 import '../../services/survey_service.dart';
@@ -69,6 +71,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
         if (!silent || _modules.isEmpty) _error = e.message;
       });
     }
+  }
+
+  /// Opens a lesson inside the Progress tab; back returns here.
+  Future<void> _openLesson(Map<String, dynamic> module) async {
+    await context.push(AppRoutes.progressLesson, extra: module);
+    // Back from the lesson: show the updated status and time.
+    if (mounted) _load(silent: true);
   }
 
   /// Completed REDCap surveys (recorded when the survey redirects back).
@@ -335,6 +344,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         child: _ModuleProgressTile(
                           module: module,
                           index: index,
+                          onTap: () => _openLesson(_modules[index]),
                         ),
                       );
                     }, childCount: _modules.length),
@@ -1034,8 +1044,13 @@ class _StatCard extends StatelessWidget {
 class _ModuleProgressTile extends StatelessWidget {
   final Map<String, dynamic> module;
   final int index;
+  final VoidCallback onTap;
 
-  const _ModuleProgressTile({required this.module, required this.index});
+  const _ModuleProgressTile({
+    required this.module,
+    required this.index,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1065,6 +1080,33 @@ class _ModuleProgressTile extends StatelessWidget {
       statusIcon = Icons.radio_button_unchecked_rounded;
     }
 
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: _buildTile(
+          context,
+          isCompleted: isCompleted,
+          isInProgress: isInProgress,
+          statusColor: statusColor,
+          statusBg: statusBg,
+          statusLabel: statusLabel,
+          statusIcon: statusIcon,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTile(
+    BuildContext context, {
+    required bool isCompleted,
+    required bool isInProgress,
+    required Color statusColor,
+    required Color statusBg,
+    required String statusLabel,
+    required IconData statusIcon,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.surfaceLight,
@@ -1190,6 +1232,13 @@ class _ModuleProgressTile extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+            const SizedBox(width: 4),
+            // Shows the row opens the lesson (mirrors in RTL languages).
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: AppTheme.textLight,
             ),
           ],
         ),

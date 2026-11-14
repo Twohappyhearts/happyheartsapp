@@ -18,10 +18,14 @@ class AppRoutes {
   static const String resetPassword = '/reset-password-screen';
   static const String loginCallback = '/login-callback';
   static const String educationHub = '/education-hub-screen';
+
   /// A lesson, opened from the Education tab (a page inside that tab).
   static const String lessonDetail = '/education-hub-screen/lesson';
   static const String assessments = '/assessments-screen';
   static const String progress = '/progress-screen';
+
+  /// A lesson, opened from the Progress tab (back returns to Progress).
+  static const String progressLesson = '/progress-screen/lesson';
   static const String chat = '/chat-screen';
   static const String profile = '/profile-screen';
 }
@@ -168,6 +172,18 @@ final GoRouter appRouter = GoRouter(
               path: AppRoutes.progress,
               pageBuilder: (context, state) =>
                   _slide(state, const ProgressScreen()),
+              routes: [
+                // /progress-screen/lesson
+                GoRoute(
+                  path: 'lesson',
+                  pageBuilder: (context, state) => _slide(
+                    state,
+                    LessonDetailScreen(
+                      moduleData: state.extra as Map<String, dynamic>?,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

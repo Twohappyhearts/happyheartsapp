@@ -150,6 +150,7 @@ class _EducationHubScreenState extends State<EducationHubScreen> {
                     ProgressCardWidget(
                       completed: _completedCount,
                       total: _modules.length,
+                      onTap: () => context.go(AppRoutes.progress),
                     ),
                     const SizedBox(height: 20),
                     CategoryFilterWidget(
