@@ -231,14 +231,20 @@ class ContentService {
   Future<Map<String, LessonProgress>> loadMyProgress() async {
     final map = <String, LessonProgress>{};
     try {
-      final rows = await _client
-          .from('lesson_progress')
-          .select(
-            'content_id, status, time_on_page_s, completed_at, '
-            'quiz_completed_at, last_activity_at',
-          )
-          .limit(1000);
-      for (final r in rows as List) {
+      // Only this account's rows: RLS lets staff and admin accounts read
+      // everyone's progress, which mixed other people's lessons in here.
+      final uid = _client.auth.currentUser?.id;
+      final rows = uid == null
+          ? const []
+          : await _client
+                .from('lesson_progress')
+                .select(
+                  'content_id, status, time_on_page_s, completed_at, '
+                  'quiz_completed_at, last_activity_at',
+                )
+                .eq('user_id', uid)
+                .limit(1000);
+      for (final r in rows) {
         final row = r as Map<String, dynamic>;
         final id = row['content_id'] as String?;
         if (id == null) continue;
@@ -313,9 +319,13 @@ class ContentService {
   Future<Map<String, _Progress>> _progress() async {
     final map = <String, _Progress>{};
     try {
+      // Only this account's rows (staff and admin accounts can read everyone's).
+      final uid = _client.auth.currentUser?.id;
+      if (uid == null) return map;
       final rows = await _client
           .from('lesson_progress')
           .select('content_id, status, quiz_completed_at')
+          .eq('user_id', uid)
           .limit(1000);
       for (final r in rows as List) {
         final row = r as Map<String, dynamic>;

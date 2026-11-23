@@ -109,12 +109,16 @@ class AssistanceService {
     }
   }
 
-  /// This account's requests, newest first (RLS limits rows to the caller).
+  /// This account's requests, newest first. Filtered to the caller: RLS alone
+  /// would also return every patient's requests to staff and admin accounts.
   Future<List<AssistanceRequest>> fetchMine({int limit = 100}) async {
     try {
+      final uid = _client.auth.currentUser?.id;
+      if (uid == null) return const [];
       final rows = await _client
           .from('assistance_requests')
           .select(_columns)
+          .eq('patient_id', uid)
           .order('created_at', ascending: false)
           .limit(limit);
       return (rows as List)
