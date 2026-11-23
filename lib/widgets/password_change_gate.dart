@@ -216,6 +216,9 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
                     ),
                     const SizedBox(height: 24),
                     TextField(
+                      // Tapping anywhere outside the field closes the keyboard.
+                      onTapOutside: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
                       controller: _password,
                       obscureText: _obscure,
                       autofillHints: const [AutofillHints.newPassword],
@@ -223,6 +226,9 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
                     ),
                     const SizedBox(height: 14),
                     TextField(
+                      // Tapping anywhere outside the field closes the keyboard.
+                      onTapOutside: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
                       controller: _confirm,
                       obscureText: _obscure,
                       autofillHints: const [AutofillHints.newPassword],

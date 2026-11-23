@@ -10,6 +10,7 @@ import '../presentation/profile_screen/profile_screen.dart';
 import '../presentation/sign_in_create_account_screen/sign_in_create_account_screen.dart';
 import '../presentation/sign_in_create_account_screen/reset_password_screen.dart';
 import '../services/auth_service.dart';
+import '../widgets/app_menu.dart';
 import '../widgets/app_scaffold.dart';
 
 class AppRoutes {
@@ -141,6 +142,7 @@ final GoRouter appRouter = GoRouter(
       branches: [
         // Branch 0: Education (lessons open as a page inside this tab)
         StatefulShellBranch(
+          navigatorKey: tabNavigatorKeys[0],
           routes: [
             GoRoute(
               path: AppRoutes.educationHub,
@@ -163,6 +165,7 @@ final GoRouter appRouter = GoRouter(
         ),
         // Branch 1: Resources (REDCap links with placement = resource)
         StatefulShellBranch(
+          navigatorKey: tabNavigatorKeys[1],
           routes: [
             GoRoute(
               path: AppRoutes.assessments,
@@ -173,6 +176,7 @@ final GoRouter appRouter = GoRouter(
         ),
         // Branch 2: Progress
         StatefulShellBranch(
+          navigatorKey: tabNavigatorKeys[2],
           routes: [
             GoRoute(
               path: AppRoutes.progress,
@@ -195,6 +199,7 @@ final GoRouter appRouter = GoRouter(
         ),
         // Branch 3: Chat
         StatefulShellBranch(
+          navigatorKey: tabNavigatorKeys[3],
           routes: [
             GoRoute(
               path: AppRoutes.chat,
@@ -205,6 +210,7 @@ final GoRouter appRouter = GoRouter(
         ),
         // Branch 4: Profile
         StatefulShellBranch(
+          navigatorKey: tabNavigatorKeys[4],
           routes: [
             GoRoute(
               path: AppRoutes.profile,

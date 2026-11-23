@@ -78,6 +78,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     ),
                     const SizedBox(height: 24),
                     TextFormField(
+                      // Tapping anywhere outside the field closes the keyboard.
+                      onTapOutside: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
                       controller: _passwordController,
                       obscureText: !_visible,
                       decoration: InputDecoration(
@@ -111,6 +114,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
+                      // Tapping anywhere outside the field closes the keyboard.
+                      onTapOutside: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
                       controller: _confirmController,
                       obscureText: !_visible,
                       decoration: InputDecoration(

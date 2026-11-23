@@ -15,6 +15,15 @@ final GlobalKey<ScaffoldState> appShellScaffoldKey = GlobalKey<ScaffoldState>();
 
 void openAppMenu() => appShellScaffoldKey.currentState?.openDrawer();
 
+/// One navigator per bottom tab (the StatefulShellRoute branches in
+/// app_routes.dart, in the same order). Pages opened from the side menu are
+/// pushed onto the current tab's navigator so the bottom bar stays visible,
+/// the same way Resources opens its surveys.
+final List<GlobalKey<NavigatorState>> tabNavigatorKeys = List.generate(
+  5,
+  (i) => GlobalKey<NavigatorState>(debugLabel: 'tab$i'),
+);
+
 /// The ☰ button at the top-left of each tab. Same look as the app's other
 /// square header buttons.
 class AppMenuButton extends StatelessWidget {
@@ -52,7 +61,19 @@ class AppDrawer extends StatelessWidget {
   /// A context above the drawer (the shell's), used after the drawer closes.
   final BuildContext shellContext;
 
-  const AppDrawer({required this.shellContext, super.key});
+  /// Index of the tab that is showing, whose navigator the menu pages go on.
+  final int currentTab;
+
+  const AppDrawer({
+    required this.shellContext,
+    required this.currentTab,
+    super.key,
+  });
+
+  /// Context of the current tab's navigator, so a pushed page keeps the
+  /// bottom bar. Falls back to the shell (full screen) if it isn't built yet.
+  BuildContext get _tabContext =>
+      tabNavigatorKeys[currentTab].currentContext ?? shellContext;
 
   void _closeThen(BuildContext drawerContext, void Function() action) {
     Navigator.of(drawerContext).pop();
@@ -78,7 +99,7 @@ class AppDrawer extends StatelessWidget {
               label: l10n.menuAssessments,
               subtitle: l10n.menuAssessmentsSubtitle,
               onTap: () => _closeThen(context, () {
-                Navigator.of(shellContext).push(
+                Navigator.of(_tabContext).push(
                   MaterialPageRoute(
                     builder: (_) => const AssessmentsScreen(
                       placement: SurveyPlacement.survey,
@@ -107,7 +128,7 @@ class AppDrawer extends StatelessWidget {
               subtitle: l10n.menuMyRequestsSubtitle,
               onTap: () => _closeThen(
                 context,
-                () => openMyAssistanceRequests(shellContext),
+                () => openMyAssistanceRequests(_tabContext),
               ),
             ),
             const Spacer(),

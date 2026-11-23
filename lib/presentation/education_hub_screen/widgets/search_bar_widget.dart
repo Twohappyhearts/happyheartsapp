@@ -29,6 +29,9 @@ class SearchBarInputWidget extends StatelessWidget {
         ],
       ),
       child: TextField(
+        // Tapping anywhere outside the field closes the keyboard.
+        onTapOutside: (_) =>
+            FocusManager.instance.primaryFocus?.unfocus(),
         controller: controller,
         onChanged: onChanged,
         style: const TextStyle(fontSize: 14, color: AppTheme.textDark),

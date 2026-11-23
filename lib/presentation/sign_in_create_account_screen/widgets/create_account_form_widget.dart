@@ -151,6 +151,9 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
           const SizedBox(height: 24),
 
           TextFormField(
+            // Tapping anywhere outside the field closes the keyboard.
+            onTapOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
             controller: _nameController,
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
@@ -171,6 +174,9 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
           const SizedBox(height: 16),
 
           TextFormField(
+            // Tapping anywhere outside the field closes the keyboard.
+            onTapOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
             controller: _usernameController,
             autocorrect: false,
             enableSuggestions: false,
@@ -198,6 +204,9 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
           const SizedBox(height: 16),
 
           TextFormField(
+            // Tapping anywhere outside the field closes the keyboard.
+            onTapOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             autofillHints: const [AutofillHints.telephoneNumber],
@@ -224,6 +233,9 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
           const SizedBox(height: 16),
 
           TextFormField(
+            // Tapping anywhere outside the field closes the keyboard.
+            onTapOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
@@ -245,6 +257,9 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
           const SizedBox(height: 16),
 
           TextFormField(
+            // Tapping anywhere outside the field closes the keyboard.
+            onTapOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
             controller: _passwordController,
             obscureText: !_passwordVisible,
             decoration: InputDecoration(
@@ -279,6 +294,9 @@ class _CreateAccountFormWidgetState extends State<CreateAccountFormWidget> {
           const SizedBox(height: 16),
 
           TextFormField(
+            // Tapping anywhere outside the field closes the keyboard.
+            onTapOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
             controller: _confirmController,
             obscureText: !_confirmVisible,
             decoration: InputDecoration(
