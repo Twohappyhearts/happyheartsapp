@@ -68,9 +68,11 @@ class _ModuleCardWidgetState extends State<ModuleCardWidget>
         AppTheme.primary,
         FontWeight.w600,
       ),
+      // Same grey and label as the Progress tab, so "not started" never
+      // looks like the green "completed" dot.
       _ => (
-        l10n.statusAvailable,
-        AppTheme.secondary.withAlpha(153),
+        l10n.statusNotStarted,
+        AppTheme.textLight,
         AppTheme.textMedium,
         FontWeight.w500,
       ),

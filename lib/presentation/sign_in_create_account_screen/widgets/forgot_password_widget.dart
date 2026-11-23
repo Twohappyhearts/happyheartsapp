@@ -84,6 +84,9 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
           const SizedBox(height: 24),
           if (!_sent) ...[
             TextFormField(
+              // Tapping anywhere outside the field closes the keyboard.
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(

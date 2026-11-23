@@ -545,6 +545,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     final msgs = chat.messages;
     return ListView.builder(
       controller: _scrollController,
+      // Scrolling the messages also puts the keyboard away.
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
       itemCount: msgs.length + (chat.isLoadingOlder ? 1 : 0),
       itemBuilder: (context, rawIndex) {
@@ -764,6 +766,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 border: Border.all(color: AppTheme.borderColor, width: 1),
               ),
               child: TextField(
+                // Tapping anywhere outside the field closes the keyboard.
+                onTapOutside: (_) =>
+                    FocusManager.instance.primaryFocus?.unfocus(),
                 controller: _messageController,
                 focusNode: _inputFocus,
                 enabled: enabled,
@@ -802,20 +807,24 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
           ),
           const SizedBox(width: 8),
-          Material(
-            color: enabled ? AppTheme.primary : AppTheme.textLight,
-            shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: enabled ? _sendMessage : null,
-              child: Tooltip(
-                message: context.l10n.chatSend,
-                child: const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Icon(
-                    Icons.send_rounded,
-                    color: Colors.white,
-                    size: 20,
+          // Part of the text field for tap-outside purposes, so sending
+          // keeps the keyboard open for the next message.
+          TextFieldTapRegion(
+            child: Material(
+              color: enabled ? AppTheme.primary : AppTheme.textLight,
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: enabled ? _sendMessage : null,
+                child: Tooltip(
+                  message: context.l10n.chatSend,
+                  child: const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Icon(
+                      Icons.send_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),

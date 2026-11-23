@@ -854,6 +854,9 @@ class _EditNameDialogState extends State<_EditNameDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text(context.l10n.profileEditName),
       content: TextField(
+        // Tapping anywhere outside the field closes the keyboard.
+        onTapOutside: (_) =>
+            FocusManager.instance.primaryFocus?.unfocus(),
         controller: _controller,
         autofocus: true,
         textCapitalization: TextCapitalization.words,

@@ -10,6 +10,7 @@ import '../presentation/profile_screen/profile_screen.dart';
 import '../presentation/sign_in_create_account_screen/sign_in_create_account_screen.dart';
 import '../presentation/sign_in_create_account_screen/reset_password_screen.dart';
 import '../services/auth_service.dart';
+import '../widgets/app_menu.dart';
 import '../widgets/app_scaffold.dart';
 
 class AppRoutes {
@@ -18,10 +19,14 @@ class AppRoutes {
   static const String resetPassword = '/reset-password-screen';
   static const String loginCallback = '/login-callback';
   static const String educationHub = '/education-hub-screen';
+
   /// A lesson, opened from the Education tab (a page inside that tab).
   static const String lessonDetail = '/education-hub-screen/lesson';
   static const String assessments = '/assessments-screen';
   static const String progress = '/progress-screen';
+
+  /// A lesson, opened from the Progress tab (back returns to Progress).
+  static const String progressLesson = '/progress-screen/lesson';
   static const String chat = '/chat-screen';
   static const String profile = '/profile-screen';
 }
@@ -92,6 +97,12 @@ CustomTransitionPage<void> _slide(
   transitionDuration: const Duration(milliseconds: 280),
 );
 
+/// A page pushed on top of a tab's first page. MaterialPage uses the platform's
+/// transition, so on iOS it slides in and can be swiped back from the left edge
+/// (the custom [_slide] transition has no back gesture).
+MaterialPage<void> _pushed(GoRouterState state, Widget child) =>
+    MaterialPage<void>(key: state.pageKey, child: child);
+
 class _SplashScreen extends StatelessWidget {
   const _SplashScreen();
   @override
@@ -131,6 +142,7 @@ final GoRouter appRouter = GoRouter(
       branches: [
         // Branch 0: Education (lessons open as a page inside this tab)
         StatefulShellBranch(
+          navigatorKey: tabNavigatorKeys[0],
           routes: [
             GoRoute(
               path: AppRoutes.educationHub,
@@ -140,7 +152,7 @@ final GoRouter appRouter = GoRouter(
                 // /education-hub-screen/lesson
                 GoRoute(
                   path: 'lesson',
-                  pageBuilder: (context, state) => _slide(
+                  pageBuilder: (context, state) => _pushed(
                     state,
                     LessonDetailScreen(
                       moduleData: state.extra as Map<String, dynamic>?,
@@ -153,6 +165,7 @@ final GoRouter appRouter = GoRouter(
         ),
         // Branch 1: Resources (REDCap links with placement = resource)
         StatefulShellBranch(
+          navigatorKey: tabNavigatorKeys[1],
           routes: [
             GoRoute(
               path: AppRoutes.assessments,
@@ -163,16 +176,30 @@ final GoRouter appRouter = GoRouter(
         ),
         // Branch 2: Progress
         StatefulShellBranch(
+          navigatorKey: tabNavigatorKeys[2],
           routes: [
             GoRoute(
               path: AppRoutes.progress,
               pageBuilder: (context, state) =>
                   _slide(state, const ProgressScreen()),
+              routes: [
+                // /progress-screen/lesson
+                GoRoute(
+                  path: 'lesson',
+                  pageBuilder: (context, state) => _pushed(
+                    state,
+                    LessonDetailScreen(
+                      moduleData: state.extra as Map<String, dynamic>?,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
         // Branch 3: Chat
         StatefulShellBranch(
+          navigatorKey: tabNavigatorKeys[3],
           routes: [
             GoRoute(
               path: AppRoutes.chat,
@@ -183,6 +210,7 @@ final GoRouter appRouter = GoRouter(
         ),
         // Branch 4: Profile
         StatefulShellBranch(
+          navigatorKey: tabNavigatorKeys[4],
           routes: [
             GoRoute(
               path: AppRoutes.profile,

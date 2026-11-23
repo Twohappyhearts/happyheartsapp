@@ -134,6 +134,9 @@ class _AiAssistantWebViewState extends State<_AiAssistantWebView> {
     try {
       await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
       await controller.setBackgroundColor(AppTheme.backgroundLight);
+      // The page has its own scrolling message list; without this, iOS bounced the
+      // whole page when a swipe reached it.
+      await controller.setOverScrollMode(WebViewOverScrollMode.never);
       await controller.addJavaScriptChannel(
         'AgentBridge',
         onMessageReceived: (m) => _onBridgeMessage(m.message),
