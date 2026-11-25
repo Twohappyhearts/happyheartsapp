@@ -28,7 +28,6 @@ class LessonDetailScreen extends StatefulWidget {
 
 class _LessonDetailScreenState extends State<LessonDetailScreen> {
   // TODO: Replace with [Riverpod/Bloc] for production state management
-  bool _isBookmarked = false;
 
   /// The lesson to show. Comes from the Education list; if the page is opened
   /// without one (e.g. a restored link), the first active session is loaded.
@@ -224,14 +223,10 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             child: Column(
               children: [
                 LessonDetailAppBarWidget(
-                  isBookmarked: _isBookmarked,
                   // Normally pushed from Education; if not (e.g. restored link), go there.
                   onBack: () => context.canPop()
                       ? context.pop()
                       : context.go(AppRoutes.educationHub),
-                  onBookmark: () =>
-                      setState(() => _isBookmarked = !_isBookmarked),
-                  onShare: () {},
                 ),
                 Expanded(
                   child: SingleChildScrollView(
@@ -431,22 +426,22 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       module['kahootUrl'],
       if ((module['attachments'] as List?)?.isNotEmpty ?? false) 'materials',
     ].where((v) => v != null).length;
+    // Plain labels, not pills: they are information, not buttons (11-14 test).
+    const metaStyle = TextStyle(
+      fontSize: 12.5,
+      color: AppTheme.textMedium,
+      fontWeight: FontWeight.w500,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryContainer,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            category,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.primaryDark,
-            ),
+        Text(
+          category,
+          // Gray, not blue: in blue it read as a link.
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textMedium,
           ),
         ),
         const SizedBox(height: 8),
@@ -470,64 +465,33 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         ),
         const SizedBox(height: 10),
         Wrap(
-          spacing: 8,
+          spacing: 14,
           runSpacing: 6,
           children: [
             if (duration.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceVariantLight,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.access_time_rounded,
-                      size: 13,
-                      color: AppTheme.textMedium,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      duration,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.textMedium,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEDE9FE),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
+              Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(
-                    Icons.layers_rounded,
-                    size: 13,
-                    color: AppTheme.purple,
+                    Icons.access_time_rounded,
+                    size: 14,
+                    color: AppTheme.textLight,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    context.l10n.lessonSections(sections),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.purple,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  Text(duration, style: metaStyle),
                 ],
               ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.layers_rounded,
+                  size: 14,
+                  color: AppTheme.textLight,
+                ),
+                const SizedBox(width: 4),
+                Text(context.l10n.lessonSections(sections), style: metaStyle),
+              ],
             ),
           ],
         ),

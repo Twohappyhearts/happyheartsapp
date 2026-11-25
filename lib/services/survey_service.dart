@@ -122,9 +122,13 @@ class SurveyService {
   /// This patient's recorded completions, newest first.
   Future<List<SurveyCompletion>> myCompletions() async {
     try {
+      // Only this account's completions (staff and admin can read everyone's).
+      final uid = _client.auth.currentUser?.id;
+      if (uid == null) return const [];
       final List<Map<String, dynamic>> rows = await _client
           .from('survey_completions')
           .select('survey_id, survey_code, completed_at')
+          .eq('user_id', uid)
           .order('completed_at', ascending: false)
           .limit(500);
       return rows

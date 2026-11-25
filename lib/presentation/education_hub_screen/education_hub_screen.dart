@@ -30,6 +30,7 @@ class _EducationHubScreenState extends State<EducationHubScreen> {
   List<String> _categories = const [];
   bool _loading = true;
   String? _error;
+  bool _wasVisible = false;
   final CurrentProfile _currentProfile = CurrentProfile.instance;
 
   void _onProfileChanged() {
@@ -42,6 +43,16 @@ class _EducationHubScreenState extends State<EducationHubScreen> {
     _loadContent();
     _currentProfile.addListener(_onProfileChanged);
     _currentProfile.load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Bottom tabs stay alive in an IndexedStack; refresh whenever this tab
+    // becomes visible again (e.g. after a lesson opened from Progress).
+    final visible = TickerMode.valuesOf(context).enabled;
+    if (visible && !_wasVisible && !_loading) _loadContent();
+    _wasVisible = visible;
   }
 
   @override
@@ -150,6 +161,7 @@ class _EducationHubScreenState extends State<EducationHubScreen> {
                     ProgressCardWidget(
                       completed: _completedCount,
                       total: _modules.length,
+                      onTap: () => context.go(AppRoutes.progress),
                     ),
                     const SizedBox(height: 20),
                     CategoryFilterWidget(

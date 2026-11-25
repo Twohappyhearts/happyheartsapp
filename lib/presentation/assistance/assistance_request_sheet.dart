@@ -223,6 +223,9 @@ class _AssistanceRequestSheetState extends State<_AssistanceRequestSheet> {
             ),
             const SizedBox(height: 16),
             TextField(
+              // Tapping anywhere outside the field closes the keyboard.
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
               controller: _controller,
               focusNode: _focus,
               autofocus: true,

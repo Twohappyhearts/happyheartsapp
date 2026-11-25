@@ -82,6 +82,9 @@ class _SignInFormWidgetState extends State<SignInFormWidget> {
           const SizedBox(height: 24),
 
           TextFormField(
+            // Tapping anywhere outside the field closes the keyboard.
+            onTapOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             autofillHints: const [AutofillHints.email],
@@ -104,6 +107,9 @@ class _SignInFormWidgetState extends State<SignInFormWidget> {
           const SizedBox(height: 16),
 
           TextFormField(
+            // Tapping anywhere outside the field closes the keyboard.
+            onTapOutside: (_) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
             controller: _passwordController,
             obscureText: !_passwordVisible,
             autofillHints: const [AutofillHints.password],

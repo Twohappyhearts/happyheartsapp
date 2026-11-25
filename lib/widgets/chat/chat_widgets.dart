@@ -375,20 +375,24 @@ class ChatInputBar extends StatelessWidget {
                   ),
                 )
               else
-                Material(
-                  color: enabled ? sendColor : AppTheme.textLight,
-                  shape: const CircleBorder(),
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    onTap: enabled ? onSend : null,
-                    child: Tooltip(
-                      message: sendLabel,
-                      child: const Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Icon(
-                          Icons.send_rounded,
-                          color: Colors.white,
-                          size: 20,
+                // Part of the text field for tap-outside purposes, so sending
+                // keeps the keyboard open for the next message.
+                TextFieldTapRegion(
+                  child: Material(
+                    color: enabled ? sendColor : AppTheme.textLight,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: enabled ? onSend : null,
+                      child: Tooltip(
+                        message: sendLabel,
+                        child: const Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Icon(
+                            Icons.send_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ),

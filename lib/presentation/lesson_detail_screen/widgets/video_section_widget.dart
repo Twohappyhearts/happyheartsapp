@@ -110,36 +110,25 @@ class _VideoSectionWidgetState extends State<VideoSectionWidget> {
                 padding: const EdgeInsets.all(14),
                 child: Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+                    // Plain text, and only when known: an empty blue pill
+                    // looked like a button that had not loaded (11-14 test).
+                    if (widget.duration.isNotEmpty) ...[
+                      const Icon(
+                        Icons.access_time_rounded,
+                        size: 13,
+                        color: AppTheme.textMedium,
                       ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(10),
+                      const SizedBox(width: 4),
+                      Text(
+                        widget.duration,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textMedium,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.access_time_rounded,
-                            size: 12,
-                            color: AppTheme.primary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            widget.duration,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.primary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
+                      const SizedBox(width: 12),
+                    ],
                     const Icon(
                       Icons.info_outline_rounded,
                       size: 14,

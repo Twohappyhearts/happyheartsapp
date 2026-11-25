@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../services/app_language.dart';
 import '../../../theme/app_theme.dart';
 
@@ -6,9 +7,13 @@ class ProgressCardWidget extends StatelessWidget {
   final int completed;
   final int total;
 
+  /// Opens the Progress tab.
+  final VoidCallback? onTap;
+
   const ProgressCardWidget({
     required this.completed,
     required this.total,
+    this.onTap,
     super.key,
   });
 
@@ -34,6 +39,22 @@ class ProgressCardWidget extends StatelessWidget {
       emoji = '🏆';
     }
 
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: _buildCard(l10n, percent, motivationalText, emoji),
+      ),
+    );
+  }
+
+  Widget _buildCard(
+    AppLocalizations l10n,
+    double percent,
+    String motivationalText,
+    String emoji,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

@@ -171,7 +171,7 @@ class ChatService {
   /// their Display ID from the dashboard, else their full name. Members with
   /// neither are not in the map (the chat shows "Research Team" for them).
   /// Patients cannot read staff profiles, so this goes through the
-  /// chat_staff_names function (migration 20261122000100).
+  /// chat_staff_names function (migration 20261122000200).
   Future<Map<String, String>> staffNames(String conversationId) async {
     final rows = await _client.rpc(
       'chat_staff_names',
