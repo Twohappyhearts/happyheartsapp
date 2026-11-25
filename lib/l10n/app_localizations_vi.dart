@@ -654,6 +654,39 @@ class AppLocalizationsVi extends AppLocalizations {
   String get chatDelete => 'Xóa';
 
   @override
+  String get chatEdit => 'Sửa';
+
+  @override
+  String get chatCopy => 'Sao chép';
+
+  @override
+  String get chatEdited => 'Đã chỉnh sửa';
+
+  @override
+  String get chatEditingMessage => 'Đang sửa tin nhắn';
+
+  @override
+  String get chatDeleteConfirm => 'Xóa tin nhắn này?';
+
+  @override
+  String get chatYouDeleted => 'Bạn đã xóa tin nhắn này';
+
+  @override
+  String get chatMessageDeleted => 'Tin nhắn này đã bị xóa';
+
+  @override
+  String get chatRemovedByTeam => 'Đã bị nhóm nghiên cứu gỡ bỏ';
+
+  @override
+  String get chatEditTooLate => 'Chỉ có thể sửa tin nhắn trong vòng 15 phút.';
+
+  @override
+  String get chatEditFailed => 'Không thể sửa tin nhắn.';
+
+  @override
+  String get chatDeleteFailed => 'Không thể xóa tin nhắn.';
+
+  @override
   String get chatSending => 'Đang gửi…';
 
   @override

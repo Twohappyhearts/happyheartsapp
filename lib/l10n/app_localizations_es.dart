@@ -658,6 +658,40 @@ class AppLocalizationsEs extends AppLocalizations {
   String get chatDelete => 'Eliminar';
 
   @override
+  String get chatEdit => 'Editar';
+
+  @override
+  String get chatCopy => 'Copiar';
+
+  @override
+  String get chatEdited => 'Editado';
+
+  @override
+  String get chatEditingMessage => 'Editando mensaje';
+
+  @override
+  String get chatDeleteConfirm => '¿Eliminar este mensaje?';
+
+  @override
+  String get chatYouDeleted => 'Eliminó este mensaje';
+
+  @override
+  String get chatMessageDeleted => 'Este mensaje fue eliminado';
+
+  @override
+  String get chatRemovedByTeam => 'Retirado por el equipo de investigación';
+
+  @override
+  String get chatEditTooLate =>
+      'Los mensajes solo se pueden editar durante 15 minutos.';
+
+  @override
+  String get chatEditFailed => 'No se pudo editar el mensaje.';
+
+  @override
+  String get chatDeleteFailed => 'No se pudo eliminar el mensaje.';
+
+  @override
   String get chatSending => 'Enviando…';
 
   @override

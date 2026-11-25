@@ -626,6 +626,39 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatDelete => '删除';
 
   @override
+  String get chatEdit => '编辑';
+
+  @override
+  String get chatCopy => '复制';
+
+  @override
+  String get chatEdited => '已编辑';
+
+  @override
+  String get chatEditingMessage => '正在编辑消息';
+
+  @override
+  String get chatDeleteConfirm => '删除这条消息？';
+
+  @override
+  String get chatYouDeleted => '你删除了这条消息';
+
+  @override
+  String get chatMessageDeleted => '此消息已被删除';
+
+  @override
+  String get chatRemovedByTeam => '已被研究团队移除';
+
+  @override
+  String get chatEditTooLate => '消息只能在发送后 15 分钟内编辑。';
+
+  @override
+  String get chatEditFailed => '无法编辑消息。';
+
+  @override
+  String get chatDeleteFailed => '无法删除消息。';
+
+  @override
   String get chatSending => '发送中…';
 
   @override
@@ -1625,6 +1658,39 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get chatDelete => '刪除';
+
+  @override
+  String get chatEdit => '編輯';
+
+  @override
+  String get chatCopy => '複製';
+
+  @override
+  String get chatEdited => '已編輯';
+
+  @override
+  String get chatEditingMessage => '正在編輯訊息';
+
+  @override
+  String get chatDeleteConfirm => '刪除這則訊息？';
+
+  @override
+  String get chatYouDeleted => '你刪除了這則訊息';
+
+  @override
+  String get chatMessageDeleted => '此訊息已被刪除';
+
+  @override
+  String get chatRemovedByTeam => '已被研究團隊移除';
+
+  @override
+  String get chatEditTooLate => '訊息只能在傳送後 15 分鐘內編輯。';
+
+  @override
+  String get chatEditFailed => '無法編輯訊息。';
+
+  @override
+  String get chatDeleteFailed => '無法刪除訊息。';
 
   @override
   String get chatSending => '傳送中…';

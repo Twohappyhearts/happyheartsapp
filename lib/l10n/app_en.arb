@@ -872,6 +872,50 @@
   "@chatDelete": {
     "description": ""
   },
+  "chatEdit": "Edit",
+  "@chatEdit": {
+    "description": ""
+  },
+  "chatCopy": "Copy",
+  "@chatCopy": {
+    "description": ""
+  },
+  "chatEdited": "Edited",
+  "@chatEdited": {
+    "description": ""
+  },
+  "chatEditingMessage": "Editing message",
+  "@chatEditingMessage": {
+    "description": ""
+  },
+  "chatDeleteConfirm": "Delete this message?",
+  "@chatDeleteConfirm": {
+    "description": ""
+  },
+  "chatYouDeleted": "You deleted this message",
+  "@chatYouDeleted": {
+    "description": ""
+  },
+  "chatMessageDeleted": "This message was deleted",
+  "@chatMessageDeleted": {
+    "description": ""
+  },
+  "chatRemovedByTeam": "Removed by the research team",
+  "@chatRemovedByTeam": {
+    "description": ""
+  },
+  "chatEditTooLate": "Messages can only be edited within 15 minutes.",
+  "@chatEditTooLate": {
+    "description": ""
+  },
+  "chatEditFailed": "Could not edit the message.",
+  "@chatEditFailed": {
+    "description": ""
+  },
+  "chatDeleteFailed": "Could not delete the message.",
+  "@chatDeleteFailed": {
+    "description": ""
+  },
   "chatSending": "Sending…",
   "@chatSending": {
     "description": ""

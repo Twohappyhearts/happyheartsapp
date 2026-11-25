@@ -1258,6 +1258,72 @@ abstract class AppLocalizations {
   ///
   ///
   /// In en, this message translates to:
+  /// **'Edit'**
+  String get chatEdit;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get chatCopy;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Edited'**
+  String get chatEdited;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Editing message'**
+  String get chatEditingMessage;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this message?'**
+  String get chatDeleteConfirm;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'You deleted this message'**
+  String get chatYouDeleted;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'This message was deleted'**
+  String get chatMessageDeleted;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Removed by the research team'**
+  String get chatRemovedByTeam;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Messages can only be edited within 15 minutes.'**
+  String get chatEditTooLate;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Could not edit the message.'**
+  String get chatEditFailed;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the message.'**
+  String get chatDeleteFailed;
+
+  ///
+  ///
+  /// In en, this message translates to:
   /// **'Sending…'**
   String get chatSending;
 

@@ -649,6 +649,40 @@ class AppLocalizationsFa extends AppLocalizations {
   String get chatDelete => 'حذف';
 
   @override
+  String get chatEdit => 'ویرایش';
+
+  @override
+  String get chatCopy => 'کپی';
+
+  @override
+  String get chatEdited => 'ویرایش‌شده';
+
+  @override
+  String get chatEditingMessage => 'در حال ویرایش پیام';
+
+  @override
+  String get chatDeleteConfirm => 'این پیام حذف شود؟';
+
+  @override
+  String get chatYouDeleted => 'شما این پیام را حذف کردید';
+
+  @override
+  String get chatMessageDeleted => 'این پیام حذف شده است';
+
+  @override
+  String get chatRemovedByTeam => 'توسط تیم پژوهش حذف شد';
+
+  @override
+  String get chatEditTooLate =>
+      'پیام‌ها فقط تا ۱۵ دقیقه پس از ارسال قابل ویرایش هستند.';
+
+  @override
+  String get chatEditFailed => 'ویرایش پیام انجام نشد.';
+
+  @override
+  String get chatDeleteFailed => 'حذف پیام انجام نشد.';
+
+  @override
   String get chatSending => 'در حال ارسال…';
 
   @override

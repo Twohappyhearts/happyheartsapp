@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
@@ -11,12 +12,12 @@ import '../../services/chat_service.dart';
 import '../../services/message_language_settings.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_menu.dart';
+import '../../widgets/chat/chat_widgets.dart';
 import '../../widgets/message_language_check.dart';
+import '../ai_chat/ai_chat_view.dart';
+import '../ai_chat/widgets/message_menu.dart';
 import '../assistance/assistance_request_sheet.dart';
 import '../assistance/my_assistance_requests_screen.dart';
-import 'widgets/ai_assistant_web_stub.dart'
-    if (dart.library.html) 'widgets/ai_assistant_web_impl.dart'
-    as ai_platform;
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -31,15 +32,21 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   /// The language check before sending is running (blocks a second tap).
   bool _checkingLanguage = false;
+
+  /// The sent message being edited in the input bar (null: writing a new one),
+  /// and the draft that was in the input bar before.
+  String? _editingId;
+  String _draftBeforeEdit = '';
+  bool _savingEdit = false;
   final ScrollController _scrollController = ScrollController();
   ChatController? _chat;
   int _boundGeneration = -1;
   int _lastCount = 0;
 
-  /// 0 = Care Team (human staff chat), 1 = AI Assistant (our agent, WebView).
+  /// 0 = Care Team (human staff chat), 1 = AI Assistant (our agent).
   int _tab = 0;
 
-  /// The AI WebView is created shortly after this screen opens (or right away
+  /// The AI chat is created shortly after this screen opens (or right away
   /// when its tab is opened), then kept alive (IndexedStack) so switching tabs
   /// doesn't reload the conversation. Loading it in the background means the
   /// assistant is usually ready by the time the patient taps the tab.
@@ -55,7 +62,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _bind();
     // Languages the research team reads, for the check before sending.
     MessageLanguageSettings.instance.prefetch();
-    // Let the Care Team chat render first, then start the AI assistant page.
+    // Let the Care Team chat render first, then start the AI assistant.
     _aiPrewarm = Timer(const Duration(milliseconds: 800), () {
       if (mounted && !_aiStarted) setState(() => _aiStarted = true);
     });
@@ -87,6 +94,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _chat = null;
     _lastCount = 0;
     _messageController.clear();
+    _editingId = null;
+    _draftBeforeEdit = '';
     _boundGeneration = auth.generation;
 
     if (auth.isSignedIn) {
@@ -142,7 +151,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
-    if (text.isEmpty || _checkingLanguage) return;
+    if (text.isEmpty || _checkingLanguage || _savingEdit) return;
     // Warn (don't block) when the team may not read the message's language.
     _checkingLanguage = true;
     final bool send;
@@ -156,6 +165,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       _inputFocus.requestFocus(); // "Edit message": the draft stays
       return;
     }
+    final editing = _editingId;
+    if (editing != null) {
+      await _saveEdit(editing, text);
+      return;
+    }
     final id = await _chat?.send(text);
     if (id != null) {
       // Draft is cleared only once the message is queued locally; a failure
@@ -163,6 +177,145 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       _messageController.clear();
       _scrollToBottom();
     }
+  }
+
+  // ---- Editing and deleting your own messages -------------------------------
+
+  /// Long press on a message: Copy, and for your own message Edit (within 15
+  /// minutes) and Delete, over a blurred screen.
+  void _showMessageActions(
+    BuildContext bubbleContext,
+    ChatMessage m,
+    Widget bubble,
+  ) {
+    final chat = _chat;
+    final box = bubbleContext.findRenderObject() as RenderBox?;
+    if (chat == null || box == null || !box.hasSize) return;
+    _inputFocus.unfocus();
+    unawaited(HapticFeedback.mediumImpact());
+    unawaited(
+      showMessageMenu(
+        context,
+        anchor: box.localToGlobal(Offset.zero) & box.size,
+        preview: bubble,
+        items: [
+          MessageMenuItem(
+            icon: Icons.copy_rounded,
+            label: context.l10n.chatCopy,
+            onTap: () => Clipboard.setData(ClipboardData(text: m.content)),
+          ),
+          if (chat.canEdit(m))
+            MessageMenuItem(
+              icon: Icons.edit_outlined,
+              label: context.l10n.chatEdit,
+              onTap: () => _startEdit(m),
+            ),
+          if (chat.canDelete(m))
+            MessageMenuItem(
+              icon: Icons.delete_outline_rounded,
+              label: context.l10n.chatDelete,
+              onTap: () => unawaited(_confirmDelete(m)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _startEdit(ChatMessage m) {
+    setState(() {
+      if (_editingId == null) _draftBeforeEdit = _messageController.text;
+      _editingId = m.id;
+      _messageController.text = m.content;
+      _messageController.selection = TextSelection.collapsed(
+        offset: _messageController.text.length,
+      );
+    });
+    _inputFocus.requestFocus();
+  }
+
+  void _cancelEdit() {
+    setState(() {
+      _editingId = null;
+      _messageController.text = _draftBeforeEdit;
+      _draftBeforeEdit = '';
+    });
+    _inputFocus.unfocus();
+  }
+
+  Future<void> _saveEdit(String messageId, String text) async {
+    final chat = _chat;
+    if (chat == null) return;
+    setState(() => _savingEdit = true);
+    try {
+      await chat.edit(messageId, text);
+      if (!mounted) return;
+      setState(() {
+        _editingId = null;
+        _messageController.text = _draftBeforeEdit;
+        _draftBeforeEdit = '';
+      });
+      _inputFocus.unfocus();
+    } on ChatException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      if (!mounted) return;
+      _showError(context.l10n.chatEditFailed);
+    } finally {
+      if (mounted) setState(() => _savingEdit = false);
+    }
+  }
+
+  Future<void> _confirmDelete(ChatMessage m) async {
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          context.l10n.chatDeleteConfirm,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textDark,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(context.l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
+            child: Text(context.l10n.chatDelete),
+          ),
+        ],
+      ),
+    );
+    if (yes != true || !mounted) return;
+    if (_editingId == m.id) _cancelEdit();
+    try {
+      await _chat?.delete(m.id);
+    } on ChatException catch (e) {
+      _showError(e.message);
+    } catch (_) {
+      if (!mounted) return;
+      _showError(context.l10n.chatDeleteFailed);
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// Placeholder text of a deleted message.
+  String _deletedLabel(ChatMessage m) {
+    if (m.isUserMessage && m.deletedByRole == 'team') {
+      return context.l10n.chatRemovedByTeam;
+    }
+    if (m.isUserMessage) return context.l10n.chatYouDeleted;
+    return context.l10n.chatMessageDeleted;
   }
 
   String _formatTime(DateTime dt) => context.l10n.time(dt.toLocal());
@@ -180,11 +333,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   bool _showDateSeparator(List<ChatMessage> msgs, int index) {
     if (index == 0) return true;
-    final prev = msgs[index - 1].createdAt.toLocal();
-    final curr = msgs[index].createdAt.toLocal();
-    return prev.day != curr.day ||
-        prev.month != curr.month ||
-        prev.year != curr.year;
+    return !chatIsSameDay(msgs[index - 1].createdAt, msgs[index].createdAt);
   }
 
   void _selectTab(int tab) {
@@ -199,90 +348,106 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final chat = _chat;
-    final isAi = _tab == 1;
     final userId = AuthService.instance.userId;
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      appBar: AppBar(
-        backgroundColor: AppTheme.surfaceLight,
-        elevation: 0,
-        scrolledUnderElevation: 1,
-        automaticallyImplyLeading: false,
-        titleSpacing: 16,
-        title: Row(
-          children: [
-            const AppMenuButton(),
-            const SizedBox(width: 12),
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: isAi
-                    ? AppTheme.purpleContainer
-                    : AppTheme.primaryContainer,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isAi ? Icons.smart_toy_outlined : Icons.support_agent_rounded,
-                color: isAi ? AppTheme.purple : AppTheme.primary,
-                size: 20,
-              ),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: IndexedStack(
+              index: _tab,
+              children: [
+                _buildTeamChat(chat),
+                if (!_aiStarted)
+                  const SizedBox.shrink()
+                else if (userId == null)
+                  ChatErrorState(message: context.l10n.chatSignInAi)
+                else
+                  AiChatView(
+                    key: ValueKey('ai-$userId'),
+                    userId: userId,
+                    active: _tab == 1,
+                  ),
+              ],
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Menu button, who the patient is talking to, and the Care Team / AI switch.
+  /// The ☰ sits where it sits on every other tab: 20 px from the left and from
+  /// the top of the safe area (Education, Progress, Profile, Assessments).
+  Widget _buildHeader() {
+    final isAi = _tab == 1;
+    return Container(
+      color: AppTheme.surfaceLight,
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: Row(
                 children: [
-                  Text(
-                    isAi
-                        ? context.l10n.chatAiTitle
-                        : context.l10n.chatTeamTitle,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textDark,
+                  const AppMenuButton(),
+                  const SizedBox(width: 12),
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: isAi
+                          ? AppTheme.purpleContainer
+                          : AppTheme.primaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isAi
+                          ? Icons.smart_toy_outlined
+                          : Icons.support_agent_rounded,
+                      color: isAi ? AppTheme.purple : AppTheme.primary,
+                      size: 20,
                     ),
                   ),
-                  Text(
-                    isAi
-                        ? context.l10n.chatAiSubtitle
-                        : context.l10n.chatTeamSubtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w400,
-                      color: AppTheme.textLight,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isAi
+                              ? context.l10n.chatAiTitle
+                              : context.l10n.chatTeamTitle,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textDark,
+                          ),
+                        ),
+                        Text(
+                          isAi
+                              ? context.l10n.chatAiSubtitle
+                              : context.l10n.chatTeamSubtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                            color: AppTheme.textLight,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 14),
+            _buildTabSwitcher(),
           ],
         ),
-        bottom: PreferredSize(
-          // 52 at the default text size; taller when the phone's text is larger.
-          preferredSize: Size.fromHeight(
-            32 + MediaQuery.textScalerOf(context).scale(20),
-          ),
-          child: _buildTabSwitcher(),
-        ),
-      ),
-      body: IndexedStack(
-        index: _tab,
-        children: [
-          _buildTeamChat(chat),
-          if (!_aiStarted)
-            const SizedBox.shrink()
-          else if (userId == null)
-            _buildErrorState(context.l10n.chatSignInAi, null)
-          else
-            // Keyed by language: switching language reloads the page.
-            ai_platform.buildAiAssistantView(
-              userId: userId,
-              language: AppLanguageController.instance.code,
-            ),
-        ],
       ),
     );
   }
@@ -347,7 +512,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
       child: Container(
         padding: const EdgeInsets.all(3),
         decoration: BoxDecoration(
@@ -370,19 +535,39 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         if (chat != null) _buildAssistanceBanner(),
         Expanded(
           child: chat == null
-              ? _buildErrorState(context.l10n.chatSignIn, null)
+              ? ChatErrorState(message: context.l10n.chatSignIn)
               : chat.isLoading
               ? const Center(
                   child: CircularProgressIndicator(color: AppTheme.primary),
                 )
               : chat.error != null
-              ? _buildErrorState(chat.error!, chat.init)
+              ? ChatErrorState(
+                  message: chat.error!,
+                  onRetry: chat.init,
+                  retryLabel: context.l10n.retry,
+                )
               : chat.messages.isEmpty
               ? _buildEmptyState()
               : _buildMessageList(chat),
         ),
-        _buildInputBar(
-          enabled: chat != null && !chat.isLoading && chat.error == null,
+        ChatInputBar(
+          controller: _messageController,
+          focusNode: _inputFocus,
+          enabled:
+              chat != null &&
+              !chat.isLoading &&
+              chat.error == null &&
+              !_savingEdit,
+          hintText: context.l10n.chatInputHint,
+          sendLabel: context.l10n.chatSend,
+          onSend: _sendMessage,
+          banner: _editingId == null
+              ? null
+              : ChatEditBanner(
+                  label: context.l10n.chatEditingMessage,
+                  cancelLabel: context.l10n.cancel,
+                  onCancel: _cancelEdit,
+                ),
         ),
       ],
     );
@@ -471,11 +656,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             Container(
               width: 72,
               height: 72,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppTheme.primaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.chat_bubble_outline_rounded,
                 color: AppTheme.primary,
                 size: 32,
@@ -507,44 +692,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildErrorState(String message, VoidCallback? onRetry) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline_rounded,
-              color: AppTheme.errorColor,
-              size: 48,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                color: AppTheme.textMedium,
-              ),
-            ),
-            if (onRetry != null) ...[
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: onRetry,
-                child: Text(context.l10n.retry),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildMessageList(ChatController chat) {
     final msgs = chat.messages;
     return ListView.builder(
       controller: _scrollController,
+      // Dragging the messages puts the keyboard away.
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
       itemCount: msgs.length + (chat.isLoadingOlder ? 1 : 0),
       itemBuilder: (context, rawIndex) {
@@ -568,7 +721,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           key: ValueKey(message.id),
           children: [
             if (_showDateSeparator(msgs, index))
-              _buildDateSeparator(message.createdAt),
+              ChatDateSeparator(label: _formatDate(message.createdAt)),
             _buildMessageBubble(message),
           ],
         );
@@ -576,253 +729,105 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildDateSeparator(DateTime date) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Expanded(child: Divider(color: AppTheme.borderColor, thickness: 1)),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              _formatDate(date),
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.textLight,
-              ),
-            ),
-          ),
-          Expanded(child: Divider(color: AppTheme.borderColor, thickness: 1)),
-        ],
-      ),
-    );
-  }
-
   Widget _buildMessageBubble(ChatMessage message) {
     final isUser = message.isUserMessage;
     final failed = message.sendState == SendState.failed;
     final pending = message.sendState == SendState.pending;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        mainAxisAlignment: isUser
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isUser) ...[
-            Container(
-              width: 28,
-              height: 28,
-              margin: const EdgeInsetsDirectional.only(end: 8, bottom: 2),
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceVariantLight,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.support_agent_rounded,
-                color: AppTheme.textMedium,
-                size: 16,
-              ),
-            ),
-          ],
-          Flexible(
-            child: Column(
-              crossAxisAlignment: isUser
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
-              children: [
-                if (!isUser)
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: 4,
-                      bottom: 3,
-                    ),
-                    child: Text(
-                      context.l10n.chatTeamTitle,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.textLight,
-                      ),
-                    ),
-                  ),
-                Opacity(
-                  opacity: pending ? 0.7 : 1,
-                  child: Container(
-                    constraints: BoxConstraints(maxWidth: 70.w),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isUser ? AppTheme.primary : AppTheme.surfaceLight,
-                      // The small corner points at the sender's side (mirrored
-                      // in right-to-left languages).
-                      borderRadius: BorderRadiusDirectional.only(
-                        topStart: const Radius.circular(16),
-                        topEnd: const Radius.circular(16),
-                        bottomStart: Radius.circular(isUser ? 16 : 4),
-                        bottomEnd: Radius.circular(isUser ? 4 : 16),
-                      ),
-                      border: failed
-                          ? Border.all(color: AppTheme.errorColor, width: 1.5)
-                          : isUser
-                          ? null
-                          : Border.all(color: AppTheme.borderColor, width: 1),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(8),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      message.content,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: isUser ? Colors.white : AppTheme.textDark,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 3, left: 4, right: 4),
-                  child: failed
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              context.l10n.chatNotSent,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 10,
-                                color: AppTheme.errorColor,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            GestureDetector(
-                              onTap: () => _chat?.retry(message.id),
-                              child: Text(
-                                context.l10n.retry,
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.primary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            GestureDetector(
-                              onTap: () => _chat?.discard(message.id),
-                              child: Text(
-                                context.l10n.chatDelete,
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 10,
-                                  color: AppTheme.textLight,
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Text(
-                          pending
-                              ? context.l10n.chatSending
-                              : _formatTime(message.createdAt),
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 10,
-                            color: AppTheme.textLight,
-                          ),
-                        ),
-                ),
-              ],
-            ),
+    // Which team member replied, e.g. "Laura · Research Team".
+    final staffName = _chat?.staffNameFor(message);
+    final senderLabel = staffName == null
+        ? context.l10n.chatTeamTitle
+        : '$staffName · ${context.l10n.chatTeamTitle}';
+
+    if (message.isDeleted) {
+      return ChatBubble(
+        isUser: isUser,
+        avatar: const ChatAvatar(icon: Icons.support_agent_rounded),
+        senderLabel: senderLabel,
+        footer: Text(
+          _formatTime(message.createdAt),
+          style: chatMetaTextStyle(),
+        ),
+        child: Text(
+          _deletedLabel(message),
+          style: chatBubbleTextStyle(isUser: isUser).copyWith(
+            fontStyle: FontStyle.italic,
+            color: isUser
+                ? Colors.white.withValues(alpha: 0.8)
+                : AppTheme.textLight,
           ),
-          if (isUser) const SizedBox(width: 4),
-        ],
+        ),
+      );
+    }
+
+    final bubble = _buildSentBubble(
+      message,
+      isUser,
+      failed,
+      pending,
+      senderLabel,
+    );
+    if (message.sendState != SendState.sent) return bubble;
+    return Builder(
+      builder: (bubbleContext) => GestureDetector(
+        onLongPress: () => _showMessageActions(bubbleContext, message, bubble),
+        child: bubble,
       ),
     );
   }
 
-  Widget _buildInputBar({required bool enabled}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
-        border: Border(top: BorderSide(color: AppTheme.borderColor, width: 1)),
-      ),
-      padding: EdgeInsets.only(left: 4.w, right: 4.w, top: 10, bottom: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceVariantLight,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppTheme.borderColor, width: 1),
-              ),
-              child: TextField(
-                controller: _messageController,
-                focusNode: _inputFocus,
-                enabled: enabled,
-                maxLines: 4,
-                minLines: 1,
-                maxLength: 4000,
-                buildCounter:
-                    (
-                      context, {
-                      required currentLength,
-                      required isFocused,
-                      maxLength,
-                    }) => null,
-                textCapitalization: TextCapitalization.sentences,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  color: AppTheme.textDark,
+  Widget _buildSentBubble(
+    ChatMessage message,
+    bool isUser,
+    bool failed,
+    bool pending,
+    String senderLabel,
+  ) {
+    return ChatBubble(
+      isUser: isUser,
+      pending: pending,
+      failed: failed,
+      avatar: const ChatAvatar(icon: Icons.support_agent_rounded),
+      senderLabel: senderLabel,
+      footer: failed
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  context.l10n.chatNotSent,
+                  style: chatMetaTextStyle(color: AppTheme.errorColor),
                 ),
-                decoration: InputDecoration(
-                  hintText: context.l10n.chatInputHint,
-                  hintStyle: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    color: AppTheme.textLight,
-                  ),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () => _chat?.retry(message.id),
+                  child: Text(
+                    context.l10n.retry,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.primary,
+                    ),
                   ),
                 ),
-                onSubmitted: (_) => _sendMessage(),
-              ),
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () => _chat?.discard(message.id),
+                  child: Text(
+                    context.l10n.chatDelete,
+                    style: chatMetaTextStyle(),
+                  ),
+                ),
+              ],
+            )
+          : Text(
+              pending
+                  ? context.l10n.chatSending
+                  : message.isEdited
+                  ? '${_formatTime(message.createdAt)} · ${context.l10n.chatEdited}'
+                  : _formatTime(message.createdAt),
+              style: chatMetaTextStyle(),
             ),
-          ),
-          const SizedBox(width: 8),
-          Material(
-            color: enabled ? AppTheme.primary : AppTheme.textLight,
-            shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: enabled ? _sendMessage : null,
-              child: Tooltip(
-                message: context.l10n.chatSend,
-                child: const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Icon(
-                    Icons.send_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      child: Text(message.content, style: chatBubbleTextStyle(isUser: isUser)),
     );
   }
 }

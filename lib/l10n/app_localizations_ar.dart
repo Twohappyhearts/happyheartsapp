@@ -648,6 +648,39 @@ class AppLocalizationsAr extends AppLocalizations {
   String get chatDelete => 'حذف';
 
   @override
+  String get chatEdit => 'تعديل';
+
+  @override
+  String get chatCopy => 'نسخ';
+
+  @override
+  String get chatEdited => 'تم التعديل';
+
+  @override
+  String get chatEditingMessage => 'جارٍ تعديل الرسالة';
+
+  @override
+  String get chatDeleteConfirm => 'حذف هذه الرسالة؟';
+
+  @override
+  String get chatYouDeleted => 'لقد حذفت هذه الرسالة';
+
+  @override
+  String get chatMessageDeleted => 'تم حذف هذه الرسالة';
+
+  @override
+  String get chatRemovedByTeam => 'أزالها فريق البحث';
+
+  @override
+  String get chatEditTooLate => 'لا يمكن تعديل الرسائل إلا خلال 15 دقيقة.';
+
+  @override
+  String get chatEditFailed => 'تعذّر تعديل الرسالة.';
+
+  @override
+  String get chatDeleteFailed => 'تعذّر حذف الرسالة.';
+
+  @override
   String get chatSending => 'جارٍ الإرسال…';
 
   @override

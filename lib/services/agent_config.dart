@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-/// Where the HappyHearts AI assistant page is served from (the Next.js
-/// dashboard app, page /m/assistant).
+/// Where the HappyHearts AI assistant API is served from (the Next.js
+/// dashboard app: /api/agent/*), and the public legal pages (/legal/*).
 ///
 /// Set AGENT_WEB_URL in env.json, e.g.
 ///   local, phone on the same Wi-Fi:  "http://192.168.1.20:4028"
@@ -19,19 +19,14 @@ class AgentConfig {
         : 'http://localhost:4028';
   }
 
-  static Uri get pageUri => Uri.parse('$baseUrl/m/assistant');
-
-  /// The assistant page in the app's language, e.g. /m/assistant?lang=zh-Hant
-  /// (en, es, vi, ko, zh-Hans, zh-Hant, fa, ar).
-  static Uri pageUriFor(String language) =>
-      pageUri.replace(queryParameters: {'lang': language});
-
   /// Public page that redirects to the current Terms of Use / Privacy Policy
   /// PDF uploaded on the dashboard (or the built-in sample until one is).
   static Uri legalUri(LegalDocument document) =>
       Uri.parse('$baseUrl/legal/${document.path}');
 
-  static String get host => Uri.parse(baseUrl).host;
+  /// The AI chat API: /api/agent/...
+  static Uri apiUri(String path, [Map<String, String>? query]) =>
+      Uri.parse('$baseUrl/api/agent/$path').replace(queryParameters: query);
 }
 
 enum LegalDocument {

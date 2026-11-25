@@ -630,6 +630,39 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatDelete => '삭제';
 
   @override
+  String get chatEdit => '편집';
+
+  @override
+  String get chatCopy => '복사';
+
+  @override
+  String get chatEdited => '수정됨';
+
+  @override
+  String get chatEditingMessage => '메시지 수정 중';
+
+  @override
+  String get chatDeleteConfirm => '이 메시지를 삭제할까요?';
+
+  @override
+  String get chatYouDeleted => '메시지를 삭제했습니다';
+
+  @override
+  String get chatMessageDeleted => '삭제된 메시지입니다';
+
+  @override
+  String get chatRemovedByTeam => '연구팀이 삭제한 메시지입니다';
+
+  @override
+  String get chatEditTooLate => '메시지는 보낸 후 15분 이내에만 수정할 수 있습니다.';
+
+  @override
+  String get chatEditFailed => '메시지를 수정하지 못했습니다.';
+
+  @override
+  String get chatDeleteFailed => '메시지를 삭제하지 못했습니다.';
+
+  @override
   String get chatSending => '보내는 중…';
 
   @override

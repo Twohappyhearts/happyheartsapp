@@ -17,6 +17,15 @@ class ChatMessage {
   final DateTime createdAt; // always local time
   final SendState sendState;
 
+  /// Last edit by the sender (null: never edited).
+  final DateTime? editedAt;
+
+  /// Deleted: shown as a placeholder; [content] is empty.
+  final DateTime? deletedAt;
+
+  /// Who deleted it: 'user' (the patient) or 'team'.
+  final String? deletedByRole;
+
   const ChatMessage({
     required this.id,
     required this.senderId,
@@ -24,9 +33,14 @@ class ChatMessage {
     required this.content,
     required this.createdAt,
     this.sendState = SendState.sent,
+    this.editedAt,
+    this.deletedAt,
+    this.deletedByRole,
   });
 
   bool get isUserMessage => senderRole == 'user';
+  bool get isDeleted => deletedAt != null;
+  bool get isEdited => editedAt != null;
 
   ChatMessage copyWith({SendState? sendState, DateTime? createdAt}) =>
       ChatMessage(
@@ -36,16 +50,27 @@ class ChatMessage {
         content: content,
         createdAt: createdAt ?? this.createdAt,
         sendState: sendState ?? this.sendState,
+        editedAt: editedAt,
+        deletedAt: deletedAt,
+        deletedByRole: deletedByRole,
       );
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
+    DateTime? time(String key) {
+      final v = json[key];
+      return v is String ? DateTime.parse(v).toLocal() : null;
+    }
+
     return ChatMessage(
       id: json['id'] as String,
       senderId: json['sender_id'] as String?,
       senderRole: (json['sender_role'] as String?) ?? 'user',
-      content: json['content'] as String,
+      content: (json['content'] as String?) ?? '',
       // Server sends UTC; convert to the device's local time for display.
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      editedAt: time('edited_at'),
+      deletedAt: time('deleted_at'),
+      deletedByRole: json['deleted_by_role'] as String?,
     );
   }
 }
@@ -82,7 +107,11 @@ class ChatService {
 
   static const int pageSize = 30;
   static const String _columns =
-      'id, sender_id, sender_role, content, created_at';
+      'id, sender_id, sender_role, content, created_at, '
+      'edited_at, deleted_at, deleted_by_role';
+
+  /// The sender may edit a message for this long (the database checks again).
+  static const Duration editWindow = Duration(minutes: 15);
 
   SupabaseClient get _client => Supabase.instance.client;
 
@@ -138,6 +167,28 @@ class ChatService {
     }
   }
 
+  /// Names of the team members who wrote in this conversation, by sender id:
+  /// their Display ID from the dashboard, else their full name. Members with
+  /// neither are not in the map (the chat shows "Research Team" for them).
+  /// Patients cannot read staff profiles, so this goes through the
+  /// chat_staff_names function (migration 20261122000100).
+  Future<Map<String, String>> staffNames(String conversationId) async {
+    final rows = await _client.rpc(
+      'chat_staff_names',
+      params: {'p_conversation_id': conversationId},
+    );
+    final names = <String, String>{};
+    for (final r in (rows as List? ?? const [])) {
+      if (r is! Map) continue;
+      final id = r['sender_id'];
+      final name = r['name'];
+      if (id is String && name is String && name.trim().isNotEmpty) {
+        names[id] = name.trim();
+      }
+    }
+    return names;
+  }
+
   /// Messages created after [after] (used to recover anything missed while
   /// disconnected or backgrounded).
   Future<List<ChatMessage>> fetchSince(
@@ -190,6 +241,47 @@ class ChatService {
     }
   }
 
+  /// Edits your own message in place (same id). The database keeps the
+  /// earlier text in chat_message_revisions and refuses after [editWindow].
+  Future<ChatMessage> edit(String messageId, String content) async {
+    try {
+      final res = await _client.rpc(
+        'chat_edit_message',
+        params: {'p_message_id': messageId, 'p_content': content},
+      );
+      return ChatMessage.fromJson(_row(res));
+    } on PostgrestException catch (e) {
+      debugPrint('ChatService.edit failed: $e');
+      if (e.code == 'HC001') throw ChatException(appL10n.chatEditTooLate);
+      if (e.code == '23514') throw ChatException(appL10n.chatErrorLength);
+      throw ChatException(appL10n.chatEditFailed);
+    } catch (e) {
+      debugPrint('ChatService.edit failed: $e');
+      throw ChatException(appL10n.chatEditFailed);
+    }
+  }
+
+  /// Deletes your own message: it stays in the conversation as a placeholder,
+  /// and its text is kept in the history for the research team.
+  Future<ChatMessage> delete(String messageId) async {
+    try {
+      final res = await _client.rpc(
+        'chat_delete_message',
+        params: {'p_message_id': messageId},
+      );
+      return ChatMessage.fromJson(_row(res));
+    } catch (e) {
+      debugPrint('ChatService.delete failed: $e');
+      throw ChatException(appL10n.chatDeleteFailed);
+    }
+  }
+
+  Map<String, dynamic> _row(dynamic res) {
+    final row = res is List ? (res.isEmpty ? null : res.first) : res;
+    if (row is Map) return Map<String, dynamic>.from(row);
+    throw const FormatException('no message returned');
+  }
+
   String _sendMessage(PostgrestException e) {
     debugPrint('ChatService.send failed: $e');
     if (e.code == '42501') return appL10n.chatErrorNoPermission;
@@ -197,28 +289,40 @@ class ChatService {
     return appL10n.chatErrorNotSent;
   }
 
+  /// New messages (INSERT) and edits/deletions (UPDATE, same id) of one
+  /// conversation; both are merged by id.
   RealtimeChannel subscribe(
     String conversationId,
-    void Function(ChatMessage) onInsert,
+    void Function(ChatMessage) onMessage,
     void Function(RealtimeSubscribeStatus status) onStatus,
   ) {
     final uid = AuthService.instance.userId ?? 'anon';
+    final filter = PostgresChangeFilter(
+      type: PostgresChangeFilterType.eq,
+      column: 'conversation_id',
+      value: conversationId,
+    );
+    void handle(PostgresChangePayload payload) {
+      try {
+        onMessage(ChatMessage.fromJson(payload.newRecord));
+      } catch (_) {}
+    }
+
     final channel = _client
         .channel('chat:$conversationId:$uid')
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
           table: 'chat_messages',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'conversation_id',
-            value: conversationId,
-          ),
-          callback: (payload) {
-            try {
-              onInsert(ChatMessage.fromJson(payload.newRecord));
-            } catch (_) {}
-          },
+          filter: filter,
+          callback: handle,
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'chat_messages',
+          filter: filter,
+          callback: handle,
         );
     channel.subscribe((status, [error]) => onStatus(status));
     return channel;

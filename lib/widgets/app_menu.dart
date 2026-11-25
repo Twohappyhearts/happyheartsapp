@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../presentation/assessments_screen/assessments_screen.dart';
 import '../presentation/assistance/assistance_request_sheet.dart';
 import '../presentation/assistance/my_assistance_requests_screen.dart';
+import '../presentation/inbox/inbox_screen.dart';
+import '../presentation/inbox/inbox_strings.dart';
 import '../services/app_language.dart';
 import '../services/current_profile.dart';
+import '../services/inbox_service.dart';
 import '../services/survey_service.dart';
 import '../theme/app_theme.dart';
 
@@ -16,7 +19,7 @@ final GlobalKey<ScaffoldState> appShellScaffoldKey = GlobalKey<ScaffoldState>();
 void openAppMenu() => appShellScaffoldKey.currentState?.openDrawer();
 
 /// The ☰ button at the top-left of each tab. Same look as the app's other
-/// square header buttons.
+/// square header buttons; a small dot when the inbox has unread messages.
 class AppMenuButton extends StatelessWidget {
   const AppMenuButton({super.key});
 
@@ -35,10 +38,26 @@ class AppMenuButton extends StatelessWidget {
             color: AppTheme.surfaceVariantLight,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(
-            Icons.menu_rounded,
-            size: 22,
-            color: AppTheme.textDark,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              const Icon(
+                Icons.menu_rounded,
+                size: 22,
+                color: AppTheme.textDark,
+              ),
+              Positioned(
+                top: 7,
+                right: 7,
+                child: ListenableBuilder(
+                  listenable: InboxService.instance,
+                  builder: (context, _) => InboxService.instance.unread > 0
+                      ? const _UnreadDot()
+                      : const SizedBox.shrink(),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -71,6 +90,26 @@ class AppDrawer extends StatelessWidget {
             const _DrawerHeader(),
             const Divider(height: 1, color: AppTheme.borderColor),
             const SizedBox(height: 8),
+            ListenableBuilder(
+              listenable: InboxService.instance,
+              builder: (context, _) {
+                final strings = InboxStrings.of(
+                  AppLanguageController.instance.code,
+                );
+                final unread = InboxService.instance.unread;
+                return _DrawerItem(
+                  icon: Icons.inbox_outlined,
+                  iconColor: AppTheme.primary,
+                  iconBg: AppTheme.primaryContainer,
+                  label: strings.menu,
+                  subtitle: unread > 0
+                      ? strings.unread(unread)
+                      : strings.menuSubtitle,
+                  badge: unread,
+                  onTap: () => _closeThen(context, () => openInbox(shellContext)),
+                );
+              },
+            ),
             _DrawerItem(
               icon: Icons.assignment_outlined,
               iconColor: AppTheme.purple,
@@ -191,6 +230,9 @@ class _DrawerItem extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
 
+  /// Unread count shown before the chevron (0: none).
+  final int badge;
+
   const _DrawerItem({
     required this.icon,
     required this.iconColor,
@@ -198,6 +240,7 @@ class _DrawerItem extends StatelessWidget {
     required this.label,
     required this.subtitle,
     required this.onTap,
+    this.badge = 0,
   });
 
   @override
@@ -232,9 +275,46 @@ class _DrawerItem extends StatelessWidget {
                 ],
               ),
             ),
+            if (badge > 0)
+              Container(
+                constraints: const BoxConstraints(minWidth: 20),
+                height: 20,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  badge > 99 ? '99+' : '$badge',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             const Icon(Icons.chevron_right_rounded, color: AppTheme.textLight),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Unread inbox marker on the ☰ button.
+class _UnreadDot extends StatelessWidget {
+  const _UnreadDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 9,
+      height: 9,
+      decoration: BoxDecoration(
+        color: AppTheme.errorColor,
+        shape: BoxShape.circle,
+        border: Border.all(color: AppTheme.surfaceVariantLight, width: 1.5),
       ),
     );
   }

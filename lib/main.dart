@@ -5,6 +5,7 @@ import 'l10n/app_localizations.dart';
 import 'widgets/custom_error_widget.dart';
 import './services/app_language.dart';
 import './services/auth_service.dart';
+import './services/inbox_service.dart';
 import './services/supabase_service.dart';
 import './services/tracking_service.dart';
 
@@ -19,6 +20,8 @@ void main() async {
   await AppLanguageController.instance.start();
   // Lesson engagement outbox (restores unsent events, flushes every 15s).
   TrackingService.instance.start();
+  // Broadcast inbox: unread count for the ☰ button and the menu.
+  InboxService.instance.start();
 
   bool hasShownError = false;
 
