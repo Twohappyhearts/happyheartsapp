@@ -848,7 +848,7 @@
   "@chatSignIn": {
     "description": ""
   },
-  "chatNeedHelp": "Need help with something?",
+  "chatNeedHelp": "Need help?",
   "@chatNeedHelp": {
     "description": ""
   },

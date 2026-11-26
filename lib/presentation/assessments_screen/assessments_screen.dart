@@ -30,15 +30,13 @@ class AssessmentsScreen extends StatefulWidget {
 }
 
 class _AssessmentsScreenState extends State<AssessmentsScreen> {
-  static const _sectionOrder = [
-    'Emotional Assessment',
-    'Basic Needs Assessment',
-  ];
-
   /// Group key for links without a section (no heading is shown for it).
   static const _noSection = '';
 
   List<SurveyLink> _surveys = const [];
+
+  /// Section names in the order set on the dashboard (Manage Sections).
+  List<String> _sectionOrder = const [];
   Map<String, DateTime> _lastCompleted = const {};
   bool _loading = true;
   String? _error;
@@ -52,10 +50,12 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
 
   Future<void> _load() async {
     try {
+      final sectionOrder = SurveyService.instance.loadSectionOrder();
       final surveys = await SurveyService.instance.loadSurveys(
         placement: widget.placement,
       );
       final completions = await SurveyService.instance.myCompletions();
+      final order = await sectionOrder;
       final last = <String, DateTime>{};
       for (final c in completions) {
         final id = c.surveyId;
@@ -64,6 +64,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
       if (!mounted) return;
       setState(() {
         _surveys = surveys;
+        _sectionOrder = order;
         _lastCompleted = last;
         _loading = false;
         _error = null;
@@ -97,6 +98,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
       final completed = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (_) => AssessmentWebViewScreen(
+            surveyId: survey.id,
             title: survey.title,
             url: survey.personalizedUrl(username),
           ),
@@ -108,8 +110,8 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
     }
   }
 
-  /// Sections in a fixed order: the two from the app design, then any other
-  /// section staff typed, then surveys without a section.
+  /// Sections in the order staff set on the dashboard, then any section not
+  /// in that list (by name), then surveys without a section.
   List<MapEntry<String, List<SurveyLink>>> get _sections {
     final groups = <String, List<SurveyLink>>{};
     for (final s in _surveys) {

@@ -616,7 +616,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               ],
             ),
           ),
-          Flexible(
+          const SizedBox(width: 12),
+          // Its own width (up to ~45% of the screen, wrapping longer labels),
+          // so the text keeps the rest of the row on every screen size.
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.sizeOf(context).width * 0.45,
+            ),
             child: ElevatedButton(
               onPressed: () => showAssistanceRequestSheet(context),
               style: ElevatedButton.styleFrom(

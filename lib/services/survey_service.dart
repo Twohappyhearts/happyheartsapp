@@ -71,11 +71,16 @@ class SurveyService {
   SurveyService._();
   static final SurveyService instance = SurveyService._();
 
-  /// When a REDCap survey ends it can redirect here (set per survey in
-  /// REDCap > Survey Settings > "Redirect to a URL"); the survey web view
-  /// intercepts it and records the completion. Same origin as the media pages.
-  static const String completionUrlPrefix =
+  /// When a REDCap survey ends it redirects here (the same URL for every
+  /// survey, set in REDCap > Survey Settings > "Redirect to a URL"). The
+  /// survey web view intercepts it before it loads and records a completion
+  /// of the survey it opened; the address never has to exist.
+  static const String completionUrl =
       'https://io.happyhearts.app/survey-complete';
+
+  /// Recognized by path alone, so a later change of domain in REDCap keeps
+  /// working in builds already installed.
+  static const String completionPath = '/survey-complete';
 
   SupabaseClient get _client => Supabase.instance.client;
 
@@ -148,12 +153,29 @@ class SurveyService {
     }
   }
 
-  /// Called when the survey web view reaches the completion redirect.
-  Future<void> recordCompletion(String code) async {
+  /// Section names (public.survey_categories) in the order staff set on the
+  /// dashboard. Empty if they can't be loaded (sections then sort by name).
+  Future<List<String>> loadSectionOrder() async {
+    try {
+      final List<Map<String, dynamic>> rows = await _client
+          .from('survey_categories')
+          .select('name')
+          .order('sort_order')
+          .order('name');
+      return [for (final r in rows) (r['name'] as String?) ?? ''];
+    } catch (e) {
+      debugPrint('SurveyService.loadSectionOrder failed: $e');
+      return const [];
+    }
+  }
+
+  /// Called when the web view of survey [surveyId] reaches the completion
+  /// redirect. The patient is the signed-in account (auth.uid() on the server).
+  Future<void> recordCompletion(String surveyId) async {
     try {
       await _client.rpc(
-        'record_survey_completion',
-        params: {'p_code': code},
+        'record_survey_completion_by_id',
+        params: {'p_survey_id': surveyId},
       );
     } on PostgrestException catch (e) {
       debugPrint('SurveyService.recordCompletion failed: $e');
@@ -161,14 +183,16 @@ class SurveyService {
     }
   }
 
-  /// Survey code from a completion redirect URL, or null if [url] isn't one.
-  static String? completionCode(String url) {
-    if (!url.startsWith(completionUrlPrefix)) return null;
+  /// Whether [url] is the REDCap "survey finished" redirect.
+  static bool isCompletionUrl(String url) {
     final uri = Uri.tryParse(url);
-    final code = uri?.queryParameters['code']?.trim().toUpperCase();
-    if (code == null || !RegExp(r'^[A-Z][A-Z0-9_]{0,49}$').hasMatch(code)) {
-      return '';
+    if (uri == null) return false;
+    final scheme = uri.scheme.toLowerCase();
+    if (scheme != 'https' && scheme != 'http') return false;
+    var path = uri.path.toLowerCase();
+    while (path.length > 1 && path.endsWith('/')) {
+      path = path.substring(0, path.length - 1);
     }
-    return code;
+    return path == completionPath;
   }
 }

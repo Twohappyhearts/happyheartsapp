@@ -7,10 +7,13 @@ import '../../services/survey_service.dart';
 import '../../theme/app_theme.dart';
 
 class AssessmentWebViewScreen extends StatefulWidget {
+  /// survey_links.id: what a completion is recorded for.
+  final String surveyId;
   final String title;
   final String url;
 
   const AssessmentWebViewScreen({
+    required this.surveyId,
     required this.title,
     required this.url,
     super.key,
@@ -68,9 +71,8 @@ class _AssessmentWebViewScreenState extends State<AssessmentWebViewScreen> {
   ///    patient doesn't lose the survey.
   NavigationDecision _onNavigationRequest(NavigationRequest request) {
     final url = request.url;
-    final code = SurveyService.completionCode(url);
-    if (code != null) {
-      _onSurveyCompleted(code);
+    if (SurveyService.isCompletionUrl(url)) {
+      _onSurveyCompleted();
       return NavigationDecision.prevent;
     }
     final uri = Uri.tryParse(url);
@@ -93,15 +95,14 @@ class _AssessmentWebViewScreenState extends State<AssessmentWebViewScreen> {
     return NavigationDecision.prevent; // unknown app schemes
   }
 
-  Future<void> _onSurveyCompleted(String code) async {
+  Future<void> _onSurveyCompleted() async {
     if (_completed) return;
     setState(() {
       _completed = true;
       _isLoading = false;
     });
-    if (code.isEmpty) return;
     try {
-      await SurveyService.instance.recordCompletion(code);
+      await SurveyService.instance.recordCompletion(widget.surveyId);
     } catch (_) {
       // The answers are already saved in REDCap; only our record failed.
       if (!mounted) return;

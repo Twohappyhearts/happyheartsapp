@@ -639,7 +639,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get chatSignIn => 'Inicie sesión para usar el chat.';
 
   @override
-  String get chatNeedHelp => '¿Necesita ayuda con algo?';
+  String get chatNeedHelp => '¿Necesita ayuda?';
 
   @override
   String get chatViewRequests => 'Ver mis solicitudes';

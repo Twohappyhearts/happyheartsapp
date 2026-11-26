@@ -338,6 +338,9 @@ class ChatInputBar extends StatelessWidget {
                         fontSize: 14,
                         color: AppTheme.textLight,
                       ),
+                      // The rounded box around it is the background; the
+                      // theme's square fill would show over its corners.
+                      filled: false,
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
